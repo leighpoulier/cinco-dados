@@ -50,6 +50,14 @@ class Control
         @pastel = Pastel.new
     end
 
+    def initial_fill(fill)
+        fill_row = Array.new(@width, {char: fill, inverse: false})
+        @rows = []
+        for i in (0...@height)
+            @rows[i] = fill_row.clone
+        end
+    end
+
     def draw(cursor)
         @rows.each do |row|
             row.each do |charhash|
@@ -66,15 +74,26 @@ class Control
 
 end
 
-class FilledBox < Control
+class Button < Control
 
-    def initialize(width, height, fill)
+    def initialize(width, height, fill, text)
         super()
         @width = width
         @height = height
-        @fill = "\u{1FB99}"
-        fill_row = @fill*width
-        @rows = Array.new(height, fill_row)
+        @fill = "\u{2588}"
+        @text = text
+
+        initial_fill(@fill)
+
+
+        # Replace centre characters witih inverse text
+        middle_row = @height/2
+        middle_col = @width/2
+        starting_col = middle_col - (text.length/2)
+        (0...text.length).each do |char_count|
+            @rows[middle_row][starting_col + char_count] = {char: @text[char_count], inverse: true}
+        end
+
     
     end
 
@@ -91,12 +110,16 @@ class Dado < Control
         
         @width = 7
         @height = 4
-        row_default = Array.new(width, {char: @@full_block, inverse: false})
+
+
+        # row_default = Array.new(width, {char: @@full_block, inverse: false})
         
-        @rows = []
-        for i in (0...height)
-            @rows[i] = row_default.clone
-        end
+        # @rows = []
+        # for i in (0...height)
+        #     @rows[i] = row_default.clone
+        # end
+
+        initial_fill(@@full_block)
 
         @prng = Random.new
 
@@ -159,29 +182,27 @@ class Dado < Control
 
 end
 
-screen = Screen.new(80,36)
+screen = Screen.new(80,30)
 
 dados = []
 
-left_margin = 8
+left_margin = 6
 top_margin = 2
 vert_spacing = 1
 
-(0..5).each do |counter|
+(0..4).each do |counter|
     dado = Dado.new()
     dados.push(dado)
     screen.add_control(dado, {x: left_margin, y: top_margin + counter * (dado.height + vert_spacing )})
 end
 
-screen.draw
+button = Button.new(8, 3, "\u{1FB99}", "ROLL")
+screen.add_control(button, {x: 18, y: 13})
 
-sleep 5
 
-dados.each do |dado|
-    dado.roll
-end
 
 screen.draw
+
 
 
 

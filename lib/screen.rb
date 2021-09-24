@@ -26,6 +26,14 @@ class Screen
         control.set_screen(self)
     end
 
+    def delete_control(control)
+        if @controls.include?(control)
+            @controls.delete(control)
+        else
+            raise "No such control in controls array"
+        end
+    end
+
     def add_dado(dado)
         if dado.instance_of? Dado
             @dados.push(dado)
@@ -103,7 +111,8 @@ class Control < SelectionCursorMapNode
     end
 
     def initial_fill(fill)
-        fill_row = Array.new(@width, {char: fill, inverse: false})
+        style = [:white, :on_black]
+        fill_row = Array.new(@width, {char: fill, style: style})
         @rows = []
         for i in (0...@height)
             @rows[i] = fill_row.clone
@@ -114,11 +123,12 @@ class Control < SelectionCursorMapNode
         print cursor.move_to(@x, @y)
         @rows.each do |row|
             row.each do |charhash|
-                if charhash[:inverse]
-                    print @pastel.decorate(charhash[:char], :black, :on_white)
-                else
-                    print @pastel.decorate(charhash[:char], :white, :on_black)
-                end
+                print @pastel.decorate(charhash[:char], *charhash[:style])
+                # if charhash[:inverse]
+                #     print @pastel.decorate(charhash[:char], :black, :on_white)
+                # else
+                #     print @pastel.decorate(charhash[:char], :white, :on_black)
+                # end
             end
             print cursor.move(-1 * row.length, -1)
 
@@ -134,16 +144,28 @@ class Control < SelectionCursorMapNode
 
 
     def on_selected()
-
     end
 
     def on_deselected()
-    
     end
 
     def activate()
-
     end
+
+    # def <=>(other)
+
+    #     case
+    #     when self.instance_of?(Background)
+    #         return 
+            
+
+    #     end
+
+    # end
+
+end
+
+class Background < Control
 
 end
 
@@ -166,8 +188,9 @@ class Button < Control
         middle_row = @height/2
         middle_col = @width/2
         starting_col = middle_col - (@text.length/2)
+        style = [:white, :on_black]
         (0...@text.length).each do |char_count|
-            @rows[middle_row][starting_col + char_count] = {char: @text[char_count], inverse: true}
+            @rows[middle_row][starting_col + char_count] = {char: @text[char_count], style: style}
         end
     end
 
@@ -218,33 +241,18 @@ class Dado < Control
         @width = WIDTH
         @locked = false
 
-        # row_default = Array.new(@width, {char: @@full_block, inverse: false})
-        
-        # @rows = []
-        # for i in (0...@height)
-        #     @rows[i] = row_default.clone
-        # end
 
         initial_fill(@@full_block)
 
         @prng = Random.new
 
-        # if shift 
-        #     @rows[0] = Array.new(@width, {char: "\u{1FB39}", inverse: false})
-            
-        #     @rows[0][0] = {char: "\u{1FB4A}", inverse: false} #top left corner
-        #     @rows[0][@width-1] = {char: "\u{1FB3F}", inverse: false} #top right corner
-        #     @rows[@height-1][0] = {char: "\u{1FB55}", inverse: false} #bottom left corner
-        #     @rows[@height-1][@width-1] = {char: "\u{1FB60}", inverse: false} #bottom right corner
+        style = [:white, :on_black]
+        @rows[height-1] = Array.new(@width, {char: "\u{1FB0E}", style: style})
         
-        # else
-            @rows[height-1] = Array.new(@width, {char: "\u{1FB0E}", inverse: false})
-            
-            @rows[0][0] = {char: "\u{1FB44}", inverse: false} #top left corner
-            @rows[0][@width-1] = {char: "\u{1FB4F}", inverse: false} #top right corner
-            @rows[@height-1][0] = {char: "\u{1FB65}", inverse: false} #bottom left corner
-            @rows[@height-1][@width-1] = {char: "\u{1FB5A}", inverse: false} #bottom right corner
-        # end
+        @rows[0][0] = {char: "\u{1FB44}", style: style} #top left corner
+        @rows[0][@width-1] = {char: "\u{1FB4F}", style: style} #top right corner
+        @rows[@height-1][0] = {char: "\u{1FB65}", style: style} #bottom left corner
+        @rows[@height-1][@width-1] = {char: "\u{1FB5A}", style: style} #bottom right corner
 
         roll
         
@@ -259,37 +267,53 @@ class Dado < Control
         if @value < 1 || @value > 6 || !@value.is_a?(Integer)
             raise "Invalid dado @value: #{@value}"
         end
+
+        style = [:white, :on_black, :inverse]
         
         if @value == 2 || @value == 3 || @value == 4 || @value == 5 || @value == 6
-            @rows[0][1] = {char: @@pip, inverse: true}
-            @rows[2][5] = {char: @@pip, inverse: true}
+            @rows[0][1] = {char: @@pip, style: style}
+            @rows[2][5] = {char: @@pip, style: style}
         end
         if @value == 4 || @value == 5 || @value == 6
-            @rows[0][5] = {char: @@pip, inverse: true}
-            @rows[2][1] = {char: @@pip, inverse: true}
+            @rows[0][5] = {char: @@pip, style: style}
+            @rows[2][1] = {char: @@pip, style: style}
         end
         if @value == 6
-            @rows[1][1] = {char: @@pip, inverse: true}
-            @rows[1][5] = {char: @@pip, inverse: true}
+            @rows[1][1] = {char: @@pip, style: style}
+            @rows[1][5] = {char: @@pip, style: style}
         end
         if @value == 1 || @value == 3 || @value == 5
-            @rows[1][3] = {char: @@pip, inverse: true}
+            @rows[1][3] = {char: @@pip, style: style}
         end
     end
 
     def reset_pips()
+        style = [:white, :on_black]
         (0..2).each do |row|
             [1,5].each do |side|
-                @rows[row][side] = {char: @@full_block, inverse: false}
+                @rows[row][side] = {char: @@full_block, style: style}
             end
         end
-        @rows[1][3]= {char: @@full_block, inverse: false}
+        @rows[1][3]= {char: @@full_block, style: style}
     end
 
     def toggle_lock()
+        if @locked
+            remove_lock()
+        else
+            add_lock()
+        end
         @locked = !@locked
+    end
+
+    def add_lock()
         @locked_border = LockedBorder.new(self, "locked_" + self.name)
-        screen.add_control(@locked_border)
+        @screen.add_control(@locked_border)
+    end
+
+    def remove_lock()
+        @screen.delete_control(@locked_border)
+        @locked_border = nil
     end
 
     def locked?
@@ -300,6 +324,27 @@ class Dado < Control
         toggle_lock()
     end
 
+end
+
+class InfoLine < Control
+    def initialize(width, vertical_position)
+        super(0, vertical_position, "infoLine")
+
+        @height = 1
+        @width = width
+
+        initial_fill(" ")
+
+        @left_indent = 1
+
+    end
+
+    @style = [:white, :on_black]
+    def display_message(message)
+        (0...@width-@left_indent).each do |char_count|
+            @rows[0][@left_indent + char_count] = {char: message[char_count], style: @style}
+        end
+    end
 end
 
 class BorderControl < Control
@@ -329,42 +374,24 @@ class LockedBorder < BorderControl
     def decorate_control()
         # set the border characters
 
+        style = [:green, :on_black]
+
         [1,@width-2].each do |col|
-            @rows[0][col] = { char: "\u{2501}", invert: false}  #top row
-            @rows[height - 1][col] = { char: "\u{2501}", invert: false} #bottom row
+            @rows[0][col] = { char: "\u{2501}", style: style}  #top row
+            @rows[height - 1][col] = { char: "\u{2501}", style: style} #bottom row
         end
 
         [1,@height-2].each do |row|
-            @rows[row][0] = { char: "\u{2503}", invert: false}  #left side
-            @rows[row][width - 1] = { char: "\u{2503}", invert: false}  #right side
+            @rows[row][0] = { char: "\u{2503}", style: style}  #left side
+            @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side
         end
 
-        @rows[0][0] = { char: "\u{250F}", invert: false} #top left corner
-        @rows[0][@width - 1] = { char: "\u{2513}", invert: false} #top right corner
-        @rows[@height - 1][0] = { char: "\u{2517}", invert: false} #bottom left corner
-        @rows[@height - 1][@width - 1] = { char: "\u{251B}", invert: false} #bottom left corner
+        @rows[0][0] = { char: "\u{250F}", style: style} #top left corner
+        @rows[0][@width - 1] = { char: "\u{2513}", style: style} #top right corner
+        @rows[@height - 1][0] = { char: "\u{2517}", style: style} #bottom left corner
+        @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
     end
 
-end
-
-class InfoLine < Control
-    def initialize(width, vertical_position)
-        super(0, vertical_position, "infoLine")
-
-        @height = 1
-        @width = width
-
-        initial_fill(" ")
-
-        @left_indent = 1
-
-    end
-
-    def display_message(message)
-        (0...@width-@left_indent).each do |char_count|
-            @rows[0][@left_indent + char_count] = {char: message[char_count], inverse: false}
-        end
-    end
 end
 
 class SelectionCursor < BorderControl
@@ -391,20 +418,22 @@ class SelectionCursor < BorderControl
     def decorate_control()
         # set the border characters
 
+        style = [:white, :on_black]
+
         (0...@width).each do |col|
-            @rows[0][col] = { char: "\u{2501}", invert: false}  #top row
-            @rows[height - 1][col] = { char: "\u{2501}", invert: false} #bottom row
+            @rows[0][col] = { char: "\u{2501}", style: style}  #top row
+            @rows[height - 1][col] = { char: "\u{2501}", style: style} #bottom row
         end
 
         (0...@height).each do |row|
-            @rows[row][0] = { char: "\u{2503}", invert: false}  #left side
-            @rows[row][width - 1] = { char: "\u{2503}", invert: false}  #right side
+            @rows[row][0] = { char: "\u{2503}", style: style}  #left side
+            @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side
         end
 
-        @rows[0][0] = { char: "\u{250F}", invert: false} #top left corner
-        @rows[0][@width - 1] = { char: "\u{2513}", invert: false} #top right corner
-        @rows[@height - 1][0] = { char: "\u{2517}", invert: false} #bottom left corner
-        @rows[@height - 1][@width - 1] = { char: "\u{251B}", invert: false} #bottom left corner
+        @rows[0][0] = { char: "\u{250F}", style: style} #top left corner
+        @rows[0][@width - 1] = { char: "\u{2513}", style: style} #top right corner
+        @rows[@height - 1][0] = { char: "\u{2517}", style: style} #bottom left corner
+        @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
     end
 
     def move(direction)

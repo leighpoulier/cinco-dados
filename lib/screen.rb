@@ -1,5 +1,6 @@
 require "tty-cursor"
 require "pastel"
+require "tty-logger"
 require_relative "cursormap"
 include CompassDirections
 
@@ -75,6 +76,9 @@ class Screen
             print "\n"
         end
         
+
+        @controls.sort!
+        $logger.info("@controls order #{@controls.join(", ")}")
         # draw each control
         @controls.each do |control|
             control.draw(@cursor)
@@ -124,11 +128,6 @@ class Control < SelectionCursorMapNode
         @rows.each do |row|
             row.each do |charhash|
                 print @pastel.decorate(charhash[:char], *charhash[:style])
-                # if charhash[:inverse]
-                #     print @pastel.decorate(charhash[:char], :black, :on_white)
-                # else
-                #     print @pastel.decorate(charhash[:char], :white, :on_black)
-                # end
             end
             print cursor.move(-1 * row.length, -1)
 
@@ -142,7 +141,6 @@ class Control < SelectionCursorMapNode
         @screen = screen
     end
 
-
     def on_selected()
     end
 
@@ -152,16 +150,56 @@ class Control < SelectionCursorMapNode
     def activate()
     end
 
-    # def <=>(other)
 
-    #     case
-    #     when self.instance_of?(Background)
-    #         return 
-            
+    def <=>(other)
 
-    #     end
-
-    # end
+        case
+        when self.instance_of?(Background)
+            case
+            when other.instance_of?(Background)
+                return 0
+            when other.is_a?(Control)
+                return nil
+            end
+        when self.instance_of?(BorderControl)
+            case
+            when other.instance_of?(Background)
+                return +1
+            when other.instance_of?(BorderControl)
+                return 0
+            when other.instance_of?(SelectionCursor)
+                return -1
+            when other.is_a?(Control)
+                return +1
+            else
+                return nil
+            end
+        when self.instance_of?(SelectionCursor)
+            case
+            when other.instance_of?(SelectionCursor)
+                return 0
+            when other.instance_of?(Background) || other.instance_of?(BorderControl)
+                return +1
+            when other.is_a?(Control)
+                return +1
+            else
+                return nil
+            end
+        when self.is_a?(Control)
+            case
+            when other.instance_of?(Background)
+                return +1
+            when other.instance_of?(BorderControl) || other.instance_of?(SelectionCursor)
+                return -1
+            when other.is_a?(Control)
+                return 0
+            else
+                return nil
+            end
+        else
+            return nil
+        end
+    end
 
 end
 
@@ -485,6 +523,10 @@ class SelectionCursor < BorderControl
         return status
     end
 
+end
+
+$logger = TTY::Logger.new do |config|
+    config.output = File.open("error.log", "a")
 end
 
 screen = Screen.new(80,30)

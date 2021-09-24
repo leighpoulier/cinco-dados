@@ -87,16 +87,27 @@ class Screen
     end
 
     def roll_unlocked_dados()
-        status = []
+        # status = []
         dados.each do |dado|
         # for dado in dados
             if !dado.locked?
                 dado.roll
             end
-            status << dado.value
+            # status << dado.value
         end
-        
-        display_message(status.sort)
+
+        cinco_dados = true
+        dado_counter = 0
+        while dado_counter < @dados.length
+            unless dados[dado_counter].value == @dados[0].value
+                cinco_dados = false
+                break
+            end
+            dado_counter += 1
+        end
+        if cinco_dados
+            display_message("Felicidades! Cinco Dades!")
+        end
     end
 
 end
@@ -135,6 +146,10 @@ class Control < SelectionCursorMapNode
         if self.is_a? BorderControl
             self.enclosed_control.draw(cursor)
         end
+    end
+
+    def inspect
+        return "x: #{@x}, y: #{@y}, width: #{@width}, height: #{@height}"
     end
 
     def set_screen(screen)
@@ -298,7 +313,7 @@ class Dado < Control
 
     def roll()
 
-        reset_pips()
+        reset_pips_to_blank()
 
         @value = @prng.rand(6) + 1
 
@@ -325,7 +340,7 @@ class Dado < Control
         end
     end
 
-    def reset_pips()
+    def reset_pips_to_blank()
         style = [:white, :on_black]
         (0..2).each do |row|
             [1,5].each do |side|
@@ -347,6 +362,7 @@ class Dado < Control
     def add_lock()
         @locked_border = LockedBorder.new(self, "locked_" + self.name)
         @screen.add_control(@locked_border)
+        $logger.info("New Locked Border: " + @locked_border.name + ", " + @locked_border.inspect)
     end
 
     def remove_lock()
@@ -407,6 +423,7 @@ class LockedBorder < BorderControl
         @enclosed_control = control
         enclose_control()
         super(@x, @y, name)
+        decorate_control()
     end
 
     def decorate_control()
@@ -414,20 +431,25 @@ class LockedBorder < BorderControl
 
         style = [:green, :on_black]
 
-        [1,@width-2].each do |col|
-            @rows[0][col] = { char: "\u{2501}", style: style}  #top row
-            @rows[height - 1][col] = { char: "\u{2501}", style: style} #bottom row
-        end
+        # [1,@width-2].each do |col|
+        #     @rows[0][col] = { char: "\u{2501}", style: style}  #top row
+        #     @rows[height - 1][col] = { char: "\u{2501}", style: style} #bottom row
+        # end
 
-        [1,@height-2].each do |row|
+        [2].each do |row|
             @rows[row][0] = { char: "\u{2503}", style: style}  #left side
             @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side
         end
+        [3].each do |row|
+            @rows[row][0] = { char: "\u{2579}", style: style}  #left side
+            @rows[row][width - 1] = { char: "\u{2579}", style: style}  #right side
+        end
 
-        @rows[0][0] = { char: "\u{250F}", style: style} #top left corner
-        @rows[0][@width - 1] = { char: "\u{2513}", style: style} #top right corner
-        @rows[@height - 1][0] = { char: "\u{2517}", style: style} #bottom left corner
-        @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
+
+        # @rows[0][0] = { char: "\u{250F}", style: style} #top left corner
+        # @rows[0][@width - 1] = { char: "\u{2513}", style: style} #top right corner
+        # @rows[@height - 1][0] = { char: "\u{2517}", style: style} #bottom left corner
+        # @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
     end
 
 end
@@ -486,6 +508,7 @@ class SelectionCursor < BorderControl
     def keypress(event)  # implements subscription of TTY::Reader
         # puts "name = #{event.key.name}"
         # puts "value = #{event.value}"
+        @screen.display_message("")
         case
         when event.key.name == :up || event.value == "w"
             move(NORTH)
@@ -526,7 +549,7 @@ class SelectionCursor < BorderControl
 end
 
 $logger = TTY::Logger.new do |config|
-    config.output = File.open("error.log", "a")
+    config.output = File.open("error_" + Time.new.strftime("%Y%m%d-%k%M") + ".log", "a")
 end
 
 screen = Screen.new(80,30)

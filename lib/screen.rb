@@ -5,9 +5,10 @@ include CompassDirections
 
 class Screen
 
-    attr_reader :columns, :rows
+    attr_reader :columns, :rows, :dados
     def initialize(width, height)
         @controls = []
+        @dados=[]
         @columns = width
         @rows = height
 
@@ -25,12 +26,28 @@ class Screen
         control.set_screen(self)
     end
 
+    def add_dado(dado)
+        if dado.instance_of? Dado
+            @dados.push(dado)
+        else
+            raise "Control must be an instance of Dado to add to dados array"
+        end
+    end
+
     def set_info_line(info_line_control)
-        @info_line = info_line_control
+        if info_line_control.instance_of? InfoLine
+            @info_line = info_line_control
+        else
+            raise "Control must be an instance of InfoLine to assign as info_line"
+        end
     end
 
     def set_selection_cursor(selection_cursor_control)
-        @selection_cursor = selection_cursor_control
+        if selection_cursor_control.instance_of? SelectionCursor
+            @selection_cursor = selection_cursor_control
+        else
+            raise "Control must be an instance of SelectionCursor to assign as selection_cursor"
+        end
     end
 
     def display_message(message)
@@ -55,6 +72,19 @@ class Screen
             control.draw(@cursor)
         end
         print @cursor.move_to(0, @rows)
+    end
+
+    def roll_unlocked_dados()
+        status = []
+        dados.each do |dado|
+        # for dado in dados
+            if !dado.locked?
+                dado.roll
+            end
+            status << dado.value
+        end
+        
+        display_message(status.sort)
     end
 
 end
@@ -93,8 +123,8 @@ class Control < SelectionCursorMapNode
             print cursor.move(-1 * row.length, -1)
 
         end
-        if self.instance_of? SelectionCursor
-            self.selected_control.draw(cursor)
+        if self.is_a? BorderControl
+            self.enclosed_control.draw(cursor)
         end
     end
 
@@ -173,6 +203,8 @@ class Dado < Control
 
     WIDTH = 7
     HEIGHT = 4
+
+    attr_reader :value
 
 
     def initialize(x, y, name)
@@ -256,6 +288,61 @@ class Dado < Control
 
     def toggle_lock()
         @locked = !@locked
+        @locked_border = LockedBorder.new(self, "locked_" + self.name)
+        screen.add_control(@locked_border)
+    end
+
+    def locked?
+        return @locked
+    end
+
+    def activate()
+        toggle_lock()
+    end
+
+end
+
+class BorderControl < Control
+
+    attr_reader :enclosed_control
+
+    def enclose_control()
+        @height = @enclosed_control.height + 2
+        @width = @enclosed_control.width + 2
+        @x = @enclosed_control.x-1
+        @y = @enclosed_control.y-1
+
+        initial_fill(" ")
+
+    end
+end
+
+class LockedBorder < BorderControl
+    
+    def initialize(control, name)
+
+        @enclosed_control = control
+        enclose_control()
+        super(@x, @y, name)
+    end
+
+    def decorate_control()
+        # set the border characters
+
+        [1,@width-2].each do |col|
+            @rows[0][col] = { char: "\u{2501}", invert: false}  #top row
+            @rows[height - 1][col] = { char: "\u{2501}", invert: false} #bottom row
+        end
+
+        [1,@height-2].each do |row|
+            @rows[row][0] = { char: "\u{2503}", invert: false}  #left side
+            @rows[row][width - 1] = { char: "\u{2503}", invert: false}  #right side
+        end
+
+        @rows[0][0] = { char: "\u{250F}", invert: false} #top left corner
+        @rows[0][@width - 1] = { char: "\u{2513}", invert: false} #top right corner
+        @rows[@height - 1][0] = { char: "\u{2517}", invert: false} #bottom left corner
+        @rows[@height - 1][@width - 1] = { char: "\u{251B}", invert: false} #bottom left corner
     end
 
 end
@@ -280,9 +367,8 @@ class InfoLine < Control
     end
 end
 
-class SelectionCursor < Control
+class SelectionCursor < BorderControl
 
-    attr_reader :selected_control
 
     def initialize(control, name)
         select_control(control)
@@ -291,45 +377,40 @@ class SelectionCursor < Control
     end
 
     def select_control(control)
-        unless @selected_control.nil?
-            @selected_control.is_selected = false
-            @selected_control.on_deselected
+        unless @enclosed_control.nil?
+            @enclosed_control.is_selected = false
+            @enclosed_control.on_deselected
         end
-        @selected_control = control
-        @selected_control.is_selected = true
-        @selected_control.on_selected
+        @enclosed_control = control
+        @enclosed_control.is_selected = true
+        @enclosed_control.on_selected
+        enclose_control()
+        decorate_control()
+    end
 
-        @height = control.height + 2
-        @width = control.width + 2
-        @x = control.x-1
-        @y = control.y-1
-
-        initial_fill(" ")
-
-
+    def decorate_control()
         # set the border characters
 
-        (0...width).each do |col|
+        (0...@width).each do |col|
             @rows[0][col] = { char: "\u{2501}", invert: false}  #top row
             @rows[height - 1][col] = { char: "\u{2501}", invert: false} #bottom row
         end
 
-        (0...height).each do |row|
+        (0...@height).each do |row|
             @rows[row][0] = { char: "\u{2503}", invert: false}  #left side
             @rows[row][width - 1] = { char: "\u{2503}", invert: false}  #right side
         end
 
         @rows[0][0] = { char: "\u{250F}", invert: false} #top left corner
-        @rows[0][width - 1] = { char: "\u{2513}", invert: false} #top right corner
-        @rows[height - 1][0] = { char: "\u{2517}", invert: false} #bottom left corner
-        @rows[height - 1][width - 1] = { char: "\u{251B}", invert: false} #bottom left corner
-
+        @rows[0][@width - 1] = { char: "\u{2513}", invert: false} #top right corner
+        @rows[@height - 1][0] = { char: "\u{2517}", invert: false} #bottom left corner
+        @rows[@height - 1][@width - 1] = { char: "\u{251B}", invert: false} #bottom left corner
     end
 
     def move(direction)
-        if @selected_control.has_link(direction)
-            # @selected_control = @selected_control.follow_link(direction)
-            select_control(@selected_control.follow_link(direction))
+        if @enclosed_control.has_link(direction)
+            # @enclosed_control = @enclosed_control.follow_link(direction)
+            select_control(@enclosed_control.follow_link(direction))
         else
             puts "Cannot Move in direction: #{direction}"
         end
@@ -348,24 +429,24 @@ class SelectionCursor < Control
         when event.key.name == :left || event.value == "a"
             move(WEST)
         when event.key.name == :return || event.key.name == :space
-            @selected_control.activate
+            @enclosed_control.activate
         end
         # @screen.display_message(get_status())
     end
 
     def get_status()
         status = ""
-        status << "#{@selected_control}: "
+        status << "#{@enclosed_control}: "
         status <<  "I can move"
-        if @selected_control.links.length == 0
+        if @enclosed_control.links.length == 0
             status <<  " nowhere \u{1F622}"
         else
             counter = 0
-            @selected_control.links.each do |link_direction, node|
+            @enclosed_control.links.each do |link_direction, node|
                 status <<  " #{link_direction} to #{node}"
-                if counter == @selected_control.links.length - 2
+                if counter == @enclosed_control.links.length - 2
                     status <<  " or"
-                elsif counter != @selected_control.links.length - 1
+                elsif counter != @enclosed_control.links.length - 1
                     status <<  ","
                 end
                 counter += 1
@@ -379,28 +460,27 @@ end
 
 screen = Screen.new(80,30)
 
-dados = []
-
 left_margin = 6
 top_margin = 2
 vert_spacing = 1
 
 (0..4).each do |counter|
     dado = Dado.new(left_margin, top_margin + counter * (Dado::HEIGHT + vert_spacing ), "dado" + counter.to_s)
-    dados.push(dado)
+    screen.add_dado(dado)
     screen.add_control(dado)
     if counter > 0 
-        dado.add_link(NORTH, dados[counter-1], true)
+        dado.add_link(NORTH, screen.dados[counter-1], true)
     end
 end
 
 button = Button.new(18, 12, 8, 3, "\u{1FB99}", "ROLL", "roll")
-dados.each do |dado|
+screen.dados.each do |dado|
     dado.add_link(EAST, button, false)
 end
-button.add_link(WEST, dados[2], false)
+button.add_link(WEST, screen.dados[2], false)
 button.register_event(:activate, ->(screen) {
-    screen.display_message("ROLL!")
+    # screen.display_message("ROLL!")
+    screen.roll_unlocked_dados()
 })
 screen.add_control(button)
 

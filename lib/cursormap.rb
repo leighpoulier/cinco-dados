@@ -1,3 +1,5 @@
+require("tty-reader")
+
 class Cursor
 
     def initialize(node)
@@ -15,11 +17,12 @@ class Cursor
             @selected_node = @selected_node.follow_link(direction)
             print_status
         else
-            raise "Cannot Move in direction: #{direction}"
+            puts "Cannot Move in direction: #{direction}"
         end
     end
 
     def print_status()
+        system("clear")
         puts "selected node = #{@selected_node}"
         print "I can move"
         if @selected_node.links.length == 0
@@ -37,6 +40,21 @@ class Cursor
             end
         end
         puts "."
+    end
+
+    def keypress(event)  # implements subscription of TTY::Reader
+        # puts "name = #{event.key.name}"
+        # puts "value = #{event.value}"
+        case
+        when event.key.name == :up || event.value == "w"
+            move(NORTH)
+        when event.key.name == :right|| event.value == "d"
+            move(EAST)
+        when event.key.name == :down|| event.value == "s"
+            move(SOUTH)
+        when event.key.name == :left|| event.value == "a"
+            move(WEST)
+        end
     end
 
 end
@@ -98,6 +116,7 @@ class Direction
 end
 
 module CompassDirections
+    # Group of standard directions to be used everywhere
     NORTH = Direction.new(:north)
     SOUTH = Direction.new(:south)
     SOUTH.set_opposite(NORTH)

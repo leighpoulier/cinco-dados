@@ -1,7 +1,11 @@
 require "tty-cursor"
 require "pastel"
+require_relative "cursormap"
+include CompassDirections
 
 class Screen
+
+    attr_reader :columns, :rows
     def initialize(width, height)
         @controls = []
         @columns = width
@@ -9,7 +13,7 @@ class Screen
 
         @cursor = TTY::Cursor
         print @cursor.move_to
-        print @cursor.show
+        print @cursor.hide
 
         @pastel = Pastel.new
 
@@ -18,20 +22,35 @@ class Screen
 
     def add_control(control)
         @controls.push(control)
+        control.set_screen(self)
     end
 
-    def background_draw()
+    def set_info_line(info_line_control)
+        @info_line = info_line_control
+    end
+
+    def set_selection_cursor(selection_cursor_control)
+        @selection_cursor = selection_cursor_control
+    end
+
+    def display_message(message)
+        @info_line.display_message(message)
+    end
+
+
+    def draw()
+        # clear screen
+        system("clear")
+
+        # draw background
         (0..(@rows-1)).each do |row|
             (0..(@columns-1)).each do |column|
                 print @pastel.black("\u{2588}")
             end
             print "\n"
         end
-    end
-
-    def draw()
-        system("clear")
-        background_draw()
+        
+        # draw each control
         @controls.each do |control|
             control.draw(@cursor)
         end
@@ -40,11 +59,13 @@ class Screen
 
 end
 
-class Control
+class Control < SelectionCursorMapNode
 
-    attr_reader :height, :width, :x, :y
+    attr_reader :height, :width, :x, :y, :screen
+    attr_accessor :is_selected
 
-    def initialize(x, y)
+    def initialize(x, y, name)
+        super(name)
         @x = x
         @y = y
         @printed_rows = 0
@@ -72,35 +93,79 @@ class Control
             print cursor.move(-1 * row.length, -1)
 
         end
-        if self.instance_of? Cursor
-            self.control.draw(cursor)
+        if self.instance_of? SelectionCursor
+            self.selected_control.draw(cursor)
         end
+    end
+
+    def set_screen(screen)
+        @screen = screen
+    end
+
+
+    def on_selected()
+
+    end
+
+    def on_deselected()
+    
+    end
+
+    def activate()
+
     end
 
 end
 
 class Button < Control
 
-    def initialize(x, y, width, height, fill, text)
-        super(x, y)
+    def initialize(x, y, width, height, fill, text, name)
+        super(x, y, name)
         @width = width
         @height = height
         @fill = "\u{2588}"
         @text = text
+        @events = {}
 
         initial_fill(@fill)
+        add_text_overlay()
+    end
 
-
+    def add_text_overlay()
         # Replace centre characters witih inverse text
         middle_row = @height/2
         middle_col = @width/2
-        starting_col = middle_col - (text.length/2)
-        (0...text.length).each do |char_count|
+        starting_col = middle_col - (@text.length/2)
+        (0...@text.length).each do |char_count|
             @rows[middle_row][starting_col + char_count] = {char: @text[char_count], inverse: true}
         end
+    end
+
+    def register_event(event_name, event_block)
+        @events[event_name] = event_block
+    end
+
+    def on_selected()
+        @fill = "\u{1FB99}"
+        initial_fill(@fill)
+        add_text_overlay()
+    end
+
+    def on_deselected()
+        @fill = "\u{2588}"
+        initial_fill(@fill)
+        add_text_overlay()
+
+    end
+
+    def activate()
+        unless @events[:activate].nil?
+            @events[:activate].call(@screen)
+        end
+    end
+
 
     
-    end
 
 end
 
@@ -110,15 +175,16 @@ class Dado < Control
     HEIGHT = 4
 
 
-    def initialize(x, y)
+    def initialize(x, y, name)
 
 
-        super(x, y)
+        super(x, y, name)
         @@full_block = "\u{2588}"
         @@pip = "\u{2584}"
         
         @height = HEIGHT
         @width = WIDTH
+        @locked = false
 
         # row_default = Array.new(@width, {char: @@full_block, inverse: false})
         
@@ -188,21 +254,51 @@ class Dado < Control
         @rows[1][3]= {char: @@full_block, inverse: false}
     end
 
+    def toggle_lock()
+        @locked = !@locked
+    end
+
 end
 
-class Cursor < Control
+class InfoLine < Control
+    def initialize(width, vertical_position)
+        super(0, vertical_position, "infoLine")
 
-    attr_reader :control
+        @height = 1
+        @width = width
 
-    def initialize(control)
-        set_control(control)
-        super(@x, @y)
+        initial_fill(" ")
+
+        @left_indent = 1
+
+    end
+
+    def display_message(message)
+        (0...@width-@left_indent).each do |char_count|
+            @rows[0][@left_indent + char_count] = {char: message[char_count], inverse: false}
+        end
+    end
+end
+
+class SelectionCursor < Control
+
+    attr_reader :selected_control
+
+    def initialize(control, name)
+        select_control(control)
+        super(@x, @y, name)
         
     end
 
-    def set_control(control)
+    def select_control(control)
+        unless @selected_control.nil?
+            @selected_control.is_selected = false
+            @selected_control.on_deselected
+        end
+        @selected_control = control
+        @selected_control.is_selected = true
+        @selected_control.on_selected
 
-        @control = control
         @height = control.height + 2
         @width = control.width + 2
         @x = control.x-1
@@ -230,8 +326,54 @@ class Cursor < Control
 
     end
 
+    def move(direction)
+        if @selected_control.has_link(direction)
+            # @selected_control = @selected_control.follow_link(direction)
+            select_control(@selected_control.follow_link(direction))
+        else
+            puts "Cannot Move in direction: #{direction}"
+        end
+    end
 
+    def keypress(event)  # implements subscription of TTY::Reader
+        # puts "name = #{event.key.name}"
+        # puts "value = #{event.value}"
+        case
+        when event.key.name == :up || event.value == "w"
+            move(NORTH)
+        when event.key.name == :right || event.value == "d"
+            move(EAST)
+        when event.key.name == :down || event.value == "s"
+            move(SOUTH)
+        when event.key.name == :left || event.value == "a"
+            move(WEST)
+        when event.key.name == :return || event.key.name == :space
+            @selected_control.activate
+        end
+        # @screen.display_message(get_status())
+    end
 
+    def get_status()
+        status = ""
+        status << "#{@selected_control}: "
+        status <<  "I can move"
+        if @selected_control.links.length == 0
+            status <<  " nowhere \u{1F622}"
+        else
+            counter = 0
+            @selected_control.links.each do |link_direction, node|
+                status <<  " #{link_direction} to #{node}"
+                if counter == @selected_control.links.length - 2
+                    status <<  " or"
+                elsif counter != @selected_control.links.length - 1
+                    status <<  ","
+                end
+                counter += 1
+            end
+        end
+        status <<  "."
+        return status
+    end
 
 end
 
@@ -244,21 +386,45 @@ top_margin = 2
 vert_spacing = 1
 
 (0..4).each do |counter|
-    dado = Dado.new(left_margin, top_margin + counter * (Dado::HEIGHT + vert_spacing ))
+    dado = Dado.new(left_margin, top_margin + counter * (Dado::HEIGHT + vert_spacing ), "dado" + counter.to_s)
     dados.push(dado)
     screen.add_control(dado)
+    if counter > 0 
+        dado.add_link(NORTH, dados[counter-1], true)
+    end
 end
 
-button = Button.new(18, 12, 8, 3, "\u{1FB99}", "ROLL")
+button = Button.new(18, 12, 8, 3, "\u{1FB99}", "ROLL", "roll")
+dados.each do |dado|
+    dado.add_link(EAST, button, false)
+end
+button.add_link(WEST, dados[2], false)
+button.register_event(:activate, ->(screen) {
+    screen.display_message("ROLL!")
+})
 screen.add_control(button)
 
-cursor = Cursor.new(button)
-screen.add_control(cursor)
+selection_cursor = SelectionCursor.new(button, "cursor")
+screen.add_control(selection_cursor)
+screen.set_selection_cursor(selection_cursor)
 
+info_line = InfoLine.new(screen.columns, screen.rows-1)
+screen.add_control(info_line)
+screen.set_info_line(info_line)
 
-screen.draw
+reader = TTY::Reader.new(interrupt: Proc.new do
+    puts "Exiting ... Goodbye!"
+    exit
+end)
 
+reader.subscribe(selection_cursor)
 
+while true do 
+
+    screen.draw
+    reader.read_keypress
+
+end
 
 
 

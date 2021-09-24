@@ -1,90 +1,95 @@
 require("tty-reader")
 
-class Cursor
+# class Cursor
 
-    def initialize(node)
-        @selected_node = node
-        print_status
-    end
+    # def initialize(node)
+    #     @selected_node = node
+    #     print_status
+    # end
 
-    def select_node(node)
-        @selected_node = node
-        print_status
-    end
+    # def select_node(node)
+    #     @selected_node = node
+    #     print_status
+    # end
 
-    def move(direction)
-        if @selected_node.has_link(direction)
-            @selected_node = @selected_node.follow_link(direction)
-            print_status
-        else
-            puts "Cannot Move in direction: #{direction}"
-        end
-    end
+    # def move(direction)
+    #     if @selected_node.has_link(direction)
+    #         @selected_node = @selected_node.follow_link(direction)
+    #         print_status
+    #     else
+    #         puts "Cannot Move in direction: #{direction}"
+    #     end
+    # end
 
-    def print_status()
-        system("clear")
-        puts "selected node = #{@selected_node}"
-        print "I can move"
-        if @selected_node.links.length == 0
-            puts " nowhere \u{1F622}"
-        else
-            counter = 0
-            @selected_node.links.each do |link_direction, node|
-                print " #{link_direction} to #{node}"
-                if counter == @selected_node.links.length - 2
-                    print " or"
-                elsif counter != @selected_node.links.length - 1
-                    print ","
-                end
-                counter += 1
-            end
-        end
-        puts "."
-    end
+    # def print_status()
+    #     system("clear")
+    #     puts "selected node = #{@selected_node}"
+    #     print "I can move"
+    #     if @selected_node.links.length == 0
+    #         puts " nowhere \u{1F622}"
+    #     else
+    #         counter = 0
+    #         @selected_node.links.each do |link_direction, node|
+    #             print " #{link_direction} to #{node}"
+    #             if counter == @selected_node.links.length - 2
+    #                 print " or"
+    #             elsif counter != @selected_node.links.length - 1
+    #                 print ","
+    #             end
+    #             counter += 1
+    #         end
+    #     end
+    #     puts "."
+    # end
 
-    def keypress(event)  # implements subscription of TTY::Reader
-        # puts "name = #{event.key.name}"
-        # puts "value = #{event.value}"
-        case
-        when event.key.name == :up || event.value == "w"
-            move(NORTH)
-        when event.key.name == :right|| event.value == "d"
-            move(EAST)
-        when event.key.name == :down|| event.value == "s"
-            move(SOUTH)
-        when event.key.name == :left|| event.value == "a"
-            move(WEST)
-        end
-    end
+    # def keypress(event)  # implements subscription of TTY::Reader
+    #     # puts "name = #{event.key.name}"
+    #     # puts "value = #{event.value}"
+    #     case
+    #     when event.key.name == :up || event.value == "w"
+    #         move(NORTH)
+    #     when event.key.name == :right|| event.value == "d"
+    #         move(EAST)
+    #     when event.key.name == :down|| event.value == "s"
+    #         move(SOUTH)
+    #     when event.key.name == :left|| event.value == "a"
+    #         move(WEST)
+    #     end
+    # end
 
-end
+# end
 
-class CursorMapNode
+class SelectionCursorMapNode
 
     attr_reader :links, :name
-
 
     def initialize(name)
         @links = {}
         @name = name
     end
 
-    def add_link(direction, cursorMapNode)
+    def add_link(direction, cursorMapNode, mirror)
         @links[direction] = cursorMapNode
-        unless cursorMapNode.has_link(direction.opposite)
-            cursorMapNode.add_link(direction.opposite, self)
+        if mirror
+            unless cursorMapNode.has_link(direction.opposite)
+                cursorMapNode.add_link(direction.opposite, self, false)
+            end
         end
     end
 
     def has_link(direction)
-        return !@links[direction].nil?
+        # if @links.empty?
+        #     return false
+        # else
+            return !@links[direction].nil?
+        # end
     end
 
     def follow_link(direction)
-        if @links[direction].is_a?(CursorMapNode)
+        if @links[direction].is_a?(SelectionCursorMapNode)
             return @links[direction]
         else
-            raise "CursorMapNode - Link direction does not contain valid CursorMapNode"
+            raise "SelectionCursorMapNode - Link direction does not contain valid CursorMapNode"
         end
     end
 

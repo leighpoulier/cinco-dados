@@ -5,9 +5,10 @@ reader = TTY::Reader.new(interrupt: Proc.new do
     exit
 end)
 
-reader.on(:keyup, :keydown, :keyleft, :keyright) do |event|
-    # puts "You pressed #{event.value}"
-    puts "You pressed #{event.key.name}"
+# reader.on(:keyup, :keydown, :keyleft, :keyright) do |event|
+reader.on(:keypress) do |event|
+    puts "Key pressed Value: #{event.value}"
+    puts "Key pressed Name: #{event.key.name}"
 end
 
 

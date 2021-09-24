@@ -3,7 +3,7 @@ require "pastel"
 
 class Screen
     def initialize(width, height)
-        @controls = {}
+        @controls = []
         @columns = width
         @rows = height
 
@@ -16,8 +16,8 @@ class Screen
         system("clear")
     end
 
-    def add_control(control, position)
-        @controls[control] = position
+    def add_control(control)
+        @controls.push(control)
     end
 
     def background_draw()
@@ -32,8 +32,7 @@ class Screen
     def draw()
         system("clear")
         background_draw()
-        @controls.each do |control, position|
-            print @cursor.move_to(position[:x], position[:y])
+        @controls.each do |control|
             control.draw(@cursor)
         end
         print @cursor.move_to(0, @rows)
@@ -43,9 +42,11 @@ end
 
 class Control
 
-    attr_reader :height, :width
+    attr_reader :height, :width, :x, :y
 
-    def initialize()
+    def initialize(x, y)
+        @x = x
+        @y = y
         @printed_rows = 0
         @pastel = Pastel.new
     end
@@ -59,6 +60,7 @@ class Control
     end
 
     def draw(cursor)
+        print cursor.move_to(@x, @y)
         @rows.each do |row|
             row.each do |charhash|
                 if charhash[:inverse]
@@ -70,14 +72,17 @@ class Control
             print cursor.move(-1 * row.length, -1)
 
         end
+        if self.instance_of? Cursor
+            self.control.draw(cursor)
+        end
     end
 
 end
 
 class Button < Control
 
-    def initialize(width, height, fill, text)
-        super()
+    def initialize(x, y, width, height, fill, text)
+        super(x, y)
         @width = width
         @height = height
         @fill = "\u{2588}"
@@ -101,21 +106,24 @@ end
 
 class Dado < Control
 
-    def initialize()
+    WIDTH = 7
+    HEIGHT = 4
 
 
-        super()
+    def initialize(x, y)
+
+
+        super(x, y)
         @@full_block = "\u{2588}"
         @@pip = "\u{2584}"
         
-        @width = 7
-        @height = 4
+        @height = HEIGHT
+        @width = WIDTH
 
-
-        # row_default = Array.new(width, {char: @@full_block, inverse: false})
+        # row_default = Array.new(@width, {char: @@full_block, inverse: false})
         
         # @rows = []
-        # for i in (0...height)
+        # for i in (0...@height)
         #     @rows[i] = row_default.clone
         # end
 
@@ -124,20 +132,20 @@ class Dado < Control
         @prng = Random.new
 
         # if shift 
-        #     @rows[0] = Array.new(width, {char: "\u{1FB39}", inverse: false})
+        #     @rows[0] = Array.new(@width, {char: "\u{1FB39}", inverse: false})
             
         #     @rows[0][0] = {char: "\u{1FB4A}", inverse: false} #top left corner
-        #     @rows[0][width-1] = {char: "\u{1FB3F}", inverse: false} #top right corner
-        #     @rows[height-1][0] = {char: "\u{1FB55}", inverse: false} #bottom left corner
-        #     @rows[height-1][width-1] = {char: "\u{1FB60}", inverse: false} #bottom right corner
+        #     @rows[0][@width-1] = {char: "\u{1FB3F}", inverse: false} #top right corner
+        #     @rows[@height-1][0] = {char: "\u{1FB55}", inverse: false} #bottom left corner
+        #     @rows[@height-1][@width-1] = {char: "\u{1FB60}", inverse: false} #bottom right corner
         
         # else
-            @rows[height-1] = Array.new(width, {char: "\u{1FB0E}", inverse: false})
+            @rows[height-1] = Array.new(@width, {char: "\u{1FB0E}", inverse: false})
             
             @rows[0][0] = {char: "\u{1FB44}", inverse: false} #top left corner
-            @rows[0][width-1] = {char: "\u{1FB4F}", inverse: false} #top right corner
-            @rows[height-1][0] = {char: "\u{1FB65}", inverse: false} #bottom left corner
-            @rows[height-1][width-1] = {char: "\u{1FB5A}", inverse: false} #bottom right corner
+            @rows[0][@width-1] = {char: "\u{1FB4F}", inverse: false} #top right corner
+            @rows[@height-1][0] = {char: "\u{1FB65}", inverse: false} #bottom left corner
+            @rows[@height-1][@width-1] = {char: "\u{1FB5A}", inverse: false} #bottom right corner
         # end
 
         roll
@@ -182,6 +190,51 @@ class Dado < Control
 
 end
 
+class Cursor < Control
+
+    attr_reader :control
+
+    def initialize(control)
+        set_control(control)
+        super(@x, @y)
+        
+    end
+
+    def set_control(control)
+
+        @control = control
+        @height = control.height + 2
+        @width = control.width + 2
+        @x = control.x-1
+        @y = control.y-1
+
+        initial_fill(" ")
+
+
+        # set the border characters
+
+        (0...width).each do |col|
+            @rows[0][col] = { char: "\u{2501}", invert: false}  #top row
+            @rows[height - 1][col] = { char: "\u{2501}", invert: false} #bottom row
+        end
+
+        (0...height).each do |row|
+            @rows[row][0] = { char: "\u{2503}", invert: false}  #left side
+            @rows[row][width - 1] = { char: "\u{2503}", invert: false}  #right side
+        end
+
+        @rows[0][0] = { char: "\u{250F}", invert: false} #top left corner
+        @rows[0][width - 1] = { char: "\u{2513}", invert: false} #top right corner
+        @rows[height - 1][0] = { char: "\u{2517}", invert: false} #bottom left corner
+        @rows[height - 1][width - 1] = { char: "\u{251B}", invert: false} #bottom left corner
+
+    end
+
+
+
+
+end
+
 screen = Screen.new(80,30)
 
 dados = []
@@ -191,14 +244,16 @@ top_margin = 2
 vert_spacing = 1
 
 (0..4).each do |counter|
-    dado = Dado.new()
+    dado = Dado.new(left_margin, top_margin + counter * (Dado::HEIGHT + vert_spacing ))
     dados.push(dado)
-    screen.add_control(dado, {x: left_margin, y: top_margin + counter * (dado.height + vert_spacing )})
+    screen.add_control(dado)
 end
 
-button = Button.new(8, 3, "\u{1FB99}", "ROLL")
-screen.add_control(button, {x: 18, y: 13})
+button = Button.new(18, 12, 8, 3, "\u{1FB99}", "ROLL")
+screen.add_control(button)
 
+cursor = Cursor.new(button)
+screen.add_control(cursor)
 
 
 screen.draw

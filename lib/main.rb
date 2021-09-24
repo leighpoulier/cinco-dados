@@ -1,4 +1,5 @@
 require_relative("cursormap")
+require("pastel")
 include CompassDirections
 
 nodes=[]
@@ -15,7 +16,7 @@ nodes[3].add_link(NORTH, nodes[2])
 nodes[3].add_link(WEST, nodes[1])
 
 
-cursor_1 = Cursor.new(map_node_1)
+cursor_1 = Cursor.new(nodes[0])
 # cursor_1.move(SOUTH)
 # cursor_1.move(EAST)
 # cursor_1.move(NORTH)
@@ -32,6 +33,11 @@ end)
 
 reader.subscribe(cursor_1)
 
+
+pastel=Pastel.new
+pastel.red.on_green.bold("Unicorns!")
+
 while true do
+    pastel.red.on_green.bold("Unicorns!")
     reader.read_keypress
 end

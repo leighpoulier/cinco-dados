@@ -1,4 +1,4 @@
-require("tty-reader")
+# require("tty-reader")
 
 # class Cursor
 

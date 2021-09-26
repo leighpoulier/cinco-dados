@@ -392,7 +392,9 @@ class SelectionCursor < BorderControl
 
         super # initial_fill(:transparent)
 
-        style = [:white, :on_black]
+        style = [:green, :on_black]
+
+        # draw a square
 
         (0...@width).each do |col|
             @rows[0][col] = { char: "\u{2501}", style: style}  #top row
@@ -420,8 +422,6 @@ class SelectionCursor < BorderControl
     end
 
     def keypress(event)  # implements subscription of TTY::Reader
-        # puts "name = #{event.key.name}"
-        # puts "value = #{event.value}"
         @screen.display_message("")
         case
         when event.key.name == :up || event.value == "w"
@@ -438,6 +438,8 @@ class SelectionCursor < BorderControl
         # @screen.display_message(get_status())
     end
 
+    
+    # return information about available links for cursor navigation and their directions
     def get_status()
         status = ""
         status << "#{@enclosed_control}: "

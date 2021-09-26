@@ -1,7 +1,7 @@
 require_relative("../lib/game_model.rb")
 include(CincoDados)
 
-describe "Game Model calculate_scores" do
+describe "Game Model" do
 
     game_model = CincoDados::GameModel.new
 

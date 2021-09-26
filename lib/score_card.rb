@@ -1,3 +1,5 @@
+require_relative("game_model")
+include CincoDados
 module CincoDados
 
     class ScoreCard
@@ -5,27 +7,13 @@ module CincoDados
         attr_reader :scores
 
         def initialize
-            @scores =
-            {
-            ones: nil,
-            twos: nil,
-            threes: nil,
-            fours: nil,
-            fives: nil,
-            sixes: nil,
-
-            three_of_a_kind: nil,
-            four_of_a_kind: nil,
-            full_house: nil,
-            small_straight: nil,
-            large_straight: nil,
-            cinco_dados: nil,
-            chance: nil,
-            }
+            @scores = GameModel::SCORE_CATEGORIES.to_h do |category|
+                [category, nil]
+            end
         end
 
         def valid_category?(category)
-            CincoDados::GameModel::SCORE_CATEGORIES.include?(category)
+            GameModel::SCORE_CATEGORIES.include?(category)
         end
 
         def add_score(category, score)

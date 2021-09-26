@@ -1,4 +1,6 @@
 require_relative("exceptions")
+require_relative("score_card")
+include CincoDados
 
 module CincoDados
     class Player
@@ -7,7 +9,7 @@ module CincoDados
 
         def initialize(name)
             @name = name
-            @score_card = CincoDados::ScoreCard.new
+            @score_card = ScoreCard.new
         end
 
         def add_score(category, score)
@@ -20,3 +22,7 @@ module CincoDados
 
     end
 end
+
+leigh = Player.new("Leigh")
+
+leigh.get_score(GameModel::SCORE_CATEGORIES[0])

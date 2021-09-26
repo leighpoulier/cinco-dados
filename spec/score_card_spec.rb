@@ -4,7 +4,7 @@ include(CincoDados)
 
 describe "ScoreCard" do
 
-    score_card = CincoDados::ScoreCard.new
+    score_card = ScoreCard.new
 
     it "starts with an empty scorecard" do
 
@@ -22,10 +22,10 @@ describe "ScoreCard" do
 
     it "allows a valid category" do
         
-        expect(score_card.add_score(CincoDados::GameModel::SCORE_CATEGORIES[5], 10)).to eq(10)
-        expect(score_card.get_score(CincoDados::GameModel::SCORE_CATEGORIES[5])).to eq(10)
-        expect(score_card.add_score(CincoDados::GameModel::SCORE_CATEGORIES[9], 10)).to eq(10)
-        expect(score_card.get_score(CincoDados::GameModel::SCORE_CATEGORIES[9])).to eq(10)
+        expect(score_card.add_score(GameModel::SCORE_CATEGORIES[5], 10)).to eq(10)
+        expect(score_card.get_score(GameModel::SCORE_CATEGORIES[5])).to eq(10)
+        expect(score_card.add_score(GameModel::SCORE_CATEGORIES[9], 10)).to eq(10)
+        expect(score_card.get_score(GameModel::SCORE_CATEGORIES[9])).to eq(10)
 
     end
 

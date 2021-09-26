@@ -26,7 +26,7 @@ module CincoDados
             # all subsequent methdos assume a sorted array
             dados.sort!
 
-            return\
+            return
             {
             ones: singles(dados, 1),
             twos: singles(dados, 2),

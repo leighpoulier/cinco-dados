@@ -1,28 +1,28 @@
 require_relative("exceptions")
-require_relative("score_card")
+require_relative("scores")
 include CincoDados
 
 module CincoDados
     class Player
 
-        attr_reader :score_card, :name
+        attr_reader :scores, :name
 
         def initialize(name)
             @name = name
-            @score_card = ScoreCard.new
+            @scores = PlayerScores.new
             @roll_count = 0
         end
 
         def add_score(category, score)
-            @score_card.add_score(category, score)
+            @scores.add_score(category, score)
         end
 
         def get_score(category)
-            @score_card.get_score(category)
+            @scores.get_score(category)
         end
 
         def full_card?()
-            @score_card.full_card?()
+            @scores.full_card?()
         end
 
 

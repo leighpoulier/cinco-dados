@@ -85,9 +85,12 @@ describe "Game Model calculate_scores" do
         })
     end
 
-    it "gives exceptions for bad input data" do
+    it "gives exceptions for bad dados array data" do
         expect { game_model.calculate_scores([]) }.to raise_error(CincoDados::DadosError)
-        
         expect { game_model.calculate_scores(["a", "b", "c"]) }.to raise_error(CincoDados::DadosError)
+        expect { game_model.calculate_scores("String") }.to raise_error(CincoDados::DadosError)
+        expect { game_model.calculate_scores(5) }.to raise_error(CincoDados::DadosError)
+        expect { game_model.calculate_scores(8.23) }.to raise_error(CincoDados::DadosError)
+        expect { game_model.calculate_scores({test: "hash"}) }.to raise_error(CincoDados::DadosError)
     end         
 end

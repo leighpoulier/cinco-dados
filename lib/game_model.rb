@@ -4,20 +4,20 @@ module CincoDados
 
         SCORE_CATEGORIES = 
         [
-            ones:,
-            twos:,
-            threes:,
-            fours:,
-            fives:,
-            sixes:,
+            :ones,
+            :twos,
+            :threes,
+            :fours,
+            :fives,
+            :sixes,
 
-            three_of_a_kind:,
-            four_of_a_kind:,
-            full_house:,
-            small_straight:,
-            large_straight:,
-            cinco_dados:,
-            chance:,
+            :three_of_a_kind,
+            :four_of_a_kind,
+            :full_house,
+            :small_straight,
+            :large_straight,
+            :cinco_dados,
+            :chance,
         ]
         
         FULL_HOUSE_SCORE = 25

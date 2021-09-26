@@ -110,6 +110,12 @@ class Screen
         end
     end
 
+    def clean_up()
+
+        print @cursor.show
+
+    end
+
 end
 
 class Control < SelectionCursorMapNode
@@ -447,7 +453,7 @@ class LockedBorder < BorderControl
 
         super  # initial_fil(:transparent)
 
-        style = [:green, :on_black]
+        style = [:red, :on_black]
 
         # [1,@width-2].each do |col|
         #     @rows[0][col] = { char: "\u{2501}", style: style}  #top row
@@ -615,6 +621,7 @@ screen.add_control(info_line)
 screen.set_info_line(info_line)
 
 reader = TTY::Reader.new(interrupt: Proc.new do
+    screen.clean_up()
     puts "Exiting ... Goodbye!"
     exit
 end)

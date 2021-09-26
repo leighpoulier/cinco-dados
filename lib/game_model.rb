@@ -28,7 +28,7 @@ module CincoDados
 
         def calculate_scores(dados)
 
-            if dados.length != 5 || !dados.is_a?(Array)
+            if !dados.is_a?(Array) || dados.length != 5
                 raise DadosError.new("Dados must be an array of length 5")
             end
             dados.each do |dado|
@@ -44,8 +44,7 @@ module CincoDados
             # all subsequent methdos assume a sorted array
             dados.sort!
 
-            return
-            {
+            return {
             ones: singles(dados, 1),
             twos: singles(dados, 2),
             threes: singles(dados, 3),

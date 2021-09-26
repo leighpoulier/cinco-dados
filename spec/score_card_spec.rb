@@ -29,4 +29,28 @@ describe "ScoreCard" do
 
     end
 
+    it "rejects replacing an exising score" do
+        expect {score_card.add_score(GameModel::SCORE_CATEGORIES[5], 10) }.to raise_error(RuleError)
+        expect {score_card.add_score(GameModel::SCORE_CATEGORIES[9], 10) }.to raise_error(RuleError)
+
+    end
+
+    score_card_2 = ScoreCard.new
+
+    it "detects a not full card" do
+
+        expect(score_card_2.full_card?).to eq(false)
+
+    end
+
+    it "detects a full card" do
+
+
+        GameModel::SCORE_CATEGORIES.each do |category|
+            expect(score_card_2.full_card?).to eq(false)
+            score_card_2.add_score(category, 10)
+        end
+        expect(score_card_2.full_card?).to eq(true)
+    end
+
 end

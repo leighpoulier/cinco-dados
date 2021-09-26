@@ -10,6 +10,7 @@ module CincoDados
         def initialize(name)
             @name = name
             @score_card = ScoreCard.new
+            @roll_count = 0
         end
 
         def add_score(category, score)
@@ -20,9 +21,11 @@ module CincoDados
             @score_card.get_score(category)
         end
 
+        def full_card?()
+            @score_card.full_card?()
+        end
+
+
+
     end
 end
-
-leigh = Player.new("Leigh")
-
-leigh.get_score(GameModel::SCORE_CATEGORIES[0])

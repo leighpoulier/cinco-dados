@@ -2,7 +2,26 @@ require_relative("exceptions")
 module CincoDados
     class GameModel
 
-        SCORE_CATEGORIES = 
+        # SCORE_CATEGORIES = 
+        # [
+        #     :ones,
+        #     :twos,
+        #     :threes,
+        #     :fours,
+        #     :fives,
+        #     :sixes,
+
+        #     :three_of_a_kind,
+        #     :four_of_a_kind,
+        #     :full_house,
+        #     :small_straight,
+        #     :large_straight,
+        #     :cinco_dados,
+        #     :chance,
+        # ]
+
+        
+        SCORE_CATEGORIES_UPPER = 
         [
             :ones,
             :twos,
@@ -10,7 +29,9 @@ module CincoDados
             :fours,
             :fives,
             :sixes,
-
+        ]
+        SCORE_CATEGORIES_LOWER =
+        [
             :three_of_a_kind,
             :four_of_a_kind,
             :full_house,
@@ -19,12 +40,18 @@ module CincoDados
             :cinco_dados,
             :chance,
         ]
+
+        SCORE_CATEGORIES = SCORE_CATEGORIES_UPPER.chain(SCORE_CATEGORIES_LOWER).to_a
         
         FULL_HOUSE_SCORE = 25
         SMALL_STRAIGHT_SCORE = 30
         LARGE_STRAIGHT_SCORE = 40
         CINCO_DADOS_SCORE = 50
         # CINCO_DADOS_BONUS_SCORE = 100
+
+        UPPER_SCORE_BONUS_THRESHOLD = 63
+        UPPER_SCORE_BONUS_SCORE = 35
+
 
         def calculate_scores(dados)
 

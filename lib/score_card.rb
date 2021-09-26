@@ -36,6 +36,38 @@ module CincoDados
             end
         end
 
+        def total(hypothetical = 0)
+            return total_selective(GameModel::SCORE_CATEGORIES) + hypothetical
+        end
+
+        def total_upper(hypothetical = 0)
+            return total_selective(GameModel::SCORE_CATEGORIES_UPPER) + hypothetical
+        end
+
+        def total_lower(hypothetical = 0)
+            return total_selective(GameModel::SCORE_CATEGORIES_LOWER) + hypothetical
+        end
+
+        def total_selective(categories)
+            return
+                categories.inject(0) do |sum, category|
+                sum + @scores[category]
+            end
+        end
+
+        def bonus(hypothetical)
+            if total_lower(hypothetical) >= GameModel::UPPER_SCORE_BONUS_THRESHOLD
+                return GameModel::UPPER_SCORE_BONUS_SCORE
+            else
+                return 0
+            end
+        end
+        
+
+        def full_card?()
+            @scores.values.tally[nil].nil?
+        end
+
 
     end
     

@@ -2,6 +2,24 @@ require_relative("exceptions")
 module CincoDados
     class GameModel
 
+        SCORE_CATEGORIES = 
+        [
+            ones:,
+            twos:,
+            threes:,
+            fours:,
+            fives:,
+            sixes:,
+
+            three_of_a_kind:,
+            four_of_a_kind:,
+            full_house:,
+            small_straight:,
+            large_straight:,
+            cinco_dados:,
+            chance:,
+        ]
+        
         FULL_HOUSE_SCORE = 25
         SMALL_STRAIGHT_SCORE = 30
         LARGE_STRAIGHT_SCORE = 40
@@ -49,6 +67,7 @@ module CincoDados
         # calculates the upper half of the scoreboard - filtering for a specific value 1-6 and then sum
         def singles(dados, value)
 
+            #filter for the wanted value, then sum
             dados.filter do |dado|
                 dado == value
             end.sum
@@ -57,12 +76,16 @@ module CincoDados
 
         # calculates 3 of a kind and 4 of a kind scores
         def of_a_kind(dados,count_of_a_kind)
+            # tally gives a hash of { item => count of that item }
             tally = dados.tally
 
+            # if the tally of anything is over the required count
             if
                 tally.any? do |value, count|
                     count >= count_of_a_kind
                 end
+
+                #return the sum of the dados (3 or 4) or the CINCO_DADOS_SCORE
 
                 return count_of_a_kind < 5 ? sum(dados) : CINCO_DADOS_SCORE
             else
@@ -87,9 +110,13 @@ module CincoDados
 
         # calculate a small or large straight
         def straight(dados,length)
+
+            #chunk the dados in to arrays, based on the block returning true for each sequential pair
             sequences = dados.chunk_while do |i, j|
                 i +1 == j
             end
+
+            #sequences now contains arrays of arrays of sequences.  Loop through and see if we have any length > required length to return a score.
             sequences.each do |sequence|
                 if sequence.length >= length
                     if length == 4

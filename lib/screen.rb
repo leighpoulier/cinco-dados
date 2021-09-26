@@ -114,13 +114,15 @@ end
 
 class Control < SelectionCursorMapNode
 
-    attr_reader :height, :width, :x, :y, :screen
+    attr_reader :height, :width, :x, :y, :screen, :x_margin, :y_margin
     attr_accessor :is_selected
 
     def initialize(x, y, name)
         super(name)
         @x = x
         @y = y
+        @x_margin = 0
+        @y_margin = 0
         @printed_rows = 0
         @pastel = Pastel.new
     end
@@ -138,7 +140,11 @@ class Control < SelectionCursorMapNode
         print cursor.move_to(@x, @y)
         @rows.each do |row|
             row.each do |charhash|
-                print @pastel.decorate(charhash[:char], *charhash[:style])
+                if charhash[:char] == :transparent
+                    print cursor.move(1,0)
+                else
+                    print @pastel.decorate(charhash[:char], *charhash[:style])
+                end
             end
             print cursor.move(-1 * row.length, -1)
 
@@ -279,6 +285,8 @@ class Dado < Control
 
     WIDTH = 7
     HEIGHT = 4
+    X_MARGIN = 1
+    Y_MARGIN = 0
 
     attr_reader :value
 
@@ -290,8 +298,10 @@ class Dado < Control
         @@full_block = "\u{2588}"
         @@pip = "\u{2584}"
         
-        @height = HEIGHT
         @width = WIDTH
+        @height = HEIGHT
+        @x_margin = X_MARGIN
+        @y_margin = Y_MARGIN
         @locked = false
 
 
@@ -317,7 +327,7 @@ class Dado < Control
 
         @value = @prng.rand(6) + 1
 
-        if @value < 1 || @value > 6 || !@value.is_a?(Integer)
+        if @value < 1 || @value > 6 || !@value.instance_of?(Integer)
             raise "Invalid dado @value: #{@value}"
         end
 
@@ -374,6 +384,7 @@ class Dado < Control
         return @locked
     end
 
+    #override
     def activate()
         toggle_lock()
     end
@@ -406,14 +417,19 @@ class BorderControl < Control
     attr_reader :enclosed_control
 
     def enclose_control()
-        @height = @enclosed_control.height + 2
-        @width = @enclosed_control.width + 2
-        @x = @enclosed_control.x-1
-        @y = @enclosed_control.y-1
+        @width = @enclosed_control.width + 2 * (1 + @enclosed_control.x_margin)
+        @height = @enclosed_control.height + 2 * (1 + @enclosed_control.y_margin)
+        @x = @enclosed_control.x-@enclosed_control.x_margin-1
+        @y = @enclosed_control.y-@enclosed_control.y_margin-1
+    end
 
-        initial_fill(" ")
+    def decorate_control()
+
+        initial_fill(:transparent)
 
     end
+
+
 end
 
 class LockedBorder < BorderControl
@@ -428,6 +444,8 @@ class LockedBorder < BorderControl
 
     def decorate_control()
         # set the border characters
+
+        super  # initial_fil(:transparent)
 
         style = [:green, :on_black]
 
@@ -450,6 +468,14 @@ class LockedBorder < BorderControl
         # @rows[0][@width - 1] = { char: "\u{2513}", style: style} #top right corner
         # @rows[@height - 1][0] = { char: "\u{2517}", style: style} #bottom left corner
         # @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
+    end
+
+    def enclose_control()
+        @width = @enclosed_control.width + 2
+        @height = @enclosed_control.height + 2
+        @x = @enclosed_control.x-1
+        @y = @enclosed_control.y-1
+
     end
 
 end
@@ -477,6 +503,8 @@ class SelectionCursor < BorderControl
 
     def decorate_control()
         # set the border characters
+
+        super # initial_fill(:transparent)
 
         style = [:white, :on_black]
 

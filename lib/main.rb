@@ -1,5 +1,5 @@
-require "pastel"
-require "tty-cursor"
+# require "pastel"
+# require "tty-cursor"
 require "tty-logger"
 require "tty-reader"
 require_relative "screen"
@@ -9,7 +9,7 @@ include CompassDirections
 include CincoDados
 
 $logger = TTY::Logger.new do |config|
-    config.output = File.open("error_" + Time.new.strftime("%Y%m%d-%H%M") + ".log", "a")
+    config.output = File.open("log_" + Time.new.strftime("%Y%m%d-%H%M") + ".log", "a")
 end
 
 screen = Screen.new(80,30)

@@ -4,6 +4,13 @@ module CincoDados
 
         # Aligns a single line of text over a square array of styled characters
 
+        def self.left_single(row,text,style)
+            self.sanitize_arguments_single_line(row,text)
+            width = row.length
+            starting_column = 0
+            return self.apply_text_single(text,row,starting_column,style)
+        end
+
         def self.centre_single(row,text,style)
 
             self.sanitize_arguments_single_line(row,text)
@@ -15,7 +22,6 @@ module CincoDados
         end
 
         def self.right_single(row,text,style)
-            Logger.log.info("decorate: #{text}")
             self.sanitize_arguments_single_line(row,text)
             width = row.length
             starting_column = self.start_column_right(text,width)

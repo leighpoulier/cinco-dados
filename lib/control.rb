@@ -7,6 +7,7 @@ class Control < SelectionCursorMapNode
 
     LINE_BOLD_HORIZONTAL = "\u{2501}"
     LINE_BOLD_VERTICAL = "\u{2503}"
+
     LINE_BOLD_CORNER_TOP_LEFT = "\u{250F}"
     LINE_BOLD_CORNER_TOP_RIGHT = "\u{2513}"
     LINE_BOLD_CORNER_BOTTOM_LEFT = "\u{2517}"
@@ -14,13 +15,36 @@ class Control < SelectionCursorMapNode
 
     LINE_LIGHT_HORIZONTAL = "\u{2500}"
     LINE_LIGHT_VERTICAL = "\u{2502}"
+    
     LINE_LIGHT_CORNER_TOP_LEFT = "\u{250e}"
     LINE_LIGHT_CORNER_TOP_RIGHT = "\u{2512}"
     LINE_LIGHT_CORNER_BOTTOM_LEFT = "\u{2516}"
     LINE_LIGHT_CORNER_BOTTOM_RIGHT = "\u{251A}"
 
+    T_LEFT_LIGHT_VERTICAL_LIGHT_HORIZONTAL = "\u{251C}"
+    T_LEFT_LIGHT_VERTICAL_BOLD_HORIZONTAL = "\u{251D}"
     T_LEFT_BOLD_VERTICAL_LIGHT_HORIZONTAL = "\u{2520}"
-    T_LEFT_LIGHT_VERTCIAL_LIGHT_HORIZONTAL = "\u{251C}"
+    T_LEFT_BOLD_VERTICAL_BOLD_HORIZONTAL = "\u{2523}"
+
+    T_RIGHT_LIGHT_VERTICAL_LIGHT_HORIZONTAL = "\u{2524}"
+    T_RIGHT_LIGHT_VERTICAL_BOLD_HORIZONTAL = "\u{2525}"
+    T_RIGHT_BOLD_VERTICAL_LIGHT_HORIZONTAL = "\u{2528}"
+    T_RIGHT_BOLD_VERTICAL_BOLD_HORIZONTAL = "\u{252B}"
+
+    T_TOP_LIGHT_VERTICAL_LIGHT_HORIZONTAL = "\u{252C}"
+    T_TOP_LIGHT_VERTICAL_BOLD_HORIZONTAL = "\u{252F}"
+    T_TOP_BOLD_VERTICAL_LIGHT_HORIZONTAL = "\u{2530}"
+    T_TOP_BOLD_VERTICAL_BOLD_HORIZONTAL = "\u{2533}"
+
+    T_BOTTOM_LIGHT_VERTICAL_LIGHT_HORIZONTAL = "\u{2534}"
+    T_BOTTOM_LIGHT_VERTICAL_BOLD_HORIZONTAL = "\u{2537}"
+    T_BOTTOM_BOLD_VERTICAL_LIGHT_HORIZONTAL = "\u{2538}"
+    T_BOTTOM_BOLD_VERTICAL_BOLD_HORIZONTAL = "\u{253B}"
+
+    CROSS_LIGHT_VERTICAL_LIGHT_HORIZONTAL = "\u{253C}"
+    CROSS_LIGHT_VERTICAL_BOLD_HORIZONTAL = "\u{253F}"
+    CROSS_BOLD_VERTICAL_LIGHT_HORIZONTAL = "\u{2542}"
+    CROSS_BOLD_VERTICAL_BOLD_HORIZONTAL = "\u{254B}"
 
     attr_reader :height, :width, :x, :y, :screen, :x_margin, :y_margin
     attr_accessor :is_selected
@@ -39,7 +63,7 @@ class Control < SelectionCursorMapNode
     def initial_fill(fill)
         # style = [:white, :on_black]
         # fill_row = Array.new(@width, {char: fill, style: style})
-        fill_row = Array.new(@width, fill)
+        fill_row = Array.new(@width) { fill }
         @rows = []
         for i in (0...@height)
             @rows[i] = fill_row.clone

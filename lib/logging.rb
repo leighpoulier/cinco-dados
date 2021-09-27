@@ -19,7 +19,7 @@ module CincoDados
                     @@logger ||= TTY::Logger.new do |config|
                         config.metadata = [:date, :time]
                         config.handlers = [:stream]
-                        config.output = File.open("log_" + Time.new.strftime("%Y%m%d-%H%M") + ".log", "a")
+                        config.output = File.open("log_" + Time.new.strftime("%Y%m%d-%H%M%S") + ".log", "a")
                     end
                 elsif @@handler == :console
                     @@logger ||= TTY::Logger.new do |config|

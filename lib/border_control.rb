@@ -39,16 +39,16 @@ class LockedBorder < BorderControl
 
         # [1,@width-2].each do |col|
         #     @rows[0][col] = { char: "\u{2501}", style: style}  #top row
-        #     @rows[height - 1][col] = { char: "\u{2501}", style: style} #bottom row
+        #     @rows[@height - 1][col] = { char: "\u{2501}", style: style} #bottom row
         # end
 
         [2].each do |row|
-            @rows[row][0] = { char: "\u{2503}", style: style}  #left side
-            @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side
+            @rows[row][0] = { char: "\u{2503}", style: style}  #left side full bar
+            @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side full bar
         end
         [3].each do |row|
-            @rows[row][0] = { char: "\u{2579}", style: style}  #left side
-            @rows[row][width - 1] = { char: "\u{2579}", style: style}  #right side
+            @rows[row][0] = { char: "\u{2579}", style: style}  #left side top half bar
+            @rows[row][width - 1] = { char: "\u{2579}", style: style}  #right side top half bar
         end
 
 

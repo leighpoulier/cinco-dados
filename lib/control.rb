@@ -4,6 +4,23 @@ include CincoDados
 
 class Control < SelectionCursorMapNode
 
+    LINE_BOLD_HORIZONTAL = "\u{2501}"
+    LINE_BOLD_VERTICAL = "\u{2503}"
+    LINE_BOLD_CORNER_TOP_LEFT = "\u{250F}"
+    LINE_BOLD_CORNER_TOP_RIGHT = "\u{2513}"
+    LINE_BOLD_CORNER_BOTTOM_LEFT = "\u{2517}"
+    LINE_BOLD_CORNER_BOTTOM_RIGHT = "\u{251B}"
+
+    LINE_LIGHT_HORIZONTAL = "\u{2500}"
+    LINE_LIGHT_VERTICAL = "\u{2502}"
+    LINE_LIGHT_CORNER_TOP_LEFT = "\u{250e}"
+    LINE_LIGHT_CORNER_TOP_RIGHT = "\u{2512}"
+    LINE_LIGHT_CORNER_BOTTOM_LEFT = "\u{2516}"
+    LINE_LIGHT_CORNER_BOTTOM_RIGHT = "\u{251A}"
+
+    T_LEFT_BOLD_VERTICAL_LIGHT_HORIZONTAL = "\u{2520}"
+    T_LEFT_LIGHT_VERTCIAL_LIGHT_HORIZONTAL = "\u{251C}"
+
     attr_reader :height, :width, :x, :y, :screen, :x_margin, :y_margin
     attr_accessor :is_selected
 
@@ -13,7 +30,7 @@ class Control < SelectionCursorMapNode
         @y = y
         @x_margin = 0
         @y_margin = 0
-        @printed_rows = 0
+        # @printed_rows = 0
         @pastel = Pastel.new
     end
 
@@ -116,7 +133,11 @@ class Control < SelectionCursorMapNode
 
 end
 
-class Background < Control
+class BackgroundControl < Control
+
+    def initialize(x,y,name)
+        super(x,y,name)
+    end
 
 end
 
@@ -300,9 +321,7 @@ class InfoLine < Control
         @height = 1
         @width = width
 
-
-        style = [:white, :on_black]
-        initial_fill({char: " ", style: style})
+        initial_fill({char: " ", style: [:white, :on_black]})
 
         @left_indent = 1
 

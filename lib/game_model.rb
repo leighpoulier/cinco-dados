@@ -1,4 +1,5 @@
-# require_relative("exceptions")
+require_relative("exceptions")
+
 module CincoDados
     class GameModel
 
@@ -53,7 +54,7 @@ module CincoDados
         UPPER_SCORE_BONUS_SCORE = 35
 
 
-        def calculate_scores(dados)
+        def self.calculate_scores(dados)
 
             if !dados.is_a?(Array) || dados.length != 5
                 raise DadosError.new("Dados must be an array of length 5")
@@ -91,7 +92,7 @@ module CincoDados
         end
 
         # calculates the upper half of the scoreboard - filtering for a specific value 1-6 and then sum
-        def singles(dados, value)
+        def self.singles(dados, value)
 
             #filter for the wanted value, then sum
             dados.filter do |dado|
@@ -101,7 +102,7 @@ module CincoDados
         end
 
         # calculates 3 of a kind and 4 of a kind scores
-        def of_a_kind(dados,count_of_a_kind)
+        def self.of_a_kind(dados,count_of_a_kind)
             # tally gives a hash of { item => count of that item }
             tally = dados.tally
 
@@ -121,7 +122,7 @@ module CincoDados
         end
 
         # calculate a full house (2 of something and 3 of something else)
-        def full_house(dados)
+        def self.full_house(dados)
 
             # tally gives a hash of { item => count of that item }
             tally = dados.tally
@@ -135,7 +136,7 @@ module CincoDados
         end
 
         # calculate a small or large straight
-        def straight(dados,length)
+        def self.straight(dados,length)
 
             #chunk the dados in to arrays, based on the block returning true for each sequential pair
             sequences = dados.chunk_while do |i, j|
@@ -156,7 +157,7 @@ module CincoDados
         end
 
         # returns the sum of all dice, used for "chance" as well as inside the of_a_kind method
-        def sum(dados)
+        def self.sum(dados)
             return dados.sum
         end
 

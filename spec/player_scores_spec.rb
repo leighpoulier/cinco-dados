@@ -15,8 +15,8 @@ describe "PlayerScores" do
 
     it "rejects bad score categories" do
     
-        expect {player_scores.add_score(:bad_category, 10)}.to raise_error(CincoDados::CategoryError)
-        expect {player_scores.get_score(:another_bad_category)}.to raise_error(CincoDados::CategoryError)
+        expect {player_scores.add_score(:bad_category, 10)}.to raise_error(CincoDados::ScoreCategoryError)
+        expect {player_scores.get_score(:another_bad_category)}.to raise_error(CincoDados::ScoreCategoryError)
     
     end
 

@@ -24,7 +24,7 @@ module CincoDados
                     raise RuleError.new("This score is already allocated")
                 end
             else
-                raise CategoryError.new("Invalid category: #{category}")
+                raise ScoreCategoryError.new("Invalid score category: #{category}")
             end
         end
 
@@ -32,7 +32,7 @@ module CincoDados
             if valid_category?(category)
                 return @scores[category]
             else
-                raise CategoryError.new("Invalid category: #{category}")
+                raise ScoreCategoryError.new("Invalid score category: #{category}")
             end
         end
 

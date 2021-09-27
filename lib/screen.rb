@@ -73,7 +73,7 @@ module CincoDados
             
 
             @controls.sort!
-            $logger.info("@controls order #{@controls.join(", ")}")
+            Logger.log.info("@controls order #{@controls.join(", ")}")
             # draw each control
             @controls.each do |control|
                 control.draw(@cursor)

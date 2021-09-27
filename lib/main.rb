@@ -1,16 +1,40 @@
 # require "pastel"
 # require "tty-cursor"
+require "optparse"
 require "tty-logger"
 require "tty-reader"
+require_relative "logging"
 require_relative "screen"
 require_relative "cursormap"
 require_relative "control"
 include CompassDirections
 include CincoDados
 
-$logger = TTY::Logger.new do |config|
-    config.output = File.open("log_" + Time.new.strftime("%Y%m%d-%H%M") + ".log", "a")
-end
+
+# Logger.set_logging_handler(:null)
+
+OptionParser.new do |parser|
+    parser.banner = "Usage: options_parser.rb [options]"
+
+    # parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    # options[:verbose] = v
+
+    parser.on("-d", "--debug OUTPUT", "enable debug mode, without output to OUTPUT [ console | file ]") do |output|
+        if ["console","file"].include?(output)
+            # puts "debug output to #{output}!"
+            Logger.set_logging_handler(output.to_sym)
+        else
+            # raise ArgumentError.new("Invalid output for debug mode: #{output}, must be one of [ console | file ]")
+            puts "Invalid output for debug mode: #{output}, must be one of [ console | file ]"
+            puts "\n"
+            puts parser.help
+            exit
+        end
+    end
+    
+end.parse!
+
+
 
 screen = Screen.new(80,30)
 

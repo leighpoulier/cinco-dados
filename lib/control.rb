@@ -40,9 +40,9 @@ class Control < SelectionCursorMapNode
             print cursor.move(-1 * row.length, -1)
 
         end
-        if self.is_a? BorderControl
-            self.enclosed_control.draw(cursor)
-        end
+        # if self.is_a? BorderControl
+        #     self.enclosed_control.draw(cursor)
+        # end
     end
 
     def inspect
@@ -273,7 +273,7 @@ class Dado < Control
     def add_lock()
         @locked_border = LockedBorder.new(self, "locked_" + self.name)
         @screen.add_control(@locked_border)
-        $logger.info("New Locked Border: " + @locked_border.name + ", " + @locked_border.inspect)
+        Logger.log.info("New Locked Border: " + @locked_border.name + ", " + @locked_border.inspect)
     end
 
     def remove_lock()

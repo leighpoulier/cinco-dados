@@ -9,6 +9,7 @@ require_relative "screen"
 require_relative "control"
 require_relative "border_control"
 require_relative "exceptions"
+require_relative "score_card"
 include CompassDirections
 include CincoDados
 
@@ -41,7 +42,7 @@ end.parse!
 screen = Screen.new(80,30)
 
 left_margin = 6
-top_margin = 2
+top_margin = 4
 vert_spacing = 1
 
 (0..4).each do |counter|
@@ -53,7 +54,7 @@ vert_spacing = 1
     end
 end
 
-button = Button.new(18, 12, 8, 3, "\u{1FB99}", "ROLL", "roll")
+button = Button.new(20, 14, 8, 3, "\u{1FB99}", "ROLL", "roll")
 screen.dados.each do |dado|
     dado.add_link(EAST, button, false)
 end
@@ -71,6 +72,10 @@ screen.set_selection_cursor(selection_cursor)
 info_line = InfoLine.new(screen.columns, screen.rows-1)
 screen.add_control(info_line)
 screen.set_info_line(info_line)
+
+
+players = ["Wendy", "leigh", "gen", "mez"]
+screen.add_control(ScoreCard.new(38,1,players))
 
 reader = TTY::Reader.new(interrupt: Proc.new do
     screen.clean_up()

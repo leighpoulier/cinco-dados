@@ -55,27 +55,27 @@ module CincoDados
 
             (1...@width-1).each do |col|
                 if col > ROW_HEADING_TEXT_WIDTH + ROW_LEFT_BORDER_WIDTH
-                    @rows[0][col] = { char: LINE_BOLD_HORIZONTAL, style: style}               #top row
+                    @rows[0][col] = { char: LINE_BOLD_HORIZONTAL, style: style}             #top row (except top left empty box)
                 end
-                @rows[@height - 1][col] = { char: LINE_BOLD_HORIZONTAL, style: style}     #bottom row
+            @rows[@height - 1][col] = { char: LINE_BOLD_HORIZONTAL, style: style}           #bottom row
             end
 
             # vertical border (top and bottom)
 
             (1...@height-1).each do |row|
                 if row > COLUMN_TOP_BORDER_WIDTH + 1
-                    @rows[row][0] = { char: LINE_BOLD_VERTICAL, style: style}               # left side
+                    @rows[row][0] = { char: LINE_BOLD_VERTICAL, style: style}               # left side (except top left empty box)
                 end
-                @rows[row][@width - 1 ] = { char: LINE_BOLD_VERTICAL, style: style}     # right side
+                @rows[row][@width - 1 ] = { char: LINE_BOLD_VERTICAL, style: style}         # right side
             end
     
-            # 4 corners
+            # 5 corners
 
             @rows[0][ROW_HEADING_TEXT_WIDTH + ROW_LEFT_BORDER_WIDTH] = { char: LINE_BOLD_CORNER_TOP_LEFT, style: style}     #top left corner names
-            @rows[COLUMN_TOP_BORDER_WIDTH + 1][0] = { char: LINE_BOLD_CORNER_TOP_LEFT, style: style}                     #top left corner categories
-            @rows[0][@width - 1] = { char: LINE_BOLD_CORNER_TOP_RIGHT, style: style}            #top right corner
-            @rows[@height - 1][0] = { char: LINE_BOLD_CORNER_BOTTOM_LEFT, style: style}           #bottom left corner
-            @rows[@height - 1][@width - 1] = { char: LINE_BOLD_CORNER_BOTTOM_RIGHT, style: style} #bottom left corner
+            @rows[COLUMN_TOP_BORDER_WIDTH + 1][0] = { char: LINE_BOLD_CORNER_TOP_LEFT, style: style}                        #top left corner categories
+            @rows[0][@width - 1] = { char: LINE_BOLD_CORNER_TOP_RIGHT, style: style}                                        #top right corner
+            @rows[@height - 1][0] = { char: LINE_BOLD_CORNER_BOTTOM_LEFT, style: style}                                     #bottom left corner
+            @rows[@height - 1][@width - 1] = { char: LINE_BOLD_CORNER_BOTTOM_RIGHT, style: style}                           #bottom left corner
 
 
             # Vertical internal lines and players names
@@ -379,24 +379,4 @@ module CincoDados
         end
     end
     
-end
-
-Logger.set_logging_handler(:file)
-
-screen = Screen.new(80,30)
-reader = TTY::Reader.new(interrupt: Proc.new do
-    screen.clean_up()
-    puts "Exiting ... Goodbye!"
-    exit
-end)
-
-players = ["Wendy", "leigh", "gen", "mez"]
-
-screen.add_control(ScoreCard.new(38,1,players))
-
-while true do 
-
-    screen.draw
-    reader.read_keypress
-
 end

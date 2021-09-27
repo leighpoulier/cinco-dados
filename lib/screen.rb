@@ -1,3 +1,4 @@
+require "pastel"
 module CincoDados
     class Screen
 
@@ -108,7 +109,7 @@ module CincoDados
         def clean_up()
 
             print @cursor.show
-
+            puts "cursor should be visible"
         end
 
     end

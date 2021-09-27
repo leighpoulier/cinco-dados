@@ -1,4 +1,4 @@
-require_relative("exceptions")
+# require_relative("exceptions")
 module CincoDados
     class GameModel
 

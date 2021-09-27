@@ -7,6 +7,8 @@ require_relative "logging"
 require_relative "screen"
 require_relative "cursormap"
 require_relative "control"
+require_relative "border_control"
+require_relative "exceptions"
 include CompassDirections
 include CincoDados
 

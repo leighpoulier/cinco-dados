@@ -1,4 +1,5 @@
 # require_relative("exceptions")
+require_relative("cursormap")
 include CincoDados
 
 class Control < SelectionCursorMapNode

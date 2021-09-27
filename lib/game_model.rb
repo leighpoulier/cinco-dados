@@ -161,5 +161,26 @@ module CincoDados
             return dados.sum
         end
 
+        def self.nice_categories_upper()
+            return SCORE_CATEGORIES_UPPER.map do |category|
+                category.to_s.gsub("_"," ").split.each do |word|
+                    unless ["a", "of", "in", "and", "or"].include?(word)
+                        word.capitalize!
+                    end
+                end.join(" ").sub("three of","3 of").sub("four of","4 of")
+            end
+        end
+
+
+        def self.nice_categories_lower()
+            return SCORE_CATEGORIES_LOWER.map do |category|
+                category.to_s.gsub("_"," ").split.each do |word|
+                    unless ["a", "of", "in", "and", "or"].include?(word)
+                        word.capitalize!
+                    end
+                end.join(" ").sub("Three of","3 of").sub("Four of","4 of")
+            end
+        end
+
     end
 end

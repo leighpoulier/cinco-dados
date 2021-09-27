@@ -1,5 +1,6 @@
 # require_relative("exceptions")
 require_relative("cursormap")
+require_relative("text")
 include CincoDados
 
 class Control < SelectionCursorMapNode
@@ -46,6 +47,7 @@ class Control < SelectionCursorMapNode
     end
 
     def draw(cursor)
+        Logger.log.info("Drawing control: #{self}")
         print cursor.move_to(@x, @y)
         @rows.each do |row|
             row.each do |charhash|
@@ -84,16 +86,16 @@ class Control < SelectionCursorMapNode
     def <=>(other)
 
         case
-        when self.instance_of?(Background)
+        when self.instance_of?(BackgroundControl)
             case
-            when other.instance_of?(Background)
+            when other.instance_of?(BackgroundControl)
                 return 0
             when other.is_a?(Control)
                 return nil
             end
         when self.instance_of?(BorderControl)
             case
-            when other.instance_of?(Background)
+            when other.instance_of?(BackgroundControl)
                 return +1
             when other.instance_of?(BorderControl)
                 return 0
@@ -108,7 +110,7 @@ class Control < SelectionCursorMapNode
             case
             when other.instance_of?(SelectionCursor)
                 return 0
-            when other.instance_of?(Background) || other.instance_of?(BorderControl)
+            when other.instance_of?(BackgroundControl) || other.instance_of?(BorderControl)
                 return +1
             when other.is_a?(Control)
                 return +1
@@ -117,7 +119,7 @@ class Control < SelectionCursorMapNode
             end
         when self.is_a?(Control)
             case
-            when other.instance_of?(Background)
+            when other.instance_of?(BackgroundControl)
                 return +1
             when other.instance_of?(BorderControl) || other.instance_of?(SelectionCursor)
                 return -1
@@ -161,12 +163,15 @@ class Button < Control
 
     def add_text_overlay(style)
         # Replace centre characters witih inverse text
-        middle_row = @height/2
-        middle_col = @width/2
-        starting_col = middle_col - (@text.length/2)
-        (0...@text.length).each do |char_count|
-            @rows[middle_row][starting_col + char_count] = {char: @text[char_count], style: style}
-        end
+        # middle_row = @height/2
+        # middle_col = @width/2
+        # starting_col = middle_col - (@text.length/2)
+        # (0...@text.length).each do |char_count|
+        #     @rows[middle_row][starting_col + char_count] = {char: @text[char_count], style: style}
+        # end
+
+        @rows = Text.centre_middle(@rows,@text,style)
+
     end
 
     def register_event(event_name, event_block)

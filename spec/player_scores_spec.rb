@@ -35,7 +35,7 @@ describe "PlayerScores" do
 
     end
 
-    player_scores_2 = ScoreCard.new
+    player_scores_2 = PlayerScores.new
 
     it "detects a not full card" do
 

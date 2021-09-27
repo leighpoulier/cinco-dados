@@ -89,7 +89,7 @@ class SelectionCursorMapNode
         if @links[direction].is_a?(SelectionCursorMapNode)
             return @links[direction]
         else
-            raise "SelectionCursorMapNode - Link direction does not contain valid CursorMapNode"
+            raise ArgumentError.new("Trying to move in an unlinked direction. direction: #{direction} does not contain valid CursorMapNode")
         end
     end
 

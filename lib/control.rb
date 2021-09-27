@@ -1,3 +1,6 @@
+require_relative("exceptions")
+include CincoDados
+
 class Control < SelectionCursorMapNode
 
     attr_reader :height, :width, :x, :y, :screen, :x_margin, :y_margin
@@ -13,9 +16,11 @@ class Control < SelectionCursorMapNode
         @pastel = Pastel.new
     end
 
+        # fill is a hash of {char: fill_char, style: [array of styles] }
     def initial_fill(fill)
-        style = [:white, :on_black]
-        fill_row = Array.new(@width, {char: fill, style: style})
+        # style = [:white, :on_black]
+        # fill_row = Array.new(@width, {char: fill, style: style})
+        fill_row = Array.new(@width, fill)
         @rows = []
         for i in (0...@height)
             @rows[i] = fill_row.clone
@@ -120,20 +125,23 @@ class Button < Control
         super(x, y, name)
         @width = width
         @height = height
-        @fill = "\u{2588}"
         @text = text
         @events = {}
+        
 
-        initial_fill(@fill)
-        add_text_overlay()
+        # fill = "\u{2588}"
+        # style = [:white, :on_black]
+        fill = {char: "\u{2588}", style: [:white, :on_black]}
+        initial_fill(fill)
+
+        add_text_overlay([:white, :on_black, :inverse])
     end
 
-    def add_text_overlay()
+    def add_text_overlay(style)
         # Replace centre characters witih inverse text
         middle_row = @height/2
         middle_col = @width/2
         starting_col = middle_col - (@text.length/2)
-        style = [:white, :on_black]
         (0...@text.length).each do |char_count|
             @rows[middle_row][starting_col + char_count] = {char: @text[char_count], style: style}
         end
@@ -144,15 +152,15 @@ class Button < Control
     end
 
     def on_selected()
-        @fill = "\u{1FB99}"
-        initial_fill(@fill)
-        add_text_overlay()
+        fill = {char: "\u{2588}", style: [:green, :on_black]}
+        initial_fill(fill)
+        add_text_overlay([:green, :on_black, :inverse])
     end
 
     def on_deselected()
-        @fill = "\u{2588}"
-        initial_fill(@fill)
-        add_text_overlay()
+        fill = {char: "\u{2588}", style: [:white, :on_black]}
+        initial_fill(fill)
+        add_text_overlay([:white, :on_black, :inverse])
 
     end
 
@@ -191,48 +199,55 @@ class Dado < Control
         @locked = false
 
 
-        initial_fill(@@full_block)
+        style = [:white, :on_black]
+        fill = {char: @@full_block, style: style}
+        initial_fill(fill)
+        # initial_fill(@@full_block)
 
         @prng = Random.new
 
-        style = [:white, :on_black]
-        @rows[height-1] = Array.new(@width, {char: "\u{1FB0E}", style: style})
+        @rows[height-1] = Array.new(@width, {char: "\u{1FB0E}", style: style})  #bottom half row
         
         @rows[0][0] = {char: "\u{1FB44}", style: style} #top left corner
         @rows[0][@width-1] = {char: "\u{1FB4F}", style: style} #top right corner
         @rows[@height-1][0] = {char: "\u{1FB65}", style: style} #bottom left corner
         @rows[@height-1][@width-1] = {char: "\u{1FB5A}", style: style} #bottom right corner
 
-        roll
+        roll()
         
     end
 
     def roll()
 
-        reset_pips_to_blank()
+        unless @locked
 
-        @value = @prng.rand(6) + 1
+            reset_pips_to_blank()
 
-        if @value < 1 || @value > 6 || !@value.instance_of?(Integer)
-            raise "Invalid dado @value: #{@value}"
-        end
+            @value = @prng.rand(6) + 1
 
-        style = [:white, :on_black, :inverse]
-        
-        if @value == 2 || @value == 3 || @value == 4 || @value == 5 || @value == 6
-            @rows[0][1] = {char: @@pip, style: style}
-            @rows[2][5] = {char: @@pip, style: style}
-        end
-        if @value == 4 || @value == 5 || @value == 6
-            @rows[0][5] = {char: @@pip, style: style}
-            @rows[2][1] = {char: @@pip, style: style}
-        end
-        if @value == 6
-            @rows[1][1] = {char: @@pip, style: style}
-            @rows[1][5] = {char: @@pip, style: style}
-        end
-        if @value == 1 || @value == 3 || @value == 5
-            @rows[1][3] = {char: @@pip, style: style}
+            if @value < 1 || @value > 6 || !@value.instance_of?(Integer)
+                raise DadosError.new("Invalid dado @value: #{@value}")
+            end
+
+            style = [:white, :on_black, :inverse]
+            
+            if @value == 2 || @value == 3 || @value == 4 || @value == 5 || @value == 6
+                @rows[0][1] = {char: @@pip, style: style}
+                @rows[2][5] = {char: @@pip, style: style}
+            end
+            if @value == 4 || @value == 5 || @value == 6
+                @rows[0][5] = {char: @@pip, style: style}
+                @rows[2][1] = {char: @@pip, style: style}
+            end
+            if @value == 6
+                @rows[1][1] = {char: @@pip, style: style}
+                @rows[1][5] = {char: @@pip, style: style}
+            end
+            if @value == 1 || @value == 3 || @value == 5
+                @rows[1][3] = {char: @@pip, style: style}
+            end
+        else
+            raise DadosError.new("You can't roll a locked dado")
         end
     end
 
@@ -284,7 +299,9 @@ class InfoLine < Control
         @height = 1
         @width = width
 
-        initial_fill(" ")
+
+        style = [:white, :on_black]
+        initial_fill({char: " ", style: style})
 
         @left_indent = 1
 
@@ -311,7 +328,7 @@ class BorderControl < Control
 
     def decorate_control()
 
-        initial_fill(:transparent)
+        initial_fill({char: :transparent, style: []})
 
     end
 
@@ -331,7 +348,7 @@ class LockedBorder < BorderControl
     def decorate_control()
         # set the border characters
 
-        super  # initial_fil(:transparent)
+        super  # initial_fill({char: :transparent, style: [])
 
         style = [:red, :on_black]
 
@@ -390,7 +407,7 @@ class SelectionCursor < BorderControl
     def decorate_control()
         # set the border characters
 
-        super # initial_fill(:transparent)
+        super # initial_fill({char: :transparent, style: [])
 
         style = [:green, :on_black]
 

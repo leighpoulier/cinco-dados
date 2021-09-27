@@ -1,5 +1,5 @@
 require_relative("exceptions")
-require_relative("scores")
+require_relative("player_scores")
 include CincoDados
 
 module CincoDados

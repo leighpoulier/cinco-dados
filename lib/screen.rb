@@ -26,7 +26,7 @@ module CincoDados
             if @controls.include?(control)
                 @controls.delete(control)
             else
-                raise "No such control in controls array"
+                raise ArgumentError.new("No such control in controls array")
             end
         end
 
@@ -34,7 +34,7 @@ module CincoDados
             if dado.instance_of? Dado
                 @dados.push(dado)
             else
-                raise "Control must be an instance of Dado to add to dados array"
+                raise ArgumentError.new("Control must be an instance of Dado to add to dados array")
             end
         end
 
@@ -42,7 +42,7 @@ module CincoDados
             if info_line_control.instance_of? InfoLine
                 @info_line = info_line_control
             else
-                raise "Control must be an instance of InfoLine to assign as info_line"
+                raise ArgumentError.new("Control must be an instance of InfoLine to assign as info_line")
             end
         end
 
@@ -50,7 +50,7 @@ module CincoDados
             if selection_cursor_control.instance_of? SelectionCursor
                 @selection_cursor = selection_cursor_control
             else
-                raise "Control must be an instance of SelectionCursor to assign as selection_cursor"
+                raise ArgumentError.new("Control must be an instance of SelectionCursor to assign as selection_cursor")
             end
         end
 
@@ -91,18 +91,18 @@ module CincoDados
                 # status << dado.value
             end
 
-            cinco_dados = true
-            dado_counter = 0
-            while dado_counter < @dados.length
-                unless dados[dado_counter].value == @dados[0].value
-                    cinco_dados = false
-                    break
-                end
-                dado_counter += 1
-            end
-            if cinco_dados
-                display_message("Felicidades! Cinco Dades!")
-            end
+            # cinco_dados = true
+            # dado_counter = 0
+            # while dado_counter < @dados.length
+            #     unless dados[dado_counter].value == @dados[0].value
+            #         cinco_dados = false
+            #         break
+            #     end
+            #     dado_counter += 1
+            # end
+            # if cinco_dados
+            #     display_message("Felicidades! Cinco Dades!")
+            # end
         end
 
         def clean_up()

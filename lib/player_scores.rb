@@ -4,10 +4,10 @@ module CincoDados
 
     class PlayerScores
 
-        attr_reader :player_scores
+        attr_reader :scores
 
         def initialize
-            @player_scores = GameModel::SCORE_CATEGORIES.to_h do |category|
+            @scores = GameModel::SCORE_CATEGORIES.to_h do |category|
                 [category, nil]
             end
         end
@@ -18,8 +18,8 @@ module CincoDados
 
         def add_score(category, score)
             if valid_category?(category)
-                if @player_scores[category].nil?
-                    return @player_scores[category] = score
+                if @scores[category].nil?
+                    return @scores[category] = score
                 else
                     raise RuleError.new("This score is already allocated")
                 end
@@ -30,7 +30,7 @@ module CincoDados
 
         def get_score(category)
             if valid_category?(category)
-                return @player_scores[category]
+                return @scores[category]
             else
                 raise CategoryError.new("Invalid category: #{category}")
             end
@@ -51,7 +51,7 @@ module CincoDados
         def total_selective(categories)
             return
                 categories.inject(0) do |sum, category|
-                sum + @player_scores[category]
+                sum + @scores[category]
             end
         end
 
@@ -63,9 +63,8 @@ module CincoDados
             end
         end
         
-
         def full_card?()
-            @player_scores.values.tally[nil].nil?
+            @scores.values.tally[nil].nil?
         end
 
 

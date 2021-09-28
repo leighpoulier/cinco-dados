@@ -1,4 +1,5 @@
 require "pastel"
+require "tty-cursor"
 module CincoDados
     class Screen
 

@@ -1,6 +1,11 @@
-require_relative("exceptions")
-require_relative("config")
-require_relative("dados_cup")
+require "tty-reader"
+require_relative "exceptions"
+require_relative "config"
+require_relative "dados_cup"
+require_relative "screen"
+require_relative "border_control"
+require_relative "player"
+require_relative "score_card"
 
 module CincoDados
     class GameModel
@@ -75,14 +80,7 @@ module CincoDados
             
         end
 
-        # def add_dados_cup(dados_cup)
-        #     if dados_cup.instance_of? DadosCup
-        #         @dados_cup=dados_cup
-        #     else
-        #         raise ArgumentError.new("Control must be an instance of DadosCup")
-        #     end
-        # end
-
+        # convert the categories lists (symbols) into nice printable strings.  Returns a hash of { :category => "category_nice" }
         def nice_categories_upper()
 
             return Config::SCORE_CATEGORIES_UPPER.zip(Config::SCORE_CATEGORIES_UPPER.map do |category|

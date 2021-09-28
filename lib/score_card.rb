@@ -1,10 +1,8 @@
-require_relative "screen"
-require_relative "control"
-require_relative "logger"
-require_relative "text"
-require_relative "config"
-# require_relative "game_model"
-require "tty-reader"
+# require_relative "screen"
+# require_relative "control"
+# require_relative "logger"
+# require_relative "text"
+# require_relative "config"
 include CincoDados
 
 module CincoDados

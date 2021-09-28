@@ -1,5 +1,3 @@
-# require_relative("exceptions")
-# include CincoDados
 
 module CincoDados
 

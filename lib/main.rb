@@ -1,19 +1,8 @@
-# # require "pastel"
-# # require "tty-cursor"
+
 require "optparse"
-# # require "tty-logger"
-# require "tty-reader"
 require_relative "logger"
-# require_relative "screen"
-# # require_relative "cursormap"
-# require_relative "control"
-# require_relative "border_control"
-# require_relative "exceptions"
-# require_relative "score_card"
-# require_relative "player"
-# require_relative "controller"
-# include CompassDirections
-# include CincoDados
+require_relative "controller"
+include CincoDados
 
 
 

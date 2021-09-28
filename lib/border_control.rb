@@ -1,4 +1,4 @@
-require_relative("control")
+require_relative "control"
 
 class BorderControl < Control
 

@@ -2,6 +2,7 @@
 require_relative("cursor_map")
 require_relative("text")
 include CincoDados
+include CompassDirections
 
 class Control < SelectionCursorMapNode
 

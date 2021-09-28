@@ -1,5 +1,3 @@
-# require("tty-reader")
-
 module CincoDados
 
     class SelectionCursorMapNode

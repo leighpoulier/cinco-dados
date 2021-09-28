@@ -1,4 +1,4 @@
-require_relative "game_model"
+require_relative "game"
 require_relative "logger"
 require_relative "control"
 include CincoDados

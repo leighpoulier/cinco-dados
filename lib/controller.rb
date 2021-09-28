@@ -45,7 +45,7 @@ module CincoDados
         when event.key.name == :return || event.key.name == :space
             @@cursor.activate()
         end
-        Controller.display_message(@@cursor.get_status())
+        display_message(@@cursor.get_status())
     end
 
     def self.display_message(message)
@@ -62,25 +62,34 @@ module CincoDados
         @@screen = Screen.new(Config::GAME_SCREEN_WIDTH, Config::GAME_SCREEN_HEIGHT)
         @@game = GameModel.new()
 
+        # create roll button
+        button = Button.new(20, 14, 8, 3, "\u{1FB99}", "ROLL", "roll")\
 
-        button = Button.new(20, 14, 8, 3, "\u{1FB99}", "ROLL", "roll")
+        # link dados to roll button
         @@game.dados_cup.dados.each do |dado|
             dado.add_link(EAST, button, false)
         end
+
+        # link button to middle dado
         button.add_link(WEST, @@game.dados_cup.dados[2], false)
+
+        # register activate event for roll button
         button.register_event(:activate, ->(screen) {
             @@game.dados_cup.roll_dados()
         })
         @@screen.add_control(button)
             
+        # create selection cursor
         selection_cursor = SelectionCursor.new(button, "cursor")
         @@screen.add_control(selection_cursor)
         @@screen.set_selection_cursor(selection_cursor)
         
+        # create info_line
         info_line = InfoLine.new(@@screen.columns, @@screen.rows-1)
         @@screen.add_control(info_line)
         @@screen.set_info_line(info_line)
 
+        # create score card
         @@screen.add_control(ScoreCard.new(38,1,@@game.players))
             
         @@cursor = selection_cursor

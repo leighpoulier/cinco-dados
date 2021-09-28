@@ -53,6 +53,8 @@ module CincoDados
         UPPER_SCORE_BONUS_THRESHOLD = 63
         UPPER_SCORE_BONUS_SCORE = 35
 
+        MAX_ROLLS_PER_TURN = 3
+
 
         def self.calculate_scores(dados)
 

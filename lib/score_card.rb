@@ -378,5 +378,11 @@ module CincoDados
             
         end
     end
+
+    class ScoreCell < Control
+
+        
+
+    end
     
 end

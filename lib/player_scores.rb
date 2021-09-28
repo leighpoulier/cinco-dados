@@ -1,4 +1,5 @@
 require_relative("game_model")
+require_relative("logging")
 include CincoDados
 module CincoDados
 
@@ -36,37 +37,68 @@ module CincoDados
             end
         end
 
-        def total(hypothetical = 0)
-            return total_selective(GameModel::SCORE_CATEGORIES) + hypothetical
+        def total(hypothetical = {})
+            return total_selective(GameModel::SCORE_CATEGORIES,hypothetical)
         end
 
-        def total_upper(hypothetical = 0)
-            return total_selective(GameModel::SCORE_CATEGORIES_UPPER) + hypothetical
+        def subtotal_upper(hypothetical = {})
+            return total_selective(GameModel::SCORE_CATEGORIES_UPPER,hypothetical)
         end
 
-        def total_lower(hypothetical = 0)
-            return total_selective(GameModel::SCORE_CATEGORIES_LOWER) + hypothetical
-        end
-
-        def total_selective(categories)
-            return
-                categories.inject(0) do |sum, category|
-                sum + @scores[category]
-            end
-        end
-
-        def bonus(hypothetical)
-            if total_lower(hypothetical) >= GameModel::UPPER_SCORE_BONUS_THRESHOLD
+        def bonus_upper(hypothetical = {})
+            if subtotal_upper(hypothetical) >= GameModel::UPPER_SCORE_BONUS_THRESHOLD
                 return GameModel::UPPER_SCORE_BONUS_SCORE
             else
                 return 0
             end
+        end
+
+        def total_upper(hypothetical = {})
+            return subtotal_upper(hypothetical) + bonus_upper(hypothetical)
+        end
+
+        def total_lower(hypothetical = {})
+            return total_selective(GameModel::SCORE_CATEGORIES_LOWER,hypothetical)
+        end
+
+        def total_selective(categories, hypothetical = {})
+            sanitize_hypothetical(categories, hypothetical)
+
+            # Logger.log.info("@scores = #{@scores}")
+            # Logger.log.info("hypothetical = #{hypothetical}")
+            # Logger.log.info("@scores.merge(hypothetical) = #{@scores.merge(hypothetical)}")
+            # Logger.log.info("*categories = #{categories}")
+            # Logger.log.info("@scores.merge(hypothetical).slice(*categories) = #{@scores.merge(hypothetical).slice(*categories)}")
+            # Logger.log.info("@scores.merge(hypothetical).slice(*categories).values = #{@scores.merge(hypothetical).slice(*categories).values}")
+            # Logger.log.info("@scores.merge(hypothetical).slice(*categories).values.compact = #{@scores.merge(hypothetical).slice(*categories).values.compact}")
+            # Logger.log.info("@scores.merge(hypothetical).slice(*categories).values.compact.sum = #{@scores.merge(hypothetical).slice(*categories).values.compact.sum}")
+
+            @scores.merge(hypothetical).slice(*categories).values.compact.sum
         end
         
         def full_card?()
             @scores.values.tally[nil].nil?
         end
 
+        def sanitize_hypothetical(categories, hypothetical)
+            if hypothetical.length > 0
+                if !hypothetical.instance_of?(Hash)
+                    raise ArgumentError.new("Hypothetical score must be a hash { category: score }")
+                end
+                if hypothetical.length != 1
+                    raise ArgumentError.new("Hypothetical score must be a hash of length 1, actual length: #{hypothetical.length}")
+                end
+                if !categories.include?(hypothetical.keys[0])
+                    raise ArgumentError.new("Hypothetical category must be a member of the relevent categories list.  Categories list: #{categories} category: #{hypothetical.keys[0]}")
+                end
+                if !scores[hypothetical.keys[0]].nil?
+                    raise ArgumentError.new("Hypothetical category must not be already entered in players scores.  Player's score for category #{hypothetical.keys[0]} is already set to value: #{scores[hypothetical.keys[0]]}")
+                end
+                if !hypothetical.values[0].instance_of?(Integer)
+                    raise ArgumentError.new("Hypothetical value must be an integer.  Actual instance_of: #{hypothetical.values[0].class}")
+                end
+            end
+        end
 
     end
     

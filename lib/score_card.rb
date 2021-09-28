@@ -1,6 +1,6 @@
 require_relative "screen"
 require_relative "control"
-require_relative "logging"
+require_relative "logger"
 require_relative "text"
 require_relative "config"
 # require_relative "game_model"

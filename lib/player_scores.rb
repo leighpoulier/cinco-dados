@@ -1,6 +1,6 @@
-require_relative("game_model")
-require_relative("logging")
-require_relative("control")
+require_relative "game_model"
+require_relative "logger"
+require_relative "control"
 include CincoDados
 module CincoDados
 

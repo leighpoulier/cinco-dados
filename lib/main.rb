@@ -1,19 +1,19 @@
-# require "pastel"
-# require "tty-cursor"
+# # require "pastel"
+# # require "tty-cursor"
 require "optparse"
-# require "tty-logger"
-require "tty-reader"
-require_relative "logging"
-require_relative "screen"
-# require_relative "cursormap"
-require_relative "control"
-require_relative "border_control"
-require_relative "exceptions"
-require_relative "score_card"
-require_relative "player"
-require_relative "controller"
-include CompassDirections
-include CincoDados
+# # require "tty-logger"
+# require "tty-reader"
+require_relative "logger"
+# require_relative "screen"
+# # require_relative "cursormap"
+# require_relative "control"
+# require_relative "border_control"
+# require_relative "exceptions"
+# require_relative "score_card"
+# require_relative "player"
+# require_relative "controller"
+# include CompassDirections
+# include CincoDados
 
 
 
@@ -47,20 +47,5 @@ rescue => e
 end
 
 
-
-# screen = Screen.new(80,30)
-
-# left_margin = 6
-# top_margin = 4
-# vert_spacing = 1
-
-# (0..4).each do |counter|
-#     dado = Dado.new(left_margin, top_margin + counter * (Dado::HEIGHT + vert_spacing ), "dado" + counter.to_s)
-#     screen.add_dado(dado)
-#     screen.add_control(dado)
-#     if counter > 0 
-#         dado.add_link(NORTH, screen.dados[counter-1], true)
-#     end
-# end
 
 Controller.start()

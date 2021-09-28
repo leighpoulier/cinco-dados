@@ -68,13 +68,35 @@ module CincoDados
                 end
                 print "\n"
             end
+
+            # #print row numbers
+            # print @cursor.move_to(0,0)
+            # (0..(@rows-1)).each do |row|
+            #     print @pastel.white.on_black(row)
+            #     print @cursor.move_to(@columns-2, row)
+            #     print @pastel.white.on_black(row)
+            #     print "\n"
+            # end
+            
+            # #print column numbers
+            # (0..(@columns-1)).each do |column|
+            #     print @cursor.move_to(column,0)
+            #     print @pastel.white.on_black(column % 10)
+            #     print @cursor.move_to(column, @rows-2)
+            #     print @pastel.white.on_black(column % 10)
+            # end
             
 
             @controls.sort!
-            # Logger.log.info("@controls order #{@controls.join(", ")}")
+            Logger.log.info("@controls order #{@controls.join(", ")}")
             # draw each control
             @controls.each do |control|
-                control.draw(@cursor)
+                # if control.instance_of?(Score)
+                #     Logger.log.info("Drawing score: #{control} at x:#{control.x} y:#{control.y}. Value: #{control.value} ")
+                # end
+                # unless control.instance_of?(ScoreCard)
+                    control.draw(@cursor)
+                # end
             end
             print @cursor.move_to(0, @rows)
         end

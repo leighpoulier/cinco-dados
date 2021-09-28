@@ -18,7 +18,7 @@ module CincoDados
             @screen = Screen.new(Config::GAME_SCREEN_WIDTH, Config::GAME_SCREEN_HEIGHT)
             @dados_cup = DadosCup.new(self, Config::DADOS_COUNT)
 
-            button = Button.new(20, 14, 6, 3, "\u{1FB99}", "ROLL", "roll")
+            button = Button.new(20, 14, 8, 3, "\u{1FB99}", "ROLL", "roll")
             @dados_cup.dados.each do |dado|
                 dado.add_link(EAST, button, false)
             end
@@ -39,26 +39,28 @@ module CincoDados
             
             players = []
             
-            player_wendy = Player.new("RC")
-            player_wendy.add_score(:ones, 3)
-            player_wendy.add_score(:fives, 15)
-            player_wendy.add_score(:three_of_a_kind, 18)
-            player_wendy.add_score(:small_straight, 30)
-            player_wendy.add_score(:chance, 24)
+            player_iryna = Player.new(self,"Iryna")
+            player_iryna.add_score(:ones, 3)
+            player_iryna.add_score(:fives, 15)
+            player_iryna.add_score(:three_of_a_kind, 18)
+            player_iryna.add_score(:small_straight, 30)
+            player_iryna.add_score(:chance, 24)
             
-            player_russ = Player.new("W")
-            player_russ.add_score(:twos, 8)
-            player_russ.add_score(:fives, 15)
-            player_russ.add_score(:four_of_a_kind, 26)
-            player_russ.add_score(:large_straight, 40)
+            player_james = Player.new(self,"James")
+            player_james.add_score(:twos, 8)
+            player_james.add_score(:fives, 15)
+            player_james.add_score(:four_of_a_kind, 26)
+            player_james.add_score(:large_straight, 40)
             
-            player_leigh = Player.new("L")
+            player_leigh = Player.new(self,"Leigh")
             player_leigh.add_score(:threes, 12)
+            player_leigh.add_score(:fours, 16)
+            player_leigh.add_score(:fives, 15)
             player_leigh.add_score(:sixes, 24)
             player_leigh.add_score(:full_house, 25)
             player_leigh.add_score(:cinco_dados, 50)
             
-            players.push(player_wendy, player_russ, player_leigh)
+            players.push(player_iryna, player_james, player_leigh)
             
             
             @screen.add_control(ScoreCard.new(self, 38,1,players))

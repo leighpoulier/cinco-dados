@@ -13,6 +13,7 @@ module CincoDados
 
         SCORE_CARD_HEIGHT = 27
         PLAYER_SCORE_WIDTH = 5
+        PLAYER_SCORE_HEIGHT = 1
 
         ROW_LEFT_BORDER_WIDTH = 1
         ROW_RIGHT_BORDER_WIDTH = 1
@@ -21,6 +22,8 @@ module CincoDados
         COLUMN_TOP_BORDER_WIDTH = 1
         COLUMN_BOTTOM_BORDER_WIDTH = 1
         COLUMN_INTERNAL_BORDER_WIDTH = 1
+
+        ROW_HEADINGS_TOTALS = {subtotal_upper: "Subtotal", bonus: "Bonus (min #{Config::UPPER_SCORE_BONUS_THRESHOLD})",total_upper: "Upper Total", total_lower: "Lower Total", grand_total: "GRAND TOTAL" }
 
         def initialize(game, x, y, players)
             super(x, y, "score_card")
@@ -78,15 +81,11 @@ module CincoDados
             @rows[@height - 1][@width - 1] = { char: LINE_BOLD_CORNER_BOTTOM_RIGHT, style: style}                           #bottom left corner
 
 
-            # Vertical internal lines and players names
-
-
-
-
-            # Row headers
-            
-
+            # Row headers (category names) and horizontal borders
             decorate_rows(style)
+
+
+            # Column headers (player names) and vertical internal borders
             decorate_columns(players, style)
             Logger.log.info("@category_row_locations = #{@category_row_locations}")
             
@@ -103,13 +102,16 @@ module CincoDados
             top_offset+=@score_categories_upper.length
             decorate_horizontal_line(style, top_offset)
             top_offset+=1
-            decorate_text_right("Subtotal", style, heading_width, top_offset, left_offset)
+            decorate_text_right(ROW_HEADINGS_TOTALS[:subtotal_upper], style, heading_width, top_offset, left_offset)
+            @category_row_locations[:subtotal_upper] = top_offset
             top_offset+=1
-            decorate_text_right("Bonus (min #{Config::UPPER_SCORE_BONUS_THRESHOLD})", style, heading_width, top_offset, left_offset)
+            decorate_text_right(ROW_HEADINGS_TOTALS[:bonus], style, heading_width, top_offset, left_offset)
+            @category_row_locations[:bonus] = top_offset
             top_offset+=1
             decorate_horizontal_line(style, top_offset)
             top_offset+=1
-            decorate_text_right("Upper Total", style, heading_width, top_offset, left_offset)
+            decorate_text_right(ROW_HEADINGS_TOTALS[:total_upper], style, heading_width, top_offset, left_offset)
+            @category_row_locations[:total_upper] = top_offset
             top_offset+=1
             decorate_horizontal_line_bold(style, top_offset)
             top_offset+=1
@@ -117,11 +119,13 @@ module CincoDados
             top_offset+=@score_categories_lower.length
             decorate_horizontal_line(style, top_offset)
             top_offset+=1
-            decorate_text_right("Lower Total", style, heading_width, top_offset, left_offset)
+            decorate_text_right(ROW_HEADINGS_TOTALS[:total_lower], style, heading_width, top_offset, left_offset)
+            @category_row_locations[:total_lower] = top_offset
             top_offset+=1
             decorate_horizontal_line_bold(style, top_offset)
             top_offset+=1
-            decorate_text_right("GRAND TOTAL", style, heading_width, top_offset, left_offset)
+            decorate_text_right(ROW_HEADINGS_TOTALS[:grand_total], style, heading_width, top_offset, left_offset)
+            @category_row_locations[:grand_total] = top_offset
             top_offset+=1
         end
 
@@ -177,21 +181,6 @@ module CincoDados
                         end
                     end
 
-
-                    # if @rows[top_offset][column][:char] == LINE_BOLD_VERTICAL || @rows[row][left_offset][:char] == CROSS_BOLD_VERTICAL_LIGHT_HORIZONTAL
-                    #     if weight == :bold
-                    #         @rows[top_offset][column][:char] = CROSS_BOLD_VERTICAL_BOLD_HORIZONTAL
-                    #     else
-                    #         @rows[top_offset][column][:char] = CROSS_BOLD_VERTICAL_LIGHT_HORIZONTAL
-                    #     end
-                    # # elsif @rows[top_offset][column][:char] == LINE_LIGHT_VERTICAL
-                    # else
-                    #     if weight == :bold
-                    #         @rows[top_offset][column] = {char: CROSS_LIGHT_VERTICAL_BOLD_HORIZONTAL, style: style}
-                    #     else
-                    #         @rows[top_offset][column] = {char: CROSS_LIGHT_VERTICAL_LIGHT_HORIZONTAL, style: style}
-                    #     end
-                    # end
                 else
                     if weight == :bold
                         @rows[top_offset][column] = {char: LINE_BOLD_HORIZONTAL, style: style}
@@ -219,16 +208,7 @@ module CincoDados
         end
 
         def decorate_text(text, style, width, top_offset, left_offset, alignment = :centre)
-            # column_counter = 0
-            # blank_spaces = width - text.length
-            # while column_counter < blank_spaces
-            #     @rows[top_offset][left_offset+column_counter] = {char: :transparent, style: style}
-            #     column_counter+=1
-            # end
-            # while column_counter < width
-            #     @rows[top_offset][left_offset+column_counter] = {char: text[column_counter-blank_spaces], style: style}
-            #     column_counter+=1
-            # end
+
             row = Array.new(width, {char: :transparent, style: style})
             if alignment == :left
                 row = Text.left_single(row, text, style)
@@ -252,18 +232,45 @@ module CincoDados
 
         def decorate_columns(players, style)
 
-            
+            # starting column
             left_offset = ROW_LEFT_BORDER_WIDTH + @row_heading_text_width
             counter = 0
+
+            # repeat for each player
             players.each do |player|
-                player.set_score_card_column(left_offset)
+                # If the first player column, make a bold vertical border to separate from the category labels. Otherwise, a light border
                 if counter == 0
                     decorate_vertical_line_bold(style, left_offset)
                 else 
                     decorate_vertical_line(style, left_offset)
                 end
+
+                # Move one column to the left to position the column header (player name)
                 left_offset+=1
+                # Place the player name
                 decorate_player_name(player.name, style, PLAYER_SCORE_WIDTH, COLUMN_TOP_BORDER_WIDTH, left_offset)
+
+                # Set players scores left offset at the current column
+                player.set_score_card_column(left_offset)
+                # Logger.log.info("#{player.name} score_card_column: #{player.score_card_column}")
+
+                #build a hash of positions for each score control in the current column with the saved category row locations from when they were placed.
+                positions = {}
+                Config::SCORE_CATEGORIES.each do |category|
+                    #add @x and @y to get absolute positions
+                    positions[category] = {x: left_offset + @x, y: @category_row_locations[category] + @y}
+                end
+                #add in the headings
+                ROW_HEADINGS_TOTALS.keys.each do |total_heading|
+                    Logger.log.info("Setting positions[#{total_heading}] to {x: #{left_offset} + #{@x}, y: #{@category_row_locations[total_heading]} + #{@y}}")
+                    positions[total_heading] = {x: left_offset + @x, y: @category_row_locations[total_heading] + @y}
+                end
+
+
+                #send positions hash to the player (which passes it on to its score_card)
+                player.position_score_card(positions)
+                # player.test_update_score_card()
+
                 left_offset+=PLAYER_SCORE_WIDTH
                 counter+=1
             end
@@ -302,24 +309,10 @@ module CincoDados
                         if @rows[row][left_offset][:char] == LINE_BOLD_HORIZONTAL || @rows[row][left_offset][:char] == CROSS_BOLD_VERTICAL_BOLD_HORIZONTAL
                             @rows[row][left_offset][:char] = CROSS_LIGHT_VERTICAL_BOLD_HORIZONTAL
                         elsif @rows[row][left_offset][:char] == :transparent
-                        # else
                             @rows[row][left_offset] = {char: CROSS_LIGHT_VERTICAL_LIGHT_HORIZONTAL, style: style}
                         end
                     end
 
-                    # if @rows[row][left_offset][:char] == LINE_BOLD_HORIZONTAL || @rows[row][left_offset][:char] == CROSS_LIGHT_VERTICAL_BOLD_HORIZONTAL
-                    #     if weight == :bold
-                    #         @rows[row][left_offset][:char] = CROSS_BOLD_VERTICAL_BOLD_HORIZONTAL
-                    #     else
-                    #         @rows[row][left_offset][:char] = CROSS_BOLD_VERTICAL_LIGHT_HORIZONTAL
-                    #     end
-                    # else
-                    #     if weight == :bold
-                    #         @rows[row][left_offset] = {char: CROSS_BOLD_VERTICAL_LIGHT_HORIZONTAL, style: style}
-                    #     else
-                    #         @rows[row][left_offset] = {char: CROSS_LIGHT_VERTICAL_LIGHT_HORIZONTAL, style: style}
-                    #     end
-                    # end
                 else
                     if weight == :bold
                         @rows[row][left_offset] = {char: LINE_BOLD_VERTICAL, style: style}
@@ -352,8 +345,12 @@ module CincoDados
 
             decorate_text(player_name, style, width, top_offset, left_offset)
 
+        end
 
-            
+        def update_scores(players)
+            players.each do |player|
+                player.update_score_card()
+            end
         end
     end
 

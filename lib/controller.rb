@@ -21,6 +21,7 @@ module CincoDados
         while true do 
         
             @@screen.draw
+            
             reader.read_keypress
         
         end

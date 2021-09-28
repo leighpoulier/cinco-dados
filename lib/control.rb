@@ -61,6 +61,7 @@ class Control < SelectionCursorMapNode
     end
 
     def set_position(x,y)
+        Logger.log.info("Setting position of control: #{self} to x: #{x}, y:#{y} ")
         @x = x
         @y = y
     end
@@ -77,7 +78,10 @@ class Control < SelectionCursorMapNode
     end
 
     def draw(cursor)
-        # Logger.log.info("Drawing control: #{self}")
+        if @x.nil? || @y.nil?
+            raise ConfigurationError.new("Unable to draw control: #{self} with x: #{@x.inspect} and y: #{@y.inspect}")
+        end
+        Logger.log.info("Drawing control: #{self} at x:#{@x} y:#{@y} with rows: #{@rows.length}")
         print cursor.move_to(@x, @y)
         @rows.each do |row|
             row.each do |charhash|
@@ -90,13 +94,11 @@ class Control < SelectionCursorMapNode
             print cursor.move(-1 * row.length, -1)
 
         end
-        # if self.is_a? BorderControl
-        #     self.enclosed_control.draw(cursor)
-        # end
     end
 
     def inspect
-        return "x: #{@x}, y: #{@y}, width: #{@width}, height: #{@height}"
+        # return "x: #{@x}, y: #{@y}, width: #{@width}, height: #{@height}"
+        return "class=#{self.class}, name=#{@name}"
     end
 
     def set_screen(screen)
@@ -116,31 +118,31 @@ class Control < SelectionCursorMapNode
     def <=>(other)
 
         case
-        when self.instance_of?(BackgroundControl)
+        when self.is_a?(BackgroundControl)
             case
-            when other.instance_of?(BackgroundControl)
+            when other.is_a?(BackgroundControl)
                 return 0
             when other.is_a?(Control)
-                return nil
+                return -1
             end
-        when self.instance_of?(BorderControl)
+        when self.is_a?(BorderControl)
             case
-            when other.instance_of?(BackgroundControl)
+            when other.is_a?(BackgroundControl)
                 return +1
-            when other.instance_of?(BorderControl)
+            when other.is_a?(BorderControl)
                 return 0
-            when other.instance_of?(SelectionCursor)
+            when other.is_a?(SelectionCursor)
                 return -1
             when other.is_a?(Control)
                 return +1
             else
                 return nil
             end
-        when self.instance_of?(SelectionCursor)
+        when self.is_a?(SelectionCursor)
             case
-            when other.instance_of?(SelectionCursor)
+            when other.is_a?(SelectionCursor)
                 return 0
-            when other.instance_of?(BackgroundControl) || other.instance_of?(BorderControl)
+            when other.is_a?(BackgroundControl) || other.is_a?(BorderControl)
                 return +1
             when other.is_a?(Control)
                 return +1
@@ -149,9 +151,9 @@ class Control < SelectionCursorMapNode
             end
         when self.is_a?(Control)
             case
-            when other.instance_of?(BackgroundControl)
+            when other.is_a?(BackgroundControl)
                 return +1
-            when other.instance_of?(BorderControl) || other.instance_of?(SelectionCursor)
+            when other.is_a?(BorderControl) || other.is_a?(SelectionCursor)
                 return -1
             when other.is_a?(Control)
                 return 0
@@ -184,9 +186,6 @@ class Button < Control
         @text = text
         @events = {}
         
-
-        # fill = "\u{2588}"
-        # style = [:white, :on_black]
         fill = {char: "\u{2588}", style: [:white, :on_black]}
         initial_fill(fill)
 

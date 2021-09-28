@@ -11,11 +11,11 @@ module CincoDados
     class GameModel
 
 
-        attr_reader :game_screen
+        attr_reader :screen
 
         def initialize
 
-            @game_screen = Screen.new(Config::GAME_SCREEN_WIDTH, Config::GAME_SCREEN_HEIGHT)
+            @screen = Screen.new(Config::GAME_SCREEN_WIDTH, Config::GAME_SCREEN_HEIGHT)
             @dados_cup = DadosCup.new(self, Config::DADOS_COUNT)
 
             button = Button.new(20, 14, 6, 3, "\u{1FB99}", "ROLL", "roll")
@@ -26,15 +26,15 @@ module CincoDados
             button.register_event(:activate, ->(screen) {
                 @dados_cup.roll_dados()
             })
-            @game_screen.add_control(button)
+            @screen.add_control(button)
             
             selection_cursor = SelectionCursor.new(button, "cursor")
-            @game_screen.add_control(selection_cursor)
-            @game_screen.set_selection_cursor(selection_cursor)
+            @screen.add_control(selection_cursor)
+            @screen.set_selection_cursor(selection_cursor)
             
-            info_line = InfoLine.new(@game_screen.columns, @game_screen.rows-1)
-            @game_screen.add_control(info_line)
-            @game_screen.set_info_line(info_line)
+            info_line = InfoLine.new(@screen.columns, @screen.rows-1)
+            @screen.add_control(info_line)
+            @screen.set_info_line(info_line)
             
             
             players = []
@@ -61,22 +61,9 @@ module CincoDados
             players.push(player_wendy, player_russ, player_leigh)
             
             
-            @game_screen.add_control(ScoreCard.new(self, 38,1,players))
+            @screen.add_control(ScoreCard.new(self, 38,1,players))
             
-            reader = TTY::Reader.new(interrupt: Proc.new do
-                @game_screen.clean_up()
-                puts "Exiting ... Goodbye!"
-                exit
-            end)
-            
-            reader.subscribe(selection_cursor)
-            
-            while true do 
-            
-                @game_screen.draw
-                reader.read_keypress
-            
-            end
+
             
         end
 

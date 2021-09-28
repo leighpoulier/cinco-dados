@@ -121,25 +121,15 @@ class SelectionCursor < BorderControl
             # @enclosed_control = @enclosed_control.follow_link(direction)
             select_control(@enclosed_control.follow_link(direction))
         else
-            puts "Cannot Move in direction: #{direction}"
+            Controller.display_message("Cannot Move in direction: #{direction}")
         end
     end
 
-    def keypress(event)  # implements subscription of TTY::Reader
-        @screen.display_message("")
-        case
-        when event.key.name == :up || event.value == "w"
-            move(NORTH)
-        when event.key.name == :right || event.value == "d"
-            move(EAST)
-        when event.key.name == :down || event.value == "s"
-            move(SOUTH)
-        when event.key.name == :left || event.value == "a"
-            move(WEST)
-        when event.key.name == :return || event.key.name == :space
-            @enclosed_control.activate
-        end
-        # @screen.display_message(get_status())
+
+    def activate()
+        Logger.log.info("Selection Cursor activate: #{@enclosed_control}")
+        @enclosed_control.activate
+
     end
 
     

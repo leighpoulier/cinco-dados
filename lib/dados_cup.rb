@@ -15,7 +15,7 @@ module CincoDados
             (0...dados_count).each do |dados_counter|
                 dado = Dado.new(Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
                 @dados.push(dado)
-                @game.game_screen.add_control(dado)
+                @game.screen.add_control(dado)
                 unless previous_dado.nil?
                     dado.add_link(NORTH, previous_dado, true)
                 end

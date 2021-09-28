@@ -3,7 +3,7 @@ require "tty-cursor"
 module CincoDados
     class Screen
 
-        attr_reader :columns, :rows, :dados
+        attr_reader :columns, :rows, :dados, :info_line, :selection_cursor
         def initialize(width, height)
             @controls = []
             # @dados=[]
@@ -56,10 +56,6 @@ module CincoDados
             end
         end
 
-        def display_message(message)
-            @info_line.display_message(message)
-        end
-
 
         def draw()
             # clear screen
@@ -75,7 +71,7 @@ module CincoDados
             
 
             @controls.sort!
-            Logger.log.info("@controls order #{@controls.join(", ")}")
+            # Logger.log.info("@controls order #{@controls.join(", ")}")
             # draw each control
             @controls.each do |control|
                 control.draw(@cursor)

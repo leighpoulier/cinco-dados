@@ -77,7 +77,7 @@ class Control < SelectionCursorMapNode
     end
 
     def draw(cursor)
-        Logger.log.info("Drawing control: #{self}")
+        # Logger.log.info("Drawing control: #{self}")
         print cursor.move_to(@x, @y)
         @rows.each do |row|
             row.each do |charhash|
@@ -253,5 +253,6 @@ class InfoLine < Control
         (0...@width-@left_indent).each do |char_count|
             @rows[0][@left_indent + char_count] = {char: message[char_count], style: @style}
         end
+        Logger.log.info("InfoLine displayed message: #{message}")
     end
 end

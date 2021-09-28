@@ -25,9 +25,9 @@ module CincoDados
 
         ROW_HEADINGS_TOTALS = {subtotal_upper: "Subtotal", bonus: "Bonus (min #{Config::UPPER_SCORE_BONUS_THRESHOLD})",total_upper: "Upper Total", total_lower: "Lower Total", grand_total: "GRAND TOTAL" }
 
-        def initialize(game, x, y, players)
+        def initialize(x, y, players)
             super(x, y, "score_card")
-            @game = game
+            @game = Controller.game
             @score_categories_upper = @game.nice_categories_upper()
             @score_categories_lower = @game.nice_categories_lower()
             @score_categories = @score_categories_upper.merge(@score_categories_lower)

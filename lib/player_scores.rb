@@ -8,8 +8,7 @@ module CincoDados
 
         attr_reader :scores, :totals
 
-        def initialize(game, player_name)
-            @game = game
+        def initialize(player_name)
             @scores = {}
             # @totals = {}
             previous_score = nil
@@ -138,7 +137,7 @@ module CincoDados
             positions.each do |category, position|
                 Logger.log.info("setting position for score category: #{category}, for score: #{@scores[category]}, to [ #{position[:x]}, #{position[:y]} }")
                 @scores[category].set_position(position[:x], position[:y])
-                @game.screen.add_control(@scores[category])
+                Controller.screen.add_control(@scores[category])
             end
         end
 

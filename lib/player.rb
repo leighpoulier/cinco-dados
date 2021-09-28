@@ -6,10 +6,9 @@ module CincoDados
 
         attr_reader :score_card, :name, :score_card_column
 
-        def initialize(game, name)
-            @game = game
+        def initialize(name)
             @name = name
-            @score_card = PlayerScores.new(@game, @name)
+            @score_card = PlayerScores.new(@name)
             @roll_count = 0
         end
 

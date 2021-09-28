@@ -7,15 +7,14 @@ module CincoDados
 
         attr_reader :dados
 
-        def initialize(game, dados_count)
-            @game = game
+        def initialize(dados_count)
             @dados = []
 
             previous_dado = nil
             (0...dados_count).each do |dados_counter|
                 dado = Dado.new(Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
                 @dados.push(dado)
-                @game.screen.add_control(dado)
+                Controller.screen.add_control(dado)
                 unless previous_dado.nil?
                     dado.add_link(NORTH, previous_dado, true)
                 end

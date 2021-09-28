@@ -62,6 +62,10 @@ module CincoDados
         @@screen = Screen.new(Config::GAME_SCREEN_WIDTH, Config::GAME_SCREEN_HEIGHT)
         @@game = GameModel.new()
 
+        @@game.dados_cup.dados.each do |dado|
+            @@screen.add_control(dado)
+        end
+
         # create roll button
         button = Button.new(20, 14, 8, 3, "\u{1FB99}", "ROLL", "roll")\
 

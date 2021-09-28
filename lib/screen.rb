@@ -32,14 +32,6 @@ module CincoDados
             end
         end
 
-        # def add_dado(dado)
-        #     if dado.instance_of? Dado
-        #         @dados.push(dado)
-        #     else
-        #         raise ArgumentError.new("Control must be an instance of Dado to add to dados array")
-        #     end
-        # end
-
         def set_info_line(info_line_control)
             if info_line_control.instance_of? InfoLine
                 @info_line = info_line_control
@@ -91,12 +83,7 @@ module CincoDados
             Logger.log.info("@controls order #{@controls.join(", ")}")
             # draw each control
             @controls.each do |control|
-                # if control.instance_of?(Score)
-                #     Logger.log.info("Drawing score: #{control} at x:#{control.x} y:#{control.y}. Value: #{control.value} ")
-                # end
-                # unless control.instance_of?(ScoreCard)
-                    control.draw(@cursor)
-                # end
+                control.draw(@cursor)
             end
             print @cursor.move_to(0, @rows)
         end

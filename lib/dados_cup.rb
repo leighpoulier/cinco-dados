@@ -14,7 +14,7 @@ module CincoDados
             (0...dados_count).each do |dados_counter|
                 dado = Dado.new(Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
                 @dados.push(dado)
-                Controller.screen.add_control(dado)
+                # Controller.screen.add_control(dado)
                 unless previous_dado.nil?
                     dado.add_link(NORTH, previous_dado, true)
                 end
@@ -23,26 +23,27 @@ module CincoDados
         end
 
 
-        def calculate_scores()
+        def calculate_scores(dados_values)
 
             # sort the array of dados here, saves doing it many times in the methods.
             # all subsequent methdos assume a sorted array
-            dados_values = @dados.map do |dado|
-                dado.value
-            end.sort
+            # dados_values = @dados.map do |dado|
+            #     dado.value
+            # end.sort
 
             if !dados_values.is_a?(Array) || dados_values.length != 5
-                raise dados_valuesError.new("dados_values must be an array of length 5")
+                raise DadosError.new("dados_values must be an array of length 5")
             end
             dados_values.each do |dado|
                 if !dado.instance_of?(Integer)
-                    raise dados_valuesError.new("Dado value must be instance of Integer")
+                    raise DadosError.new("Dado value must be instance of Integer")
                 end
                 if dado < 1 || dado > 6
-                    raise dados_valuesError.new("Dado value must be one of 1,2,3,4,5,6")
+                    raise DadosError.new("Dado value must be one of 1,2,3,4,5,6")
                 end
             end
 
+            dados_values.sort!
 
             return {
             ones: singles(dados_values, 1),
@@ -57,7 +58,7 @@ module CincoDados
             full_house: full_house(dados_values),
             small_straight: straight(dados_values,4),
             large_straight: straight(dados_values,5),
-            cinco_dados_values: of_a_kind(dados_values,5),
+            cinco_dados: of_a_kind(dados_values,5),
             chance: sum(dados_values),
             }
             
@@ -86,7 +87,7 @@ module CincoDados
 
                 #return the sum of the dados_values (3 or 4) or the CINCO_dados_values_SCORE
 
-                return count_of_a_kind < 5 ? sum(dados_values) : CINCO_dados_values_SCORE
+                return count_of_a_kind < 5 ? sum(dados_values) : Config::CINCO_DADOS_SCORE
             else
                 return 0
             end
@@ -100,7 +101,7 @@ module CincoDados
             tally = dados_values.tally
             # A full house contains only two unique items, so tally.length will == 2 and tally will contain values 2 and 3.
             if tally.length == 2 && tally.value?(3)
-                return FULL_HOUSE_SCORE
+                return Config::FULL_HOUSE_SCORE
             else
                 return 0
             end
@@ -119,9 +120,9 @@ module CincoDados
             sequences.each do |sequence|
                 if sequence.length >= length
                     if length == 4
-                        return SMALL_STRAIGHT_SCORE
+                        return Config::SMALL_STRAIGHT_SCORE
                     elsif length == 5
-                        return LARGE_STRAIGHT_SCORE
+                        return Config::LARGE_STRAIGHT_SCORE
                     end
                 end
             end

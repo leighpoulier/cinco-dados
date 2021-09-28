@@ -1,5 +1,6 @@
 require_relative("game_model")
 require_relative("logging")
+require_relative("control")
 include CincoDados
 module CincoDados
 
@@ -7,20 +8,28 @@ module CincoDados
 
         attr_reader :scores
 
-        def initialize
-            @scores = GameModel::SCORE_CATEGORIES.to_h do |category|
-                [category, nil]
+        def initialize(player_name)
+            @scores = {}
+            previous_score = nil
+            Config::SCORE_CATEGORIES.each do |category|
+                new_score = Score.new(player_name + category.to_s)
+                unless previous_score.nil?
+                    new_score.add_link(NORTH, previous_score, true)
+                end
+                scores[category] = new_score
+                previous_score = new_score
             end
+            Logger.log.info("scores: #{@scores}")
         end
 
         def valid_category?(category)
-            GameModel::SCORE_CATEGORIES.include?(category)
+            Config::SCORE_CATEGORIES.include?(category)
         end
 
         def add_score(category, score)
             if valid_category?(category)
-                if @scores[category].nil?
-                    return @scores[category] = score
+                if @scores[category].value.nil?
+                    return @scores[category].set_value(score)
                 else
                     raise RuleError.new("This score is already allocated")
                 end
@@ -31,23 +40,23 @@ module CincoDados
 
         def get_score(category)
             if valid_category?(category)
-                return @scores[category]
+                return @scores[category].value
             else
                 raise ScoreCategoryError.new("Invalid score category: #{category}")
             end
         end
 
         def total(hypothetical = {})
-            return total_selective(GameModel::SCORE_CATEGORIES,hypothetical)
+            return total_selective(Config::SCORE_CATEGORIES,hypothetical)
         end
 
         def subtotal_upper(hypothetical = {})
-            return total_selective(GameModel::SCORE_CATEGORIES_UPPER,hypothetical)
+            return total_selective(Config::SCORE_CATEGORIES_UPPER,hypothetical)
         end
 
         def bonus_upper(hypothetical = {})
-            if subtotal_upper(hypothetical) >= GameModel::UPPER_SCORE_BONUS_THRESHOLD
-                return GameModel::UPPER_SCORE_BONUS_SCORE
+            if subtotal_upper(hypothetical) >= Config::UPPER_SCORE_BONUS_THRESHOLD
+                return Config::UPPER_SCORE_BONUS_SCORE
             else
                 return 0
             end
@@ -58,7 +67,7 @@ module CincoDados
         end
 
         def total_lower(hypothetical = {})
-            return total_selective(GameModel::SCORE_CATEGORIES_LOWER,hypothetical)
+            return total_selective(Config::SCORE_CATEGORIES_LOWER,hypothetical)
         end
 
         def total_selective(categories, hypothetical = {})
@@ -73,11 +82,20 @@ module CincoDados
             # Logger.log.info("@scores.merge(hypothetical).slice(*categories).values.compact = #{@scores.merge(hypothetical).slice(*categories).values.compact}")
             # Logger.log.info("@scores.merge(hypothetical).slice(*categories).values.compact.sum = #{@scores.merge(hypothetical).slice(*categories).values.compact.sum}")
 
-            @scores.merge(hypothetical).slice(*categories).values.compact.sum
+            @scores.keys.zip(@scores.values.map do |score|
+                score.value
+            end).to_h
+            .merge(hypothetical)
+            .slice(*categories)
+            .values
+            .compact
+            .sum
         end
         
         def full_card?()
-            @scores.values.tally[nil].nil?
+            @scores.values.map do |score|
+                score.value
+            end.tally[nil].nil?
         end
 
         def sanitize_hypothetical(categories, hypothetical)
@@ -91,7 +109,7 @@ module CincoDados
                 if !categories.include?(hypothetical.keys[0])
                     raise ArgumentError.new("Hypothetical category must be a member of the relevent categories list.  Categories list: #{categories} category: #{hypothetical.keys[0]}")
                 end
-                if !scores[hypothetical.keys[0]].nil?
+                if !scores[hypothetical.keys[0]].value.nil?
                     raise ArgumentError.new("Hypothetical category must not be already entered in players scores.  Player's score for category #{hypothetical.keys[0]} is already set to value: #{scores[hypothetical.keys[0]]}")
                 end
                 if !hypothetical.values[0].instance_of?(Integer)
@@ -102,4 +120,23 @@ module CincoDados
 
     end
     
+    class Score < Control
+
+        attr_reader :value
+
+        def initialize(name)
+            super(name)
+            @value = nil
+        end
+
+        def set_value(value)
+            if @value.nil?
+                return @value = value
+            else
+                raise RuleError.new("Cannot allocate to an already allocated score")
+            end
+        end
+
+
+    end
 end

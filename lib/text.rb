@@ -57,11 +57,11 @@ module CincoDados
 
         def self.sanitize_arguments_common(row,text)
             if !row.instance_of?(Array)
-                raise ArgumentError.new("rows must be an Array: rows is a #{rows.class}")
+                raise ArgumentError.new("rows must be an Array: rows is a #{row.class}")
             end
 
             if !text.instance_of?(String)
-                raise ArgumentError.new("text must be an String: text is a #{rows.class}")
+                raise ArgumentError.new("text must be a String: text is a #{text.class}")
             end  
 
             if text.length < 1
@@ -114,7 +114,15 @@ module CincoDados
         end
 
         def self.start_column_centre(text, width)
-            return ((width-1)/2 - (text.length-1)/2)
+            # return ((width-1)/2 - (text.length-1)/2)
+            # return ((width-1)/2 - (text.length)/2)
+            if text.length == width
+                return 0
+            elsif (width % 2) == (text.length % 2)
+                return (width/2 - text.length/2)
+            else
+                return ((width)/2 - (text.length+1)/2)
+            end
         end
 
         def self.start_column_right(text, width)

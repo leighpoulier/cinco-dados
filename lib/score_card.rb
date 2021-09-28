@@ -2,7 +2,8 @@ require_relative "screen"
 require_relative "control"
 require_relative "logging"
 require_relative "text"
-require_relative "game_model"
+require_relative "config"
+# require_relative "game_model"
 require "tty-reader"
 include CincoDados
 
@@ -10,9 +11,10 @@ module CincoDados
 
     class ScoreCard < BackgroundControl
 
-        SCORE_CATEGORIES_UPPER = GameModel.nice_categories_upper()
-        SCORE_CATEGORIES_LOWER = GameModel.nice_categories_lower()
-        SCORE_CATEGORIES = SCORE_CATEGORIES_UPPER.chain(SCORE_CATEGORIES_LOWER).to_a
+
+
+        SCORE_CARD_HEIGHT = 27
+        PLAYER_SCORE_WIDTH = 5
 
         ROW_LEFT_BORDER_WIDTH = 1
         ROW_RIGHT_BORDER_WIDTH = 1
@@ -21,31 +23,31 @@ module CincoDados
         COLUMN_TOP_BORDER_WIDTH = 1
         COLUMN_BOTTOM_BORDER_WIDTH = 1
         COLUMN_INTERNAL_BORDER_WIDTH = 1
-        ROW_INTERNAL_BORDERS_AT = [COLUMN_TOP_BORDER_WIDTH + 1, COLUMN_TOP_BORDER_WIDTH + 1 + SCORE_CATEGORIES_UPPER.length + 1, COLUMN_TOP_BORDER_WIDTH + 1 + SCORE_CATEGORIES_UPPER.length + 4, COLUMN_TOP_BORDER_WIDTH + 1 + SCORE_CATEGORIES_UPPER.length + 6,  COLUMN_TOP_BORDER_WIDTH + 1 + SCORE_CATEGORIES_UPPER.length + 6 + SCORE_CATEGORIES_LOWER.length + 1, COLUMN_TOP_BORDER_WIDTH + 1 + SCORE_CATEGORIES_UPPER.length + 6 + SCORE_CATEGORIES_LOWER.length + 3 ]
 
-        ROW_HEADING_TEXT_WIDTH = SCORE_CATEGORIES.map do |category|
-            category.to_s.length
-        end.max
-        PLAYER_SCORE_WIDTH = 5
-
-
-
-        SCORE_CARD_HEIGHT = 27
-
-        def initialize(x,y,players_names)
+        def initialize(game, x, y, players)
             super(x, y, "score_card")
-            @width = ROW_LEFT_BORDER_WIDTH + ROW_HEADING_TEXT_WIDTH + (players_names.length * (PLAYER_SCORE_WIDTH + ROW_INTERNAL_BORDER_WIDTH)) + ROW_RIGHT_BORDER_WIDTH
+            @game = game
+            @score_categories_upper = @game.nice_categories_upper()
+            @score_categories_lower = @game.nice_categories_lower()
+            @score_categories = @score_categories_upper.merge(@score_categories_lower)
+            @row_heading_text_width = @score_categories.values.map do |category|
+                category.to_s.length
+            end.max
+
+            @row_internal_borders_at = [COLUMN_TOP_BORDER_WIDTH + 1, COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 1, COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 4, COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 6,  COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 6 + @score_categories_lower.length + 1, COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 6 + @score_categories_lower.length + 3 ]
+    
+            @width = ROW_LEFT_BORDER_WIDTH + @row_heading_text_width + (players.length * (PLAYER_SCORE_WIDTH + ROW_INTERNAL_BORDER_WIDTH)) + ROW_RIGHT_BORDER_WIDTH
             @height = SCORE_CARD_HEIGHT
 
-            @column_internal_borders_at = [ROW_LEFT_BORDER_WIDTH + ROW_HEADING_TEXT_WIDTH]
-            (0...players_names.length).each do |player_counter|
-                @column_internal_borders_at << ROW_LEFT_BORDER_WIDTH + ROW_HEADING_TEXT_WIDTH + (PLAYER_SCORE_WIDTH + COLUMN_INTERNAL_BORDER_WIDTH) * player_counter
+            @column_internal_borders_at = [ROW_LEFT_BORDER_WIDTH + @row_heading_text_width]
+            (0...players.length).each do |player_counter|
+                @column_internal_borders_at << ROW_LEFT_BORDER_WIDTH + @row_heading_text_width + (PLAYER_SCORE_WIDTH + COLUMN_INTERNAL_BORDER_WIDTH) * player_counter
             end
-
-            decorate_control(players_names)
+            @category_row_locations = {}
+            decorate_control(players)
         end
 
-        def decorate_control(players_names)
+        def decorate_control(players)
 
             style = [:white, :on_black]
 
@@ -54,7 +56,7 @@ module CincoDados
             # horizontal border (top and bottom)
 
             (1...@width-1).each do |col|
-                if col > ROW_HEADING_TEXT_WIDTH + ROW_LEFT_BORDER_WIDTH
+                if col > @row_heading_text_width + ROW_LEFT_BORDER_WIDTH
                     @rows[0][col] = { char: LINE_BOLD_HORIZONTAL, style: style}             #top row (except top left empty box)
                 end
             @rows[@height - 1][col] = { char: LINE_BOLD_HORIZONTAL, style: style}           #bottom row
@@ -71,7 +73,7 @@ module CincoDados
     
             # 5 corners
 
-            @rows[0][ROW_HEADING_TEXT_WIDTH + ROW_LEFT_BORDER_WIDTH] = { char: LINE_BOLD_CORNER_TOP_LEFT, style: style}     #top left corner names
+            @rows[0][@row_heading_text_width + ROW_LEFT_BORDER_WIDTH] = { char: LINE_BOLD_CORNER_TOP_LEFT, style: style}     #top left corner names
             @rows[COLUMN_TOP_BORDER_WIDTH + 1][0] = { char: LINE_BOLD_CORNER_TOP_LEFT, style: style}                        #top left corner categories
             @rows[0][@width - 1] = { char: LINE_BOLD_CORNER_TOP_RIGHT, style: style}                                        #top right corner
             @rows[@height - 1][0] = { char: LINE_BOLD_CORNER_BOTTOM_LEFT, style: style}                                     #bottom left corner
@@ -87,24 +89,25 @@ module CincoDados
             
 
             decorate_rows(style)
-            decorate_columns(players_names, style)
+            decorate_columns(players, style)
+            Logger.log.info("@category_row_locations = #{@category_row_locations}")
             
 
         end
 
         def decorate_rows(style)
-            top_offset = ROW_INTERNAL_BORDERS_AT[0]
+            top_offset = @row_internal_borders_at[0]
             left_offset = ROW_LEFT_BORDER_WIDTH
-            heading_width = ROW_HEADING_TEXT_WIDTH
+            heading_width = @row_heading_text_width
             decorate_horizontal_line_bold(style, top_offset)
             top_offset+=1
-            decorate_categories(SCORE_CATEGORIES_UPPER, style, heading_width, top_offset, left_offset)
-            top_offset+=SCORE_CATEGORIES_UPPER.length
+            decorate_categories(@score_categories_upper, style, heading_width, top_offset, left_offset)
+            top_offset+=@score_categories_upper.length
             decorate_horizontal_line(style, top_offset)
             top_offset+=1
             decorate_text_right("Subtotal", style, heading_width, top_offset, left_offset)
             top_offset+=1
-            decorate_text_right("Bonus (min #{GameModel::UPPER_SCORE_BONUS_THRESHOLD})", style, heading_width, top_offset, left_offset)
+            decorate_text_right("Bonus (min #{Config::UPPER_SCORE_BONUS_THRESHOLD})", style, heading_width, top_offset, left_offset)
             top_offset+=1
             decorate_horizontal_line(style, top_offset)
             top_offset+=1
@@ -112,8 +115,8 @@ module CincoDados
             top_offset+=1
             decorate_horizontal_line_bold(style, top_offset)
             top_offset+=1
-            decorate_categories(SCORE_CATEGORIES_LOWER, style, heading_width, top_offset, left_offset)
-            top_offset+=SCORE_CATEGORIES_LOWER.length
+            decorate_categories(@score_categories_lower, style, heading_width, top_offset, left_offset)
+            top_offset+=@score_categories_lower.length
             decorate_horizontal_line(style, top_offset)
             top_offset+=1
             decorate_text_right("Lower Total", style, heading_width, top_offset, left_offset)
@@ -125,13 +128,14 @@ module CincoDados
         end
 
         def decorate_categories(categories, style, width, top_offset, left_offset)
-            categories.each do |category|
+            categories.each do |category, category_nice|
                 # category_text=category.to_s.gsub("_", " ").split.each do |word| 
                 #     unless ["a", "of", "in", "and", "or"].include?(word)
                 #         word.capitalize!
                 #     end
                 # end.join(" ")
-                decorate_text_right(category, style, width, top_offset, left_offset)
+                decorate_text_right(category_nice, style, width, top_offset, left_offset)
+                @category_row_locations[category] = top_offset
                 top_offset+=1
             end
 
@@ -238,7 +242,6 @@ module CincoDados
             @rows[top_offset][left_offset...(left_offset+width)] = row
         end
 
-
         def decorate_text_left(text, style, width, top_offset, left_offset)
             decorate_text(text, style, width, top_offset, left_offset, :left)
         end
@@ -249,46 +252,23 @@ module CincoDados
             decorate_text(text, style, width, top_offset, left_offset, :right)
         end
 
-
-        def decorate_columns(players_names, style)
+        def decorate_columns(players, style)
 
             
-            left_offset = ROW_LEFT_BORDER_WIDTH + ROW_HEADING_TEXT_WIDTH
+            left_offset = ROW_LEFT_BORDER_WIDTH + @row_heading_text_width
             counter = 0
-            players_names.each do |player_name|
+            players.each do |player|
+                player.set_score_card_column(left_offset)
                 if counter == 0
                     decorate_vertical_line_bold(style, left_offset)
                 else 
                     decorate_vertical_line(style, left_offset)
                 end
                 left_offset+=1
-                decorate_player_name(player_name, style, PLAYER_SCORE_WIDTH, COLUMN_TOP_BORDER_WIDTH, left_offset)
+                decorate_player_name(player.name, style, PLAYER_SCORE_WIDTH, COLUMN_TOP_BORDER_WIDTH, left_offset)
                 left_offset+=PLAYER_SCORE_WIDTH
                 counter+=1
             end
-
-            # players_names.each do |players_name|
-            #     #convert intersections in top border
-            #     @rows[0][left_offset] = {char: T_TOP_LIGHT_VERTICAL_BOLD_HORIZONTAL, style: style}
-
-            #     # Add player names while we are here
-            #     @rows[1][(left_offset + 1)..(left_offset + PLAYER_SCORE_WIDTH)] = Text.centre_single(Array.new(PLAYER_SCORE_WIDTH, {char: :transparent, style: style}), players_name, style)
-
-            #     # Repeated vertical lines for most of the table
-            #     (1...@rows.length-1).each do |row|
-            #         if ROW_INTERNAL_BORDERS_AT.include?(row)
-            #             @rows[row][left_offset][:char] = CROSS_LIGHT_VERTICAL_LIGHT_HORIZONTAL
-            #         else
-            #             @rows[row][left_offset][:char] = LINE_LIGHT_VERTICAL
-            #         end
-            #     end
-            #     @rows[@rows.length-1][left_offset]
-
-            #     # convert to intersections in bottom border
-            #     @rows[@rows.length-1][left_offset][:char] = T_BOTTOM_LIGHT_VERTICAL_BOLD_HORIZONTAL
-
-            #     left_offset += PLAYER_SCORE_WIDTH + COLUMN_INTERNAL_BORDER_WIDTH
-            # end
         end
 
         def decorate_vertical_line_bold(style, left_offset)
@@ -313,7 +293,7 @@ module CincoDados
             end
 
             (1...@height-1).each do |row|
-                if ROW_INTERNAL_BORDERS_AT.include?(row)
+                if @row_internal_borders_at.include?(row)
                     if weight == :bold
                         if @rows[row][left_offset][:char] == LINE_BOLD_HORIZONTAL || @rows[row][left_offset][:char] == CROSS_LIGHT_VERTICAL_BOLD_HORIZONTAL
                             @rows[row][left_offset][:char] = CROSS_BOLD_VERTICAL_BOLD_HORIZONTAL
@@ -379,10 +359,4 @@ module CincoDados
         end
     end
 
-    class ScoreCell < Control
-
-        
-
-    end
-    
 end

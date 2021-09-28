@@ -26,7 +26,8 @@ class LockedBorder < BorderControl
 
         @enclosed_control = control
         enclose_control()
-        super(@x, @y, name)
+        super(name)
+        set_position(@x, @y)
         decorate_control()
     end
 
@@ -73,7 +74,8 @@ class SelectionCursor < BorderControl
 
     def initialize(control, name)
         select_control(control)
-        super(@x, @y, name)
+        super(name)
+        set_position(@x,@y)
         
     end
 

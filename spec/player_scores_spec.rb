@@ -12,8 +12,12 @@ describe "PlayerScores" do
     context "basic" do
         it "starts with an empty scorecard" do
 
-            expect(@player_scores.scores.values.tally.length).to eq(1)
-            expect(@player_scores.scores.values.tally.keys).to eq([nil])
+            values_tally = @player_scores.scores.values.map do |score|
+                score.value
+            end.tally
+
+            expect(values_tally.length).to eq(1)
+            expect(values_tally.keys).to eq([nil])
         
         end
 

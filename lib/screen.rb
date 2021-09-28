@@ -5,7 +5,7 @@ module CincoDados
         attr_reader :columns, :rows, :dados
         def initialize(width, height)
             @controls = []
-            @dados=[]
+            # @dados=[]
             @columns = width
             @rows = height
 
@@ -31,13 +31,13 @@ module CincoDados
             end
         end
 
-        def add_dado(dado)
-            if dado.instance_of? Dado
-                @dados.push(dado)
-            else
-                raise ArgumentError.new("Control must be an instance of Dado to add to dados array")
-            end
-        end
+        # def add_dado(dado)
+        #     if dado.instance_of? Dado
+        #         @dados.push(dado)
+        #     else
+        #         raise ArgumentError.new("Control must be an instance of Dado to add to dados array")
+        #     end
+        # end
 
         def set_info_line(info_line_control)
             if info_line_control.instance_of? InfoLine
@@ -82,29 +82,6 @@ module CincoDados
             print @cursor.move_to(0, @rows)
         end
 
-        def roll_unlocked_dados()
-            # status = []
-            dados.each do |dado|
-            # for dado in dados
-                if !dado.locked?
-                    dado.roll
-                end
-                # status << dado.value
-            end
-
-            # cinco_dados = true
-            # dado_counter = 0
-            # while dado_counter < @dados.length
-            #     unless dados[dado_counter].value == @dados[0].value
-            #         cinco_dados = false
-            #         break
-            #     end
-            #     dado_counter += 1
-            # end
-            # if cinco_dados
-            #     display_message("Felicidades! Cinco Dades!")
-            # end
-        end
 
         def clean_up()
 

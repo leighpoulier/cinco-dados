@@ -81,7 +81,7 @@ class Control < SelectionCursorMapNode
         if @x.nil? || @y.nil?
             raise ConfigurationError.new("Unable to draw control: #{self} with x: #{@x.inspect} and y: #{@y.inspect}")
         end
-        Logger.log.info("Drawing control: #{self} at x:#{@x} y:#{@y} with rows: #{@rows.length}")
+        # Logger.log.info("Drawing control: #{self} at x:#{@x} y:#{@y} with rows: #{@rows.length}")
         print cursor.move_to(@x, @y)
         @rows.each do |row|
             row.each do |charhash|
@@ -101,9 +101,10 @@ class Control < SelectionCursorMapNode
         return "class=#{self.class}, name=#{@name}"
     end
 
-    def set_screen(screen)
-        @screen = screen
-    end
+    # def set_screen(screen)
+    #     raise StandardError.new("What is this method used for?")
+    #     @screen = screen
+    # end
 
     def on_selected()
     end
@@ -113,6 +114,7 @@ class Control < SelectionCursorMapNode
 
     def activate()
     end
+
 
 
     def <=>(other)

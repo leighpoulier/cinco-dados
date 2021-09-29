@@ -47,5 +47,28 @@ module CincoDados
     MAX_ROLLS_PER_TURN = 3
 
 
+        # convert the categories lists (symbols) into nice printable strings.  Returns a hash of { :category => "category_nice" }
+        def self.nice_categories_upper()
+
+            return Config::SCORE_CATEGORIES_UPPER.zip(Config::SCORE_CATEGORIES_UPPER.map do |category|
+                category.to_s.gsub("_"," ").split.each do |word|
+                    unless ["a", "of", "in", "and", "or"].include?(word)
+                        word.capitalize!
+                    end
+                end.join(" ").sub("three of","3 of").sub("four of","4 of")
+            end).to_h
+        end
+
+
+        def self.nice_categories_lower()
+            return Config::SCORE_CATEGORIES_LOWER.zip(Config::SCORE_CATEGORIES_LOWER.map do |category|
+                category.to_s.gsub("_"," ").split.each do |word|
+                    unless ["a", "of", "in", "and", "or"].include?(word)
+                        word.capitalize!
+                    end
+                end.join(" ").sub("Three of","3 of").sub("Four of","4 of")
+            end).to_h
+        end
+
     end
 end

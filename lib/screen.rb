@@ -3,7 +3,7 @@ require "tty-cursor"
 module CincoDados
     class Screen
 
-        attr_reader :columns, :rows, :dados, :info_line, :selection_cursor
+        attr_reader :columns, :rows, :info_line, :selection_cursor
         def initialize(width, height)
             @controls = []
             # @dados=[]
@@ -21,7 +21,8 @@ module CincoDados
 
         def add_control(control)
             @controls.push(control)
-            control.set_screen(self)
+            @controls.sort!
+            Logger.log.info("@controls order #{@controls.join(", ")}")
         end
 
         def delete_control(control)
@@ -61,6 +62,8 @@ module CincoDados
                 print "\n"
             end
 
+            
+
             # #print row numbers
             # print @cursor.move_to(0,0)
             # (0..(@rows-1)).each do |row|
@@ -79,8 +82,6 @@ module CincoDados
             # end
             
 
-            @controls.sort!
-            Logger.log.info("@controls order #{@controls.join(", ")}")
             # draw each control
             @controls.each do |control|
                 control.draw(@cursor)
@@ -93,6 +94,34 @@ module CincoDados
 
             print @cursor.show
         end
+
+    end
+
+    class GameScreen < Screen
+
+        attr_reader :button
+
+        def initialize(width, height)
+            super(width, height)
+
+
+        # create roll button
+        @button = Button.new(20, 14, 8, 3, "\u{1FB99}", "ROLL", "roll")
+        add_control(@button)        
+            
+        # create selection cursor
+        @selection_cursor = SelectionCursor.new(button, "cursor")
+        add_control(@selection_cursor)
+        # set_selection_cursor(selection_cursor)
+        
+        # create info_line
+        @info_line = InfoLine.new(columns, rows-1)
+        add_control(@info_line)
+        # set_info_line(info_line)
+
+
+        end
+
 
     end
 

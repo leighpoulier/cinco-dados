@@ -25,11 +25,11 @@ module CincoDados
 
         ROW_HEADINGS_TOTALS = {subtotal_upper: "Subtotal", bonus: "Bonus (min #{Config::UPPER_SCORE_BONUS_THRESHOLD})",total_upper: "Upper Total", total_lower: "Lower Total", grand_total: "GRAND TOTAL" }
 
-        def initialize(x, y, players)
+        def initialize(x, y, players, game_screen)
             super(x, y, "score_card")
-            @game = Controller.game
-            @score_categories_upper = @game.nice_categories_upper()
-            @score_categories_lower = @game.nice_categories_lower()
+            @game_screen = game_screen
+            @score_categories_upper = Config.nice_categories_upper()
+            @score_categories_lower = Config.nice_categories_lower()
             @score_categories = @score_categories_upper.merge(@score_categories_lower)
             @row_heading_text_width = @score_categories.values.map do |category|
                 category.to_s.length
@@ -89,6 +89,8 @@ module CincoDados
             decorate_columns(players, style)
             Logger.log.info("@category_row_locations = #{@category_row_locations}")
             
+            Logger.log.info("Add link on button to #{players[0].name} score: :three_of_a_kind")
+            @game_screen.button.add_link(EAST, players[0].player_scores.scores[:three_of_a_kind], false)
 
         end
 
@@ -251,8 +253,8 @@ module CincoDados
                 decorate_player_name(player.name, style, PLAYER_SCORE_WIDTH, COLUMN_TOP_BORDER_WIDTH, left_offset)
 
                 # Set players scores left offset at the current column
-                player.set_score_card_column(left_offset)
-                # Logger.log.info("#{player.name} score_card_column: #{player.score_card_column}")
+                player.set_player_scores_column(left_offset)
+                # Logger.log.info("#{player.name} player_scores_column: #{player.player_scores_column}")
 
                 #build a hash of positions for each score control in the current column with the saved category row locations from when they were placed.
                 positions = {}
@@ -267,9 +269,9 @@ module CincoDados
                 end
 
 
-                #send positions hash to the player (which passes it on to its score_card)
-                player.position_score_card(positions)
-                # player.test_update_score_card()
+                #send positions hash to the player (which passes it on to its player_scores)
+                player.position_player_scores(@game_screen, positions)
+                # player.test_update_player_scores()
 
                 left_offset+=PLAYER_SCORE_WIDTH
                 counter+=1
@@ -349,7 +351,7 @@ module CincoDados
 
         def update_scores(players)
             players.each do |player|
-                player.update_score_card()
+                player.update_player_scores()
             end
         end
     end

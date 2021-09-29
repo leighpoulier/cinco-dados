@@ -11,14 +11,14 @@ module CincoDados
         attr_reader :value
 
 
-        def initialize(x, y, name)
+        def initialize(game_screen, x, y, name)
 
 
             super(name)
             set_position(x,y)
             @@full_block = "\u{2588}"
             @@pip = "\u{2584}"
-            
+            @game_screen = game_screen
             @width = WIDTH
             @height = HEIGHT
             @x_margin = X_MARGIN
@@ -39,6 +39,9 @@ module CincoDados
             @rows[0][@width-1] = {char: "\u{1FB4F}", style: style} #top right corner
             @rows[@height-1][0] = {char: "\u{1FB65}", style: style} #bottom left corner
             @rows[@height-1][@width-1] = {char: "\u{1FB5A}", style: style} #bottom right corner
+
+
+            @locked_border = LockedBorder.new(self, "locked_" + self.name)
 
             roll()
             
@@ -98,14 +101,12 @@ module CincoDados
         end
 
         def add_lock()
-            @locked_border = LockedBorder.new(self, "locked_" + self.name)
-            @screen.add_control(@locked_border)
-            Logger.log.info("New Locked Border: " + @locked_border.name + ", " + @locked_border.inspect)
+            @game_screen.add_control(@locked_border)
+            # Logger.log.info("New Locked Border: " + @locked_border.name + ", " + @locked_border.inspect)
         end
 
         def remove_lock()
-            @screen.delete_control(@locked_border)
-            @locked_border = nil
+            @game_screen.delete_control(@locked_border)
         end
 
         def locked?

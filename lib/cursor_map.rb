@@ -2,14 +2,23 @@ module CincoDados
 
     class SelectionCursorMapNode
 
-        attr_reader :links, :name
+        attr_reader :links, :name, :enabled
 
         def initialize(name)
-            @links = {}
+            @links = {}  # { direction, node}
+            # @alternate_links_if_disabled {} # {attempted direction, node}
             @name = name
+            @enabled = true
         end
 
         def add_link(direction, cursorMapNode, mirror)
+            if !direction.is_a?(Direction)
+                raise ArgumentError.new("Direction must be an instance of Direction class")
+            end
+            if !cursorMapNode.is_a?(SelectionCursorMapNode)
+                raise ArgumentError.new("cursorMapNode must be an instance of SelectionCursorMapNode class")
+            end
+            Logger.log.info("inside add_link: Set link on #{self} in direction: #{direction} to node #{cursorMapNode}")
             @links[direction] = cursorMapNode
             if mirror
                 unless cursorMapNode.has_link(direction.opposite)
@@ -27,11 +36,55 @@ module CincoDados
         end
 
         def follow_link(direction)
+            # if @links[direction].is_a?(SelectionCursorMapNode)
+            #     return @links[direction]
+            # else
+            #     raise ArgumentError.new("Trying to move in an unlinked direction. direction: #{direction} does not contain valid CursorMapNode")
+            # end
             if @links[direction].is_a?(SelectionCursorMapNode)
-                return @links[direction]
+                Logger.log.info("#{self} has a link in direction #{direction} to node: #{@links[direction]}")
+                if @links[direction].enabled
+                    Logger.log.info("#{@links[direction]} enabled")
+                    return @links[direction]
+                else
+                    Logger.log.info("#{@links[direction]} disabled, recursing")
+                    next_node = @links[direction].follow_link(direction)
+                    unless next_node.nil?
+                        Logger.log.info("Continuing in same direction #{direction}}")
+                        return next_node
+                    else
+                        Logger.log.info("Cannot continue in same direction #{direction}}")
+                        return nil
+                        # links_excluding_self = @links[direction].links.reject do |dir,node|
+                        #     node.equal?(self)
+                        # end
+                        # if links_excluding_self.length > 0
+                        #     Logger.log.info("Node #{@links[direction]} contains other links besides self")
+                        #     alternate_link =  links_excluding_self.first
+                        #     Logger.log.info("Node #{@links[direction]} contains other links besides self, following alternate direction: #{alternate_link[0]} to node: #{alternate_link[1]}")
+                        #     return alternate_link[1]
+                        # else
+                        #     Logger.log.info("Node #{@links[direction]} does not contain other links besides self")
+                        #     return nil
+                        # end
+
+                    end
+                end
             else
-                raise ArgumentError.new("Trying to move in an unlinked direction. direction: #{direction} does not contain valid CursorMapNode")
+                return nil
             end
+        end
+
+        def disable()
+            
+            @enabled = true
+
+        end
+
+        def enable()
+
+            @enabled = false
+        
         end
 
         def to_s()

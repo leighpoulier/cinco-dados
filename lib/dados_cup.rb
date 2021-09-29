@@ -5,16 +5,16 @@ require_relative "dado"
 module CincoDados
     class DadosCup
 
-        attr_reader :dados
+        attr_reader :dados, :scores
 
-        def initialize(dados_count)
+        def initialize(game_screen, dados_count)
             @dados = []
 
             previous_dado = nil
             (0...dados_count).each do |dados_counter|
-                dado = Dado.new(Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
+                dado = Dado.new(game_screen, Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
                 @dados.push(dado)
-                # Controller.screen.add_control(dado)
+                game_screen.add_control(dado)
                 unless previous_dado.nil?
                     dado.add_link(NORTH, previous_dado, true)
                 end
@@ -23,27 +23,27 @@ module CincoDados
         end
 
 
-        def calculate_scores(dados_values)
+        def calculate_scores()
 
             # sort the array of dados here, saves doing it many times in the methods.
             # all subsequent methdos assume a sorted array
-            # dados_values = @dados.map do |dado|
-            #     dado.value
-            # end.sort
+            dados_values = @dados.map do |dado|
+                dado.value
+            end.sort
 
-            if !dados_values.is_a?(Array) || dados_values.length != 5
-                raise DadosError.new("dados_values must be an array of length 5")
-            end
-            dados_values.each do |dado|
-                if !dado.instance_of?(Integer)
-                    raise DadosError.new("Dado value must be instance of Integer")
-                end
-                if dado < 1 || dado > 6
-                    raise DadosError.new("Dado value must be one of 1,2,3,4,5,6")
-                end
-            end
+            # if !dados_values.is_a?(Array) || dados_values.length != 5
+            #     raise DadosError.new("dados_values must be an array of length 5")
+            # end
+            # dados_values.each do |dado|
+            #     if !dado.instance_of?(Integer)
+            #         raise DadosError.new("Dado value must be instance of Integer")
+            #     end
+            #     if dado < 1 || dado > 6
+            #         raise DadosError.new("Dado value must be one of 1,2,3,4,5,6")
+            #     end
+            # end
 
-            dados_values.sort!
+            # dados_values.sort!
 
             return {
             ones: singles(dados_values, 1),
@@ -144,6 +144,7 @@ module CincoDados
                 end
                 # status << dado.value
             end
+            @scores = calculate_scores()
         end
 
     end

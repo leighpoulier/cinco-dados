@@ -8,68 +8,36 @@ require_relative "player"
 require_relative "score_card"
 
 module CincoDados
-    class GameModel
+    class Game
 
 
-        attr_reader :screen, :players, :dados_cup
+        attr_reader :players, :dados_cup, :score_card
 
-        def initialize
+        def initialize(game_screen, players)
+            @game_screen = game_screen
+            @players = players
+            
+            # create the dados cup
+            @dados_cup = DadosCup.new(@game_screen, Config::DADOS_COUNT)
 
-            @dados_cup = DadosCup.new(Config::DADOS_COUNT)
+            # link dados to roll button
+            @dados_cup.dados.each do |dado|
+                dado.add_link(EAST, @game_screen.button, false)
+            end
+
+            # link the dados cup to the the players score cells for hypothetical display
+            @players.each do |player|
+                player.player_scores.set_dados_cup(@dados_cup)
+            end
+            
+            # create score card
+            # requires a reference to game_screen so it can pass it to the score controls   
+            @score_card = ScoreCard.new(38,1,@players, @game_screen)
+            @game_screen.add_control(@score_card)
+                
+
 
             
-            
-            @players = []
-            
-            player_iryna = Player.new("Iryna")
-            player_iryna.add_score(:ones, 3)
-            player_iryna.add_score(:fives, 15)
-            player_iryna.add_score(:three_of_a_kind, 18)
-            player_iryna.add_score(:small_straight, 30)
-            player_iryna.add_score(:chance, 24)
-            
-            player_james = Player.new("James")
-            player_james.add_score(:twos, 8)
-            player_james.add_score(:fives, 15)
-            player_james.add_score(:four_of_a_kind, 26)
-            player_james.add_score(:large_straight, 40)
-            
-            player_leigh = Player.new("Leigh")
-            player_leigh.add_score(:threes, 12)
-            player_leigh.add_score(:fours, 16)
-            player_leigh.add_score(:fives, 15)
-            player_leigh.add_score(:sixes, 24)
-            player_leigh.add_score(:full_house, 25)
-            player_leigh.add_score(:cinco_dados, 50)
-            
-            @players.push(player_iryna, player_james, player_leigh)
-            
-            
-
-            
-        end
-
-        # convert the categories lists (symbols) into nice printable strings.  Returns a hash of { :category => "category_nice" }
-        def nice_categories_upper()
-
-            return Config::SCORE_CATEGORIES_UPPER.zip(Config::SCORE_CATEGORIES_UPPER.map do |category|
-                category.to_s.gsub("_"," ").split.each do |word|
-                    unless ["a", "of", "in", "and", "or"].include?(word)
-                        word.capitalize!
-                    end
-                end.join(" ").sub("three of","3 of").sub("four of","4 of")
-            end).to_h
-        end
-
-
-        def nice_categories_lower()
-            return Config::SCORE_CATEGORIES_LOWER.zip(Config::SCORE_CATEGORIES_LOWER.map do |category|
-                category.to_s.gsub("_"," ").split.each do |word|
-                    unless ["a", "of", "in", "and", "or"].include?(word)
-                        word.capitalize!
-                    end
-                end.join(" ").sub("Three of","3 of").sub("Four of","4 of")
-            end).to_h
         end
 
     end

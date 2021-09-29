@@ -27,6 +27,7 @@ module CincoDados
 
             # link the dados cup to the the players score cells for hypothetical display
             @players.each do |player|
+                Logger.log.info("Set dados_cup #{@dados_cup} on player: #{player}")
                 player.player_scores.set_dados_cup(@dados_cup)
             end
             
@@ -34,7 +35,19 @@ module CincoDados
             # requires a reference to game_screen so it can pass it to the score controls   
             @score_card = ScoreCard.new(38,1,@players, @game_screen)
             @game_screen.add_control(@score_card)
-                
+            
+                        
+            
+            # Add a link from the roll button to the first players cells
+            current_player = players[0]
+            Config::SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING.each do |category|
+                if current_player.player_scores.scores[category].enabled
+                    @game_screen.button.add_link(EAST, current_player.player_scores.scores[category], false)
+                    Logger.log.info("Add link on button to #{current_player.name} score: #{current_player.player_scores.scores[category]}")
+                    break
+                end
+            end
+
 
 
             

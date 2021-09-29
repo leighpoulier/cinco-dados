@@ -22,7 +22,7 @@ module CincoDados
         def add_control(control)
             @controls.push(control)
             @controls.sort!
-            Logger.log.info("@controls order #{@controls.join(", ")}")
+            # Logger.log.info("@controls order #{@controls.join(", ")}")
         end
 
         def delete_control(control)

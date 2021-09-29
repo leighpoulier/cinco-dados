@@ -71,7 +71,7 @@ module CincoDados
         when event.key.name == :return || event.key.name == :space
             @@cursor.activate()
         end
-        display_message(@@cursor.get_status())
+        display_message(@@game.dados_cup.scores.inspect)
     end
 
     def self.display_message(message)

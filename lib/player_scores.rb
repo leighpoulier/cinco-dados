@@ -35,7 +35,7 @@ module CincoDados
                 new_total.initial_fill
                 @scores[row_headings_totals_category] = new_total
             end
-            Logger.log.info("scores: #{@scores}")
+            # Logger.log.info("scores: #{@scores}")
         end
 
         def valid_category?(category)
@@ -97,7 +97,7 @@ module CincoDados
         def total_selective(categories, hypothetical = {})
             sanitize_hypothetical(categories, hypothetical)
 
-            Logger.log.info("Scores: #{@scores}")
+            # Logger.log.info("Scores: #{@scores}")
             @scores.keys.zip(@scores.values.map do |score|
                 score.value
             end).to_h
@@ -151,19 +151,22 @@ module CincoDados
                 
                 #link each selectable score (not totals) to the button to WEST
                 if @scores[category].instance_of?(Score)
-                    Logger.log.info("Add link to button on score: #{scores[category]}")
+                    # Logger.log.info("Add link to button on score: #{scores[category]}")
                     @scores[category].add_link(WEST, game_screen.button, false)
                 end
             end
         end
 
         def set_dados_cup(dados_cup)
-            if !dados_cup.is_a?(DadosCup)
+            Logger.log.info("Enter set_dados_cup, going to set dados cup for scores: #{scores}")
+            unless dados_cup.is_a?(DadosCup)
                 raise ArgumentError.new("set_dados_cup must be passed a DadosCup instance")
             end
-            @scores.each do |score_cell|
+            @scores.each do |category, score_cell|
+                Logger.log.info("Inside loop.  Testing class of scorecell #{score_cell} with class #{score_cell.class.name}")
                 if score_cell.instance_of?(Score)
-                    score.set_dados_cup(dados_cup)
+                    score_cell.set_dados_cup(dados_cup)
+                    Logger.log.info("Set score_cell #{score_cell} dados_cup to dados_cup #{dados_cup}")
                 end
             end
 
@@ -182,7 +185,7 @@ module CincoDados
             totals.each do |total_name, score|
                 score.set_value(self.send(total_name))
                 score.update_score()
-                Logger.log.info("Total: #{score.name} given value: #{score.value}")
+                # Logger.log.info("Total: #{score.name} given value: #{score.value}")
             end
         end
 
@@ -266,6 +269,9 @@ module CincoDados
             if @dados_cup.is_a?(DadosCup)
                 style = [:green, :on_black, :inverse]
                 decorate_control(@dados_cup.scores[@category], style)
+                Logger.log.info("Decorate score: #{self} with value #{@dados_cup.scores[@category]}")
+            else
+                raise ConfigurationError.new("Dados cup is not a DadosCup object, it is a #{@dados_cup.class.name} class of value #{@dados_cup.inspect}")
             end
         end
 

@@ -43,7 +43,7 @@ module CincoDados
 
             @locked_border = LockedBorder.new(self, "locked_" + self.name)
 
-            roll()
+            # roll()
             
         end
 

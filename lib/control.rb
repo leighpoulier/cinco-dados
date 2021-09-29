@@ -61,7 +61,7 @@ class Control < SelectionCursorMapNode
     end
 
     def set_position(x,y)
-        Logger.log.info("Setting position of control: #{self} to x: #{x}, y:#{y} ")
+        # Logger.log.info("Setting position of control: #{self} to x: #{x}, y:#{y} ")
         @x = x
         @y = y
     end

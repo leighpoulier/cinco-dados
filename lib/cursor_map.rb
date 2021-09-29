@@ -18,7 +18,7 @@ module CincoDados
             if !cursorMapNode.is_a?(SelectionCursorMapNode)
                 raise ArgumentError.new("cursorMapNode must be an instance of SelectionCursorMapNode class")
             end
-            Logger.log.info("inside add_link: Set link on #{self} in direction: #{direction} to node #{cursorMapNode}")
+            # Logger.log.info("inside add_link: Set link on #{self} in direction: #{direction} to node #{cursorMapNode}")
             @links[direction] = cursorMapNode
             if mirror
                 unless cursorMapNode.has_link(direction.opposite)
@@ -44,16 +44,16 @@ module CincoDados
             if @links[direction].is_a?(SelectionCursorMapNode)
                 Logger.log.info("#{self} has a link in direction #{direction} to node: #{@links[direction]}")
                 if @links[direction].enabled
-                    Logger.log.info("#{@links[direction]} enabled")
+                    Logger.log.info("link points to node: #{@links[direction]} which is enabled")
                     return @links[direction]
                 else
-                    Logger.log.info("#{@links[direction]} disabled, recursing")
+                    Logger.log.info("link points to node: #{@links[direction]} which is disabled, recursing")
                     next_node = @links[direction].follow_link(direction)
                     unless next_node.nil?
-                        Logger.log.info("Continuing in same direction #{direction}}")
+                        Logger.log.info("Continuing in same direction #{direction}")
                         return next_node
                     else
-                        Logger.log.info("Cannot continue in same direction #{direction}}")
+                        Logger.log.info("Cannot continue in same direction #{direction}")
                         return nil
                         # links_excluding_self = @links[direction].links.reject do |dir,node|
                         #     node.equal?(self)

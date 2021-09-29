@@ -88,9 +88,6 @@ module CincoDados
             # Column headers (player names) and vertical internal borders
             decorate_columns(players, style)
             Logger.log.info("@category_row_locations = #{@category_row_locations}")
-            
-            Logger.log.info("Add link on button to #{players[0].name} score: :three_of_a_kind")
-            @game_screen.button.add_link(EAST, players[0].player_scores.scores[:three_of_a_kind], false)
 
         end
 
@@ -264,7 +261,7 @@ module CincoDados
                 end
                 #add in the headings
                 ROW_HEADINGS_TOTALS.keys.each do |total_heading|
-                    Logger.log.info("Setting positions[#{total_heading}] to {x: #{left_offset} + #{@x}, y: #{@category_row_locations[total_heading]} + #{@y}}")
+                    # Logger.log.info("Setting positions[#{total_heading}] to {x: #{left_offset} + #{@x}, y: #{@category_row_locations[total_heading]} + #{@y}}")
                     positions[total_heading] = {x: left_offset + @x, y: @category_row_locations[total_heading] + @y}
                 end
 

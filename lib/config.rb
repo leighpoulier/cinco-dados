@@ -33,7 +33,12 @@ module CincoDados
         :chance,
     ]
 
-    SCORE_CATEGORIES = SCORE_CATEGORIES_UPPER.chain(SCORE_CATEGORIES_LOWER).to_a
+    SCORE_CATEGORIES = SCORE_CATEGORIES_UPPER + SCORE_CATEGORIES_LOWER
+
+    SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING = SCORE_CATEGORIES.map.with_index.sort_by do |value, index|
+         ((SCORE_CATEGORIES.length+1)/2 - 1 - index).abs 
+    end.map(&:first)
+
     
     FULL_HOUSE_SCORE = 25
     SMALL_STRAIGHT_SCORE = 30

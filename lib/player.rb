@@ -40,5 +40,9 @@ module CincoDados
         def test_update_player_scores()
             @player_scores.test_update_all_scores()
         end
+
+        def to_s()
+            return @name
+        end
     end
 end

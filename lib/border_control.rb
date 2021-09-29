@@ -99,7 +99,7 @@ class SelectionCursor < BorderControl
 
         enclose_control()
         if @enclosed_control.is_a?(Score)
-            decorate_control(:sides)
+            decorate_control(:none)
         else
             decorate_control()
         end
@@ -163,7 +163,7 @@ class SelectionCursor < BorderControl
 
 
     def activate()
-        Logger.log.info("Selection Cursor activate: #{@enclosed_control}")
+        Logger.log.info("Selection Cursor activating control: #{@enclosed_control}")
         @enclosed_control.activate
 
     end

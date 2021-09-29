@@ -9,6 +9,8 @@ module CincoDados
 
         def initialize(game_screen, dados_count)
             @dados = []
+            @dados_values = []
+            @scores = {}
 
             previous_dado = nil
             (0...dados_count).each do |dados_counter|
@@ -20,6 +22,7 @@ module CincoDados
                 end
                 previous_dado = dado
             end
+            roll_dados()
         end
 
 
@@ -27,9 +30,7 @@ module CincoDados
 
             # sort the array of dados here, saves doing it many times in the methods.
             # all subsequent methdos assume a sorted array
-            dados_values = @dados.map do |dado|
-                dado.value
-            end.sort
+            dados_values = @dados_values.sort
 
             # if !dados_values.is_a?(Array) || dados_values.length != 5
             #     raise DadosError.new("dados_values must be an array of length 5")
@@ -144,7 +145,14 @@ module CincoDados
                 end
                 # status << dado.value
             end
+            @dados_values = @dados.map do |dado|
+                dado.value
+            end
             @scores = calculate_scores()
+        end
+
+        def to_s()
+            return @dados_values.to_s
         end
 
     end

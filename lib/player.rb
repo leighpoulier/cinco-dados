@@ -4,12 +4,17 @@ include CincoDados
 module CincoDados
     class Player
 
-        attr_reader :player_scores, :name, :player_scores_column
+        attr_reader :player_scores, :name, :player_scores_column, :roll_count
 
         def initialize(name)
+            unless name.is_a?(String)
+                raise ArgumentError.new("Please provide a string for your name.  provided name is a #{name.class.name}")
+            end
+            if name.length > 5
+                raise ArgumentError.new("Maximum Length of name is 5 characters.  Provided name \"#{name}\" length: #{name.length}")
+            end
             @name = name
             @player_scores = PlayerScores.new(@name)
-            @roll_count = 0
         end
 
         def add_score(category, score)
@@ -23,6 +28,10 @@ module CincoDados
 
         def full_card?()
             @player_scores.full_card?()
+        end
+
+        def turns_remaining?()
+            return !full_card?()
         end
 
         def set_player_scores_column(column)

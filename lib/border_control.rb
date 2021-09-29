@@ -153,18 +153,18 @@ class SelectionCursor < BorderControl
                 select_control(next_control, direction)
             else
                 # raise StandardError.new("Cannot Move in direction: #{direction}")
-                Controller.display_message("Cannot Move in direction: #{direction}")
+                Controller.display_message("Cannot Move in direction: #{direction}. #{@enclosed_control} has a link but it returns nil")
             end
         else
             # raise StandardError.new("Cannot Move in direction: #{direction}")
-            Controller.display_message("Cannot Move in direction: #{direction}")
+            Controller.display_message("Cannot Move in direction: #{direction}. #{@enclosed_control} has no link.")
         end
     end
 
 
-    def activate()
+    def on_activate()
         Logger.log.info("Selection Cursor activating control: #{@enclosed_control}")
-        @enclosed_control.activate
+        @enclosed_control.on_activate
 
     end
 

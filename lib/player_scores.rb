@@ -14,7 +14,7 @@ module CincoDados
             previous_score = nil
             Config::SCORE_CATEGORIES.each do |category|
                 # create new score object
-                new_score = Score.new(player_name + "_" + category.to_s, category)
+                new_score = Score.new(self, player_name + "_" + category.to_s, category)
 
                 # link it to the above score object (for navigation as control)
                 unless previous_score.nil?
@@ -43,7 +43,7 @@ module CincoDados
         end
 
         def add_score(category, score)
-            # Logger.log.info("add_score for category: #{category} with score: #{score}")
+            Logger.log.info("add_score for category: #{category} with score: #{score}")
             if valid_category?(category)
                 if @scores[category].value.nil?
                     return_value = @scores[category].set_value(score)
@@ -149,7 +149,7 @@ module CincoDados
                 @scores[category].set_position(position[:x], position[:y])
                 game_screen.add_control(@scores[category])
                 
-                #link each selectable score (not totals) to the button to WEST
+                # link each selectable score (not totals) to the button to WEST
                 if @scores[category].instance_of?(Score)
                     # Logger.log.info("Add link to button on score: #{scores[category]}")
                     @scores[category].add_link(WEST, game_screen.button, false)
@@ -158,15 +158,15 @@ module CincoDados
         end
 
         def set_dados_cup(dados_cup)
-            Logger.log.info("Enter set_dados_cup, going to set dados cup for scores: #{scores}")
+            # Logger.log.info("Enter set_dados_cup, going to set dados cup for scores: #{scores}")
             unless dados_cup.is_a?(DadosCup)
                 raise ArgumentError.new("set_dados_cup must be passed a DadosCup instance")
             end
             @scores.each do |category, score_cell|
-                Logger.log.info("Inside loop.  Testing class of scorecell #{score_cell} with class #{score_cell.class.name}")
+                # Logger.log.info("Inside loop.  Testing class of scorecell #{score_cell} with class #{score_cell.class.name}")
                 if score_cell.instance_of?(Score)
                     score_cell.set_dados_cup(dados_cup)
-                    Logger.log.info("Set score_cell #{score_cell} dados_cup to dados_cup #{dados_cup}")
+                    # Logger.log.info("Set score_cell #{score_cell} dados_cup to dados_cup #{dados_cup}")
                 end
             end
 
@@ -194,6 +194,16 @@ module CincoDados
                 score.set_value("999")
                 score.update_score()
             end
+        end
+
+        def get_empty_categories()
+            Config::SCORE_CATEGORIES.filter do |category|
+                @scores[category].value.nil?
+            end
+        end
+
+        def count_empty_categories()
+            return get_empty_categories().length
         end
 
     end
@@ -246,8 +256,9 @@ module CincoDados
     
     class Score < ScoreCardCell
 
-        def initialize(name, category)
+        def initialize(player_scores, name, category)
             super(name,category)
+            @player_scores = player_scores
             @dados_cup = nil
         end
 
@@ -267,9 +278,19 @@ module CincoDados
 
         def on_selected()
             if @dados_cup.is_a?(DadosCup)
-                style = [:green, :on_black, :inverse]
-                decorate_control(@dados_cup.scores[@category], style)
-                Logger.log.info("Decorate score: #{self} with value #{@dados_cup.scores[@category]}")
+
+                # get the score for the current dados
+                dados_value = @dados_cup.scores[@category]
+
+                # if the score is 0, style it yellow
+                if dados_value == 0
+                    style = [:yellow, :on_black, :inverse]
+                else
+                    style = [:green, :on_black, :inverse]
+                end
+
+                decorate_control(dados_value, style)
+                Logger.log.info("Decorate score: #{self} with value #{dados_value}")
             else
                 raise ConfigurationError.new("Dados cup is not a DadosCup object, it is a #{@dados_cup.class.name} class of value #{@dados_cup.inspect}")
             end
@@ -277,6 +298,15 @@ module CincoDados
 
         def on_deselected()
             update_score()
+        end
+
+        def on_activate()
+            dados_value = @dados_cup.scores[@category]
+            # if dados_value == 0
+            #     # somehow display an are you sure modal?
+            # else
+                @player_scores.add_score(@category, dados_value )
+            # end
         end
 
     end

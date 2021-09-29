@@ -39,6 +39,11 @@ module CincoDados
          ((SCORE_CATEGORIES.length+1)/2 - 1 - index).abs 
     end.map(&:first)
 
+    SCORE_CATEGORIES_EXCLUDE_FROM_RECOMMENDATION = 
+    [
+        :chance,
+    ]
+
     
     FULL_HOUSE_SCORE = 25
     SMALL_STRAIGHT_SCORE = 30

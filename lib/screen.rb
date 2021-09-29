@@ -25,6 +25,10 @@ module CincoDados
             # Logger.log.info("@controls order #{@controls.join(", ")}")
         end
 
+        def has_control?(control)
+            return @controls.include?(control)
+        end
+
         def delete_control(control)
             if @controls.include?(control)
                 @controls.delete(control)

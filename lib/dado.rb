@@ -24,6 +24,7 @@ module CincoDados
             @x_margin = X_MARGIN
             @y_margin = Y_MARGIN
             @locked = false
+            @enabled = false
 
 
             style = [:white, :on_black]
@@ -97,16 +98,17 @@ module CincoDados
             else
                 add_lock()
             end
-            @locked = !@locked
         end
 
         def add_lock()
             @game_screen.add_control(@locked_border)
+            @locked = true
             # Logger.log.info("New Locked Border: " + @locked_border.name + ", " + @locked_border.inspect)
         end
 
         def remove_lock()
             @game_screen.delete_control(@locked_border)
+            @locked = false
         end
 
         def locked?
@@ -114,7 +116,7 @@ module CincoDados
         end
 
         #override
-        def activate()
+        def on_activate()
             toggle_lock()
         end
 

@@ -8,6 +8,7 @@ module CincoDados
         attr_reader :dados, :scores
 
         def initialize(game_screen, dados_count)
+            @game_screen = game_screen
             @dados = []
             @dados_values = []
             @scores = {}
@@ -16,35 +17,35 @@ module CincoDados
             (0...dados_count).each do |dados_counter|
                 dado = Dado.new(game_screen, Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
                 @dados.push(dado)
-                game_screen.add_control(dado)
+                # game_screen.add_control(dado)
                 unless previous_dado.nil?
                     dado.add_link(NORTH, previous_dado, true)
                 end
                 previous_dado = dado
             end
-            roll_dados()
+            # roll_dados_no_delay()
         end
 
 
-        def calculate_scores()
+        def calculate_scores(dados_values = @dados_values)
 
             # sort the array of dados here, saves doing it many times in the methods.
             # all subsequent methdos assume a sorted array
-            dados_values = @dados_values.sort
+            # dados_values = @dados_values.sort
+            
+            if !dados_values.is_a?(Array) || dados_values.length != 5
+                raise DadosError.new("dados_values must be an array of length 5")
+            end
+            dados_values.each do |dado|
+                if !dado.instance_of?(Integer)
+                    raise DadosError.new("Dado value must be instance of Integer")
+                end
+                if dado < 1 || dado > 6
+                    raise DadosError.new("Dado value must be one of 1,2,3,4,5,6")
+                end
+            end
 
-            # if !dados_values.is_a?(Array) || dados_values.length != 5
-            #     raise DadosError.new("dados_values must be an array of length 5")
-            # end
-            # dados_values.each do |dado|
-            #     if !dado.instance_of?(Integer)
-            #         raise DadosError.new("Dado value must be instance of Integer")
-            #     end
-            #     if dado < 1 || dado > 6
-            #         raise DadosError.new("Dado value must be one of 1,2,3,4,5,6")
-            #     end
-            # end
-
-            # dados_values.sort!
+            dados_values.sort!
 
             return {
             ones: singles(dados_values, 1),
@@ -113,7 +114,8 @@ module CincoDados
         def straight(dados_values,length)
 
             #chunk the dados_values in to arrays, based on the block returning true for each sequential pair
-            sequences = dados_values.chunk_while do |i, j|
+            #uniq is required to remove repeats, which will break the 1+i test
+            sequences = dados_values.uniq.chunk_while do |i, j|
                 i +1 == j
             end
 
@@ -137,18 +139,64 @@ module CincoDados
 
 
         def roll_dados()
-            # status = []
-            @dados.each do |dado|
-            # for dado in dados
-                if !dado.locked?
-                    dado.roll
+            roll_dados_delay(0.5)
+        end
+
+        def roll_dados_no_delay()
+            roll_dados_delay(0)
+        end
+
+        def roll_dados_delay(delay)
+
+            # get the unlocked dados
+            unlocked_dados = @dados.reject(&:locked?)
+
+            unlocked_dados.each do |dado|
+                if @game_screen.has_control?(dado)
+                    @game_screen.delete_control(dado)
                 end
-                # status << dado.value
             end
+
+            @game_screen.draw()
+            
+            unlocked_dados.each do |dado|
+                sleep delay
+                dado.roll
+                @game_screen.add_control(dado)
+                dado.enable
+                @game_screen.draw()
+            end
+
             @dados_values = @dados.map do |dado|
                 dado.value
             end
             @scores = calculate_scores()
+        end
+
+        def remove_all_locks()
+            @dados.filter(&:locked?).each do |dado|
+                dado.remove_lock()
+            end
+        end
+
+        def disable_all_dados()
+            @dados.each do |dado|
+                dado.disable()
+            end
+        end
+
+        def enable_all_dados()
+            @dados.each do |dado|
+                dado.enable()
+            end
+        end
+
+        def hide_all_dados()
+            @dados.each do |dado|
+                if @game_screen.has_control?(dado)
+                    @game_screen.delete_control(dado)
+                end
+            end
         end
 
         def to_s()

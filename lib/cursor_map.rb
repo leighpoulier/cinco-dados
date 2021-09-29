@@ -75,15 +75,23 @@ module CincoDados
             end
         end
 
+        def remove_link(direction)
+            unless links[direction].nil?
+                links[direction].delete(direction)
+            else
+                raise ArgumentError.new("Cannot delete non-existant link from #{self} in direction #{direction}.")
+            end
+        end
+
         def disable()
             
-            @enabled = true
+            @enabled = false
 
         end
 
         def enable()
 
-            @enabled = false
+            @enabled = true
         
         end
 

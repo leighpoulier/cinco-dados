@@ -4,7 +4,11 @@ include(CincoDados)
 
 describe "Game Model" do
 
-    game = CincoDados::GameModel.new
+    game_screen = CincoDados::GameScreen.new(80,30)
+
+    players = [Player.new("test")]
+
+    game = CincoDados::Game.new(game_screen, players)
 
     it "detects straights" do
         expect(game.dados_cup.calculate_scores([1,2,3,4,5])).to eq({
@@ -53,10 +57,15 @@ describe "Game Model" do
             three_of_a_kind: 0, four_of_a_kind: 0, full_house: 0,
             small_straight: 30, large_straight: 0, cinco_dados: 0, chance: 11
         })
-        expect(game.dados_cup.calculate_scores([2,1,1,4,3])).to eq({
-            ones: 2, twos: 2, threes: 3, fours: 4, fives: 0, sixes: 0,
+        expect(game.dados_cup.calculate_scores([2,3,5,4,2])).to eq({
+            ones: 0, twos: 4, threes: 3, fours: 4, fives: 5, sixes: 0,
             three_of_a_kind: 0, four_of_a_kind: 0, full_house: 0,
-            small_straight: 30, large_straight: 0, cinco_dados: 0, chance: 11
+            small_straight: 30, large_straight: 0, cinco_dados: 0, chance: 16
+        })
+        expect(game.dados_cup.calculate_scores([6,3,5,4,4])).to eq({
+            ones: 0, twos: 0, threes: 3, fours: 8, fives: 5, sixes: 6,
+            three_of_a_kind: 0, four_of_a_kind: 0, full_house: 0,
+            small_straight: 30, large_straight: 0, cinco_dados: 0, chance: 22
         })
     end
 

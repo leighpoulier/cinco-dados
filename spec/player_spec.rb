@@ -8,11 +8,11 @@ describe "Player" do
         expect {Player.new() }.to raise_error(ArgumentError)
     end
 
-    player = Player.new("Player1")
+    player = Player.new("test")
 
     it "starts with an empty scorecard" do
 
-        values_tally = player.score_card.scores.values.map do |score|
+        values_tally = player.player_scores.scores.values.map do |score|
             score.value
         end.tally
 

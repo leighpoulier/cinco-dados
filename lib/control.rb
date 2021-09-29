@@ -6,6 +6,9 @@ include CompassDirections
 
 class Control < SelectionCursorMapNode
 
+    BLOCK_FULL = "\u{2588}"
+    BLOCK_SHADED = "\u{2592}"
+
     LINE_BOLD_HORIZONTAL = "\u{2501}"
     LINE_BOLD_VERTICAL = "\u{2503}"
 
@@ -112,7 +115,7 @@ class Control < SelectionCursorMapNode
     def on_deselected()
     end
 
-    def activate()
+    def on_activate()
     end
 
 
@@ -186,12 +189,12 @@ class Button < Control
         @width = width
         @height = height
         @text = text
+        @enabled = true
         @events = {}
         
-        fill = {char: "\u{2588}", style: [:white, :on_black]}
-        initial_fill(fill)
+        @fill = {char: BLOCK_FULL, style: [:white, :on_black]}
+        @style = [:white, :on_black, :inverse]
 
-        add_text_overlay([:white, :on_black, :inverse])
     end
 
     def add_text_overlay(style)
@@ -207,27 +210,48 @@ class Button < Control
 
     end
 
+    def decorate_control()
+        initial_fill(@fill)
+        add_text_overlay(@style)
+    end
+
     def register_event(event_name, event_block)
         @events[event_name] = event_block
     end
 
     def on_selected()
-        fill = {char: "\u{2588}", style: [:green, :on_black]}
+        fill = {char: BLOCK_FULL, style: [:green, :on_black]}
         initial_fill(fill)
         add_text_overlay([:green, :on_black, :inverse])
     end
 
     def on_deselected()
-        fill = {char: "\u{2588}", style: [:white, :on_black]}
-        initial_fill(fill)
-        add_text_overlay([:white, :on_black, :inverse])
+        initial_fill(@fill)
+        add_text_overlay(@style)
 
     end
 
-    def activate()
-        unless @events[:activate].nil?
-            @events[:activate].call(@screen)
+    def on_activate()
+        if @enabled
+            unless @events[:activate].nil?
+                @events[:activate].call()
+            end
         end
+    end
+
+    def disable()
+        super()
+        fill = {char: BLOCK_SHADED, style: [:white, :on_black]}
+        fill = {char: :transparent, style: [:white, :on_black]}
+        style = [:white, :on_black]
+        initial_fill(fill)
+        # add_text_overlay(style)
+    end
+
+    def enable()
+        super()
+        initial_fill(@fill)
+        add_text_overlay(@style)
     end
 
 

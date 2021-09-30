@@ -4,7 +4,7 @@ include CincoDados
 module CincoDados
     class Player
 
-        attr_reader :player_scores, :name, :player_scores_column, :roll_count
+        attr_reader :player_scores, :name, :player_scores_column, :roll_count, :player_name
 
         def initialize(name)
             unless name.is_a?(String)
@@ -15,6 +15,7 @@ module CincoDados
             end
             @name = name
             @player_scores = PlayerScores.new(@name)
+            @player_name = PlayerName.new(@name)
         end
 
         def add_score(category, score)
@@ -50,8 +51,30 @@ module CincoDados
             @player_scores.test_update_all_scores()
         end
 
+        def get_all_scores()
+            return @player_scores.get_all_scores()
+        end
+
         def to_s()
             return @name
         end
+    end
+
+    class PlayerName < Control
+
+        def initialize(name)
+            super(name)
+            @value = name
+            @style = [:white, :on_black]
+            @fill = {char: :transparent , style: @style}
+            @width = ScoreCard::PLAYER_SCORE_WIDTH
+            @height = ScoreCard::PLAYER_SCORE_HEIGHT
+        end
+
+        def position_name(game_screen, x, y)
+            set_position(position[:x], position[:y])
+            game_screen.add_control(@scores[category])
+        end
+
     end
 end

@@ -75,15 +75,24 @@ module CincoDados
         end
 
         def bonus(hypothetical = {})
-            if subtotal_upper(hypothetical) >= Config::UPPER_SCORE_BONUS_THRESHOLD
-                return Config::UPPER_SCORE_BONUS_SCORE
+            if full_section?(Config::SCORE_CATEGORIES_UPPER, hypothetical)
+                if subtotal_upper(hypothetical) >= Config::UPPER_SCORE_BONUS_THRESHOLD
+                    return Config::UPPER_SCORE_BONUS_SCORE
+                else
+                    return 0
+                end
             else
-                return 0
+                return nil
             end
         end
 
         def total_upper(hypothetical = {})
-            return subtotal_upper(hypothetical) + bonus(hypothetical)
+            bonus = bonus(hypothetical)
+            if bonus.nil?
+                return subtotal_upper(hypothetical)
+            else
+                return subtotal_upper(hypothetical) + bonus(hypothetical)
+            end
         end
 
         def total_lower(hypothetical = {})
@@ -110,6 +119,12 @@ module CincoDados
         
         def full_card?()
             @scores.values.map do |score|
+                score.value
+            end.tally[nil].nil?
+        end
+
+        def full_section?(categories, hypothetical = {})
+            @scores.merge(hypothetical).slice(*categories).values.map do |score|
                 score.value
             end.tally[nil].nil?
         end
@@ -152,7 +167,7 @@ module CincoDados
                 # link each selectable score (not totals) to the button to WEST
                 if @scores[category].instance_of?(Score)
                     # Logger.log.info("Add link to button on score: #{scores[category]}")
-                    @scores[category].add_link(WEST, game_screen.button, false)
+                    @scores[category].add_link(WEST, game_screen.roll_button, false)
                 end
             end
         end
@@ -197,6 +212,18 @@ module CincoDados
         end
 
         def get_empty_categories()
+            get_empty_categories_from(Config::SCORE_CATEGORIES)
+        end
+
+        def get_empty_categories_upper()
+            get_empty_categories_from(Config::SCORE_CATEGORIES_UPPER)
+        end
+
+        def get_empty_categories_lower()
+            get_empty_categories_from(Config::SCORE_CATEGORIES_LOWER)
+        end
+
+        def get_empty_categories_from(categories)
             Config::SCORE_CATEGORIES.filter do |category|
                 @scores[category].value.nil?
             end
@@ -206,18 +233,36 @@ module CincoDados
             return get_empty_categories().length
         end
 
+
+        def get_all_scores()
+
+            return {scores: get_all(Score), totals: get_all(Total)}
+
+        end
+
+        def get_all(classss)
+            scores = @scores.filter do |category, score|
+                score.is_a?(classss)
+            end
+
+            return scores.keys.zip(scores.values.map do |score|
+                score.value
+            end).to_h
+        end
+
     end
 
     class ScoreCardCell < Control
 
         attr_reader :value
 
+
         def initialize(name, category)
             super(name)
             @category = category
             # @dados_cup = dados_cup
             @style = [:white, :on_black]
-            @fill = {char: " " , style: @style}
+            @fill = {char: :transparent , style: @style}
             @value = nil
             @width = ScoreCard::PLAYER_SCORE_WIDTH
             @height = ScoreCard::PLAYER_SCORE_HEIGHT
@@ -255,6 +300,9 @@ module CincoDados
     end
     
     class Score < ScoreCardCell
+
+
+        ON_ACTIVATE_DESCRIPTION = "commit score"
 
         def initialize(player_scores, name, category)
             super(name,category)
@@ -303,10 +351,15 @@ module CincoDados
         def on_activate()
             dados_value = @dados_cup.scores[@category]
             # if dados_value == 0
-            #     # somehow display an are you sure modal?
+            #     # somehow display an "are you sure" modal?
             # else
                 @player_scores.add_score(@category, dados_value )
             # end
+        end
+
+        #override
+        def get_on_activate_description()
+            ON_ACTIVATE_DESCRIPTION
         end
 
     end

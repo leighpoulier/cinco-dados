@@ -17,7 +17,7 @@ module CincoDados
             (0...dados_count).each do |dados_counter|
                 dado = Dado.new(game_screen, Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
                 @dados.push(dado)
-                # game_screen.add_control(dado)
+                game_screen.add_control(dado)
                 unless previous_dado.nil?
                     dado.add_link(NORTH, previous_dado, true)
                 end
@@ -89,7 +89,7 @@ module CincoDados
 
                 #return the sum of the dados_values (3 or 4) or the CINCO_dados_values_SCORE
 
-                return count_of_a_kind < 5 ? sum(dados_values) : Config::CINCO_DADOS_SCORE
+                return count_of_a_kind < 5 ? sum(dados_values) : Config::SCORE_CINCO_DADOS  
             else
                 return 0
             end
@@ -103,7 +103,7 @@ module CincoDados
             tally = dados_values.tally
             # A full house contains only two unique items, so tally.length will == 2 and tally will contain values 2 and 3.
             if tally.length == 2 && tally.value?(3)
-                return Config::FULL_HOUSE_SCORE
+                return Config::SCORE_FULL_HOUSE
             else
                 return 0
             end
@@ -123,9 +123,9 @@ module CincoDados
             sequences.each do |sequence|
                 if sequence.length >= length
                     if length == 4
-                        return Config::SMALL_STRAIGHT_SCORE
+                        return Config::SCORE_SMALL_STRAIGHT
                     elsif length == 5
-                        return Config::LARGE_STRAIGHT_SCORE
+                        return Config::SCORE_LARGE_STRAIGHT
                     end
                 end
             end
@@ -152,9 +152,10 @@ module CincoDados
             unlocked_dados = @dados.reject(&:locked?)
 
             unlocked_dados.each do |dado|
-                if @game_screen.has_control?(dado)
-                    @game_screen.delete_control(dado)
-                end
+                # if @game_screen.has_control?(dado)
+                #     @game_screen.delete_control(dado)
+                # end
+                dado.hide
             end
 
             @game_screen.draw()
@@ -162,7 +163,8 @@ module CincoDados
             unlocked_dados.each do |dado|
                 sleep delay
                 dado.roll
-                @game_screen.add_control(dado)
+                # @game_screen.add_control(dado)
+                dado.show
                 dado.enable
                 @game_screen.draw()
             end
@@ -170,7 +172,49 @@ module CincoDados
             @dados_values = @dados.map do |dado|
                 dado.value
             end
+
+            # @dados_values = [6,6,6,6,6]
+            
+            if cinco_dados()
+                flash_dados(0.2, 2)
+            end
+            
             @scores = calculate_scores()
+        end
+
+        def cinco_dados()
+            
+            if @dados_values.tally.length == 1
+                return true
+            else
+                return false
+            end
+
+        end
+
+        def flash_dados(flash_delay, repeats)
+            if !repeats.is_a?(Integer) || repeats < 1
+                raise ArgumentError.new("repeats must be a positive integer greater than 0")
+            end
+
+            if !flash_delay.is_a?(Numeric) || flash_delay <= 0
+                raise ArgumentError.new("flash_delay must be a positive number")
+            end
+
+            repeats.times do 
+                sleep flash_delay
+                hide_all_dados()
+                @game_screen.draw()
+                sleep flash_delay
+                show_all_dados()
+                @game_screen.draw()
+            end
+        end
+
+        def bonus_qualifying_upper_scores()
+            return @scores.slice(*Config::SCORE_CATEGORIES_UPPER).filter do |category, score|
+                score >= Config::SCORE_CATEGORIES_BONUS_MINIMUMS[category]
+            end
         end
 
         def remove_all_locks()
@@ -193,9 +237,19 @@ module CincoDados
 
         def hide_all_dados()
             @dados.each do |dado|
-                if @game_screen.has_control?(dado)
-                    @game_screen.delete_control(dado)
-                end
+                # if @game_screen.has_control?(dado)
+                #     @game_screen.delete_control(dado)
+                # end
+                dado.hide()
+            end
+        end
+
+        def show_all_dados()
+            @dados.each do |dado|
+                # if !@game_screen.has_control?(dado)
+                #     @game_screen.add_control(dado)
+                # end
+                dado.show()
             end
         end
 

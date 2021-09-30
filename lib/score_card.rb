@@ -9,8 +9,6 @@ module CincoDados
 
     class ScoreCard < BackgroundControl
 
-
-
         SCORE_CARD_HEIGHT = 27
         PLAYER_SCORE_WIDTH = 5
         PLAYER_SCORE_HEIGHT = 1
@@ -23,6 +21,7 @@ module CincoDados
         COLUMN_BOTTOM_BORDER_WIDTH = 1
         COLUMN_INTERNAL_BORDER_WIDTH = 1
 
+        # these categories correspond to methods - so don't change them!
         ROW_HEADINGS_TOTALS = {subtotal_upper: "Subtotal", bonus: "Bonus (min #{Config::UPPER_SCORE_BONUS_THRESHOLD})",total_upper: "Upper Total", total_lower: "Lower Total", grand_total: "GRAND TOTAL" }
 
         def initialize(x, y, players, game_screen)

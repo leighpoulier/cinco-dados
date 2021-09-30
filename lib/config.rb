@@ -2,6 +2,8 @@
 module CincoDados
     class Config
 
+    MAX_PLAYERS = 4
+
     GAME_SCREEN_WIDTH = 80
     GAME_SCREEN_HEIGHT = 30
 
@@ -44,12 +46,16 @@ module CincoDados
         :chance,
     ]
 
+    SCORE_CATEGORIES_BONUS_MINIMUMS = SCORE_CATEGORIES_UPPER.map.with_index do |category, index|
+        [category, (index+1) * 3]
+    end.to_h
+
     
-    FULL_HOUSE_SCORE = 25
-    SMALL_STRAIGHT_SCORE = 30
-    LARGE_STRAIGHT_SCORE = 40
-    CINCO_DADOS_SCORE = 50
-    # CINCO_DADOS_BONUS_SCORE = 100
+    SCORE_FULL_HOUSE = 25
+    SCORE_SMALL_STRAIGHT = 30
+    SCORE_LARGE_STRAIGHT = 40
+    SCORE_CINCO_DADOS = 50
+    # SCORE_CINCO_DADOS_BONUS = 100
 
     UPPER_SCORE_BONUS_THRESHOLD = 63
     UPPER_SCORE_BONUS_SCORE = 35

@@ -50,8 +50,8 @@ class Control < SelectionCursorMapNode
     CROSS_BOLD_VERTICAL_LIGHT_HORIZONTAL = "\u{2542}"
     CROSS_BOLD_VERTICAL_BOLD_HORIZONTAL = "\u{254B}"
 
-    attr_reader :height, :width, :x, :y, :screen, :x_margin, :y_margin
-    attr_accessor :is_selected
+    attr_reader :height, :width, :x, :y, :screen, :x_margin, :y_margin, :visible
+    # attr_accessor :is_selected
 
     def initialize(name)
         super(name)
@@ -60,7 +60,8 @@ class Control < SelectionCursorMapNode
         @x_margin = 0
         @y_margin = 0
         # @printed_rows = 0
-        @pastel = Pastel.new
+        @visible = true
+        # @pastel = Pastel.new
     end
 
     def set_position(x,y)
@@ -80,7 +81,7 @@ class Control < SelectionCursorMapNode
         end
     end
 
-    def draw(cursor)
+    def draw(cursor, pastel)
         if @x.nil? || @y.nil?
             raise ConfigurationError.new("Unable to draw control: #{self} with x: #{@x.inspect} and y: #{@y.inspect}")
         end
@@ -91,7 +92,7 @@ class Control < SelectionCursorMapNode
                 if charhash[:char] == :transparent
                     print cursor.move(1,0)
                 else
-                    print @pastel.decorate(charhash[:char], *charhash[:style])
+                    print pastel.decorate(charhash[:char], *charhash[:style])
                 end
             end
             print cursor.move(-1 * row.length, -1)
@@ -99,26 +100,18 @@ class Control < SelectionCursorMapNode
         end
     end
 
+    def show()
+        @visible = true
+    end
+
+    def hide()
+        @visible = false
+    end
+
     def inspect
         # return "x: #{@x}, y: #{@y}, width: #{@width}, height: #{@height}"
         return "class=#{self.class}, name=#{@name}"
     end
-
-    # def set_screen(screen)
-    #     raise StandardError.new("What is this method used for?")
-    #     @screen = screen
-    # end
-
-    def on_selected()
-    end
-
-    def on_deselected()
-    end
-
-    def on_activate()
-    end
-
-
 
     def <=>(other)
 
@@ -183,8 +176,8 @@ end
 
 class Button < Control
 
-    def initialize(x, y, width, height, fill, text, name)
-        super(name)
+    def initialize(x, y, width, height, text)
+        super(text)
         set_position(x,y)
         @width = width
         @height = height
@@ -192,19 +185,17 @@ class Button < Control
         @enabled = true
         @events = {}
         
-        @fill = {char: BLOCK_FULL, style: [:white, :on_black]}
-        @style = [:white, :on_black, :inverse]
+        @fill_style = [:white, :on_black]
+        @fill = {char: BLOCK_FULL, style: @fill_style}
+        @text_style = [:white, :on_black, :inverse]
+
+
+        initial_fill(@fill)
+        add_text_overlay(@text_style)
 
     end
 
     def add_text_overlay(style)
-        # Replace centre characters witih inverse text
-        # middle_row = @height/2
-        # middle_col = @width/2
-        # starting_col = middle_col - (@text.length/2)
-        # (0...@text.length).each do |char_count|
-        #     @rows[middle_row][starting_col + char_count] = {char: @text[char_count], style: style}
-        # end
 
         @rows = Text.centre_middle(@rows,@text,style)
 
@@ -219,16 +210,16 @@ class Button < Control
         @events[event_name] = event_block
     end
 
+
     def on_selected()
         fill = {char: BLOCK_FULL, style: [:green, :on_black]}
         initial_fill(fill)
         add_text_overlay([:green, :on_black, :inverse])
     end
-
+    
     def on_deselected()
         initial_fill(@fill)
-        add_text_overlay(@style)
-
+        add_text_overlay(@text_style)
     end
 
     def on_activate()
@@ -241,21 +232,37 @@ class Button < Control
 
     def disable()
         super()
-        fill = {char: BLOCK_SHADED, style: [:white, :on_black]}
-        fill = {char: :transparent, style: [:white, :on_black]}
-        style = [:white, :on_black]
+        fill = {char: BLOCK_SHADED, style: @fill_style}
         initial_fill(fill)
-        # add_text_overlay(style)
     end
 
     def enable()
         super()
         initial_fill(@fill)
-        add_text_overlay(@style)
+        add_text_overlay(@text_style)
     end
 
 
     
+
+end
+
+class RollButton < Button
+
+    ON_ACTIVATE_DESCRIPTION = "roll"
+
+    def initialize(x, y, width, height, text)
+        super
+    end
+
+
+
+    #override
+    def get_on_activate_description()
+        ON_ACTIVATE_DESCRIPTION
+    end
+
+
 
 end
 

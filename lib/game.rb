@@ -31,7 +31,7 @@ module CincoDados
 
             # link dados to roll button
             @dados_cup.dados.each do |dado|
-                dado.add_link(EAST, @game_screen.button, false)
+                dado.add_link(EAST, @game_screen.roll_button, false)
             end
 
             # link the dados cup to the the players score cells for hypothetical display
@@ -62,18 +62,19 @@ module CincoDados
             # Set the EAST link from the roll button to one of the cells of the first player
             # Config::SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING.each do |category|
             #     if @current_player.player_scores.scores[category].enabled
-            #         @game_screen.button.add_link(EAST, @current_player.player_scores.scores[category], false)
+            #         @game_screen.roll_button.add_link(EAST, @current_player.player_scores.scores[category], false)
             #         Logger.log.info("Add link on button to #{@current_player.name} score: #{player.player_scores.scores[category]}")
             #         break
             #     end
             # end
-            @game_screen.button.add_link(EAST, @current_player.player_scores.scores[get_recommended_score_category()] ,false)
+
+            @game_screen.roll_button.add_link(EAST, @current_player.player_scores.scores[get_recommended_score_category()] ,false)
             Logger.log.info("Add link on button to #{@current_player.name} score: #{@current_player.player_scores.scores[get_recommended_score_category()]}")
             
         end
 
         def delete_roll_button_link()
-            @game_screen.button.remove_link(EAST)
+            @game_screen.roll_button.remove_link(EAST)
         end
 
         def increment_current_player_roll_count()
@@ -84,25 +85,44 @@ module CincoDados
             end
         end
 
-        def get_recommended_score_category(exclude = Config::SCORE_CATEGORIES_EXCLUDE_FROM_RECOMMENDATION)
-            Logger.log.info("All dados_cup scores: #{@dados_cup.scores}")
-            Logger.log.info("Filtered dados cup scores: #{@dados_cup.scores.slice(*@current_player.player_scores.get_empty_categories)}")
-            if exclude.nil?
-                Logger.log.info("not excluding base on exclude is a #{exclude.class.name} with value: #{exclude.inspect}")
-                recommended_category = @dados_cup.scores.slice(*@current_player.player_scores.get_empty_categories).sort_by do |category, score|
-                    score
-                end.last.first
-            else
-                unless exclude.is_a?(Array)
-                    raise ArgumentError.new("excluded categories must be passed as an array of symbols")
-                end
-                Logger.log.info("Attempting to exclude categories #{exclude.to_s}, which is a #{exclude.class.name} with value: #{exclude.inspect}")
-                recommended_category = @dados_cup.scores.slice(*@current_player.player_scores.get_empty_categories).reject do |category, score|
-                    exclude.include?(category)
-                end.sort_by do |category, score|
+        # def get_recommended_score_category(exclude = Config::SCORE_CATEGORIES_EXCLUDE_FROM_RECOMMENDATION)
+        def get_recommended_score_category(exclude = [])
+
+            # Logger.log.info("All dados_cup scores: #{@dados_cup.scores}")
+            # Logger.log.info("Filtered dados cup scores: #{@dados_cup.scores.slice(*@current_player.player_scores.get_empty_categories)}")
+
+            unless exclude.is_a?(Array)
+                raise ArgumentError.new("excluded categories must be passed as an array of symbols. Use an empty array if necessary to avoid exclusion")
+            end
+
+            Logger.log.info("Attempting to exclude categories #{exclude.to_s}, which is a #{exclude.class.name} with value: #{exclude.inspect}")
+
+            # Filter out the past in excluded categories
+            filtered_categories = @dados_cup.scores.slice(*@current_player.player_scores.get_empty_categories).reject do |category, score|
+                exclude.include?(category)
+            end
+
+            # First see if there are any scores which would help towards achieving the upper bonus
+            bonus_qualifying_upper_scores = @dados_cup.bonus_qualifying_upper_scores().slice(*@current_player.player_scores.get_empty_categories_upper())
+            Logger.log.info("Bonus qualifying upper scores: #{bonus_qualifying_upper_scores}")
+            
+            # if at bonus qualifying score is achieved, recommend it
+            if bonus_qualifying_upper_scores.length > 0
+                Logger.log.info("Recommending bonus qualifying upper score")
+                return bonus_qualifying_upper_scores.sort_by do |category, score|
                     score
                 end.last.first
             end
+
+            # otherwise recommend the highest score achievable from the filtered categories
+            recommended_category = filtered_categories.sort_by do |category, score|
+                score
+            end.last.first
+
+            if recommended_category.nil?
+                raise CincoDadosError("Recommending a score category failed =(")
+            end
+
             Logger.log.info("Filtered dados cup scores, sorted descending: #{recommended_category}")
             return recommended_category
         end
@@ -110,11 +130,30 @@ module CincoDados
         def play_turn(reader)
             @current_player_roll_count = 0
             @current_player_count_empty_categories = @current_player.player_scores.count_empty_categories()
-            Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
+            # Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
+
+
+            # Set the link on the button to the appropriate column based on @current_player
+            # set_roll_button_link()
+
+            # Enable the roll button in case it was disabled after the previous turn
+            @game_screen.roll_button.enable()
+            # Show the roll button in case it was hidden
+            @game_screen.roll_button.show()
+
+            # Position the cursor on the roll button
+            @game_screen.selection_cursor.select_control(@game_screen.roll_button, WEST)
+
+            # Hide all the dados
+            @dados_cup.hide_all_dados()
+
+            # Enable all the dados 
+            # @dados_cup.enable_all_dados()
+
 
             # while a new score isn't added, and the roll count < 3
             while @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories() && @current_player_roll_count < Config::MAX_ROLLS_PER_TURN
-                Controller.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
+                Controller.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Press Enter/Space to #{@game_screen.selection_cursor.enclosed_control.get_on_activate_description()}.")
                 @game_screen.draw
                 reader.read_keypress
             end
@@ -123,7 +162,7 @@ module CincoDados
             @dados_cup.remove_all_locks()
 
             # 3 turns are over, but still no score added
-            Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
+            # Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
             if @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories()
 
                 #select the recommended control
@@ -131,15 +170,18 @@ module CincoDados
 
 
                 # Disable the roll buton
-                @game_screen.button.disable()
+                @game_screen.roll_button.disable()
+                # Hide the roll button
+                @game_screen.roll_button.hide()
 
                 # Disabled all the dice
                 @dados_cup.disable_all_dados()
 
-                
+                # Loop until player commits a score
                 while @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories()
                     Controller.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
-                    Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
+                    # Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
+
                     @game_screen.draw
                     reader.read_keypress
                 end
@@ -152,20 +194,42 @@ module CincoDados
             @current_player = @players[@turn_counter % @players.length]
             Logger.log.info("Player is now #{@current_player}")
 
-            # Set the link on the button to the appropriate column based on @current_player
-            # set_roll_button_link()
+        end
 
-            # Enable the roll button in case it was disabled after the previous turn
-            @game_screen.button.enable()
+        def roll()
 
-            # Position the cursor on the roll button
-            @game_screen.selection_cursor.select_control(@game_screen.button, WEST)
+            @game_screen.roll_button.hide()
+            @game_screen.selection_cursor.hide()
+            @dados_cup.roll_dados()
+            increment_current_player_roll_count()
+            set_roll_button_link()
+            @game_screen.roll_button.show()
+            @game_screen.selection_cursor.show()
 
-            # Hide all the dados
-            @dados_cup.hide_all_dados()
+        end
 
-            # Enable all the dados 
-            # @dados_cup.enable_all_dados()
+        def play(reader)
+
+            while turns_remaining?() do 
+                
+                # @@game_screen.draw()
+                
+                play_turn(reader)
+
+                next_player()
+            
+            end
+
+            @game_screen.draw
+
+            game_results = []
+
+            players.each do |player|
+                game_results.push({name: player.name}.merge(player.get_all_scores()))
+            end
+
+            return game_results
+            
 
         end
 

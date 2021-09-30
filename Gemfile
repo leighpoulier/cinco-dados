@@ -13,3 +13,5 @@ gem "pastel", "~> 0.8.0"
 gem "tty-cursor", "~> 0.7.1"
 
 gem "tty-logger", "~> 0.6.0"
+
+gem "tty-prompt", "~> 0.23.1"

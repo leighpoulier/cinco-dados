@@ -8,6 +8,9 @@ module CincoDados
         X_MARGIN = 1
         Y_MARGIN = 0
 
+        ON_ACTIVATE_DESCRIPTION_UNLOCKED = "lock dado"
+        ON_ACTIVATE_DESCRIPTION_LOCKED = "unlock dado"
+
         attr_reader :value
 
 
@@ -43,6 +46,8 @@ module CincoDados
 
 
             @locked_border = LockedBorder.new(self, "locked_" + self.name)
+            game_screen.add_control(@locked_border)
+            @locked_border.hide()
 
             # roll()
             
@@ -101,13 +106,15 @@ module CincoDados
         end
 
         def add_lock()
-            @game_screen.add_control(@locked_border)
+            # @game_screen.add_control(@locked_border)
+            @locked_border.show
             @locked = true
             # Logger.log.info("New Locked Border: " + @locked_border.name + ", " + @locked_border.inspect)
         end
 
         def remove_lock()
-            @game_screen.delete_control(@locked_border)
+            # @game_screen.delete_control(@locked_border)
+            @locked_border.hide
             @locked = false
         end
 
@@ -118,6 +125,15 @@ module CincoDados
         #override
         def on_activate()
             toggle_lock()
+        end
+
+        #override
+        def get_on_activate_description()
+            if @locked
+                ON_ACTIVATE_DESCRIPTION_LOCKED
+            else
+                ON_ACTIVATE_DESCRIPTION_UNLOCKED
+            end
         end
 
     end

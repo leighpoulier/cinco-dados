@@ -82,12 +82,12 @@ class SelectionCursor < BorderControl
 
     def select_control(control, direction)
         unless @enclosed_control.nil?
-            @enclosed_control.is_selected = false
+            # @enclosed_control.is_selected = false
             @enclosed_control.on_deselected
             @previously_enclosed_control = @enclosed_control  #save for linking backwards below
         end
         @enclosed_control = control
-        @enclosed_control.is_selected = true
+        # @enclosed_control.is_selected = true
         @enclosed_control.on_selected
 
         # use the opposite direction link on the target control to return to the last control.  

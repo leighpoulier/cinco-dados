@@ -14,24 +14,24 @@ describe "Game Model" do
         expect(game.dados_cup.calculate_scores([1,2,3,4,5])).to eq({
             ones: 1, twos: 2, threes: 3, fours: 4, fives: 5, sixes: 0,
             three_of_a_kind: 0, four_of_a_kind: 0, full_house: 0,
-            small_straight: Config::SMALL_STRAIGHT_SCORE, large_straight: Config::LARGE_STRAIGHT_SCORE, cinco_dados: 0, chance: 15
+            small_straight: Config::SCORE_SMALL_STRAIGHT, large_straight: Config::SCORE_LARGE_STRAIGHT, cinco_dados: 0, chance: 15
         })
         expect(game.dados_cup.calculate_scores([2,3,4,5,6])).to eq({
             ones: 0, twos: 2, threes: 3, fours: 4, fives: 5, sixes: 6,
             three_of_a_kind: 0, four_of_a_kind: 0, full_house: 0,
-            small_straight: Config::SMALL_STRAIGHT_SCORE, large_straight: Config::LARGE_STRAIGHT_SCORE, cinco_dados: 0, chance: 20
+            small_straight: Config::SCORE_SMALL_STRAIGHT, large_straight: Config::SCORE_LARGE_STRAIGHT, cinco_dados: 0, chance: 20
         })
     end
 
     it "detects full house and three of a kind" do
         expect(game.dados_cup.calculate_scores([1,1,1,2,2])).to eq({
             ones: 3, twos: 4, threes: 0, fours: 0, fives: 0, sixes: 0,
-            three_of_a_kind: 7, four_of_a_kind: 0, full_house: Config::FULL_HOUSE_SCORE,
+            three_of_a_kind: 7, four_of_a_kind: 0, full_house: Config::SCORE_FULL_HOUSE,
             small_straight: 0, large_straight: 0, cinco_dados: 0, chance: 7
         })
         expect(game.dados_cup.calculate_scores([6,5,6,5,6])).to eq({
             ones: 0, twos: 0, threes: 0, fours: 0, fives: 10, sixes: 18,
-            three_of_a_kind: 28, four_of_a_kind: 0, full_house: Config::FULL_HOUSE_SCORE,
+            three_of_a_kind: 28, four_of_a_kind: 0, full_house: Config::SCORE_FULL_HOUSE,
             small_straight: 0, large_straight: 0, cinco_dados: 0, chance: 28
         })
 
@@ -86,12 +86,12 @@ describe "Game Model" do
         expect(game.dados_cup.calculate_scores([1,1,1,1,1])).to eq({
             ones: 5, twos: 0, threes: 0, fours: 0, fives: 0, sixes: 0,
             three_of_a_kind: 5, four_of_a_kind: 5, full_house: 0,
-            small_straight: 0, large_straight: 0, cinco_dados: Config::CINCO_DADOS_SCORE, chance: 5
+            small_straight: 0, large_straight: 0, cinco_dados: Config::SCORE_CINCO_DADOS, chance: 5
         })
         expect(game.dados_cup.calculate_scores([4,4,4,4,4])).to eq({
             ones: 0, twos: 0, threes: 0, fours: 20, fives: 0, sixes: 0,
             three_of_a_kind: 20, four_of_a_kind: 20, full_house: 0,
-            small_straight: 0, large_straight: 0, cinco_dados: Config::CINCO_DADOS_SCORE, chance: 20
+            small_straight: 0, large_straight: 0, cinco_dados: Config::SCORE_CINCO_DADOS, chance: 20
         })
     end
 

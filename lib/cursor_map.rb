@@ -95,6 +95,22 @@ module CincoDados
         
         end
 
+
+        def on_selected()
+        end
+
+        def on_deselected()
+        end
+
+        def on_activate()
+        end
+
+        def get_on_activate_description()
+            raise ConfigurationError.new("Should not reach this backup method.  This cursor map node has no on_activate_description")
+
+        end
+
+
         def to_s()
             return @name
         end

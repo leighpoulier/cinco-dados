@@ -142,7 +142,7 @@ module CincoDados
             @game_screen.roll_button.show()
 
             # Position the cursor on the roll button
-            @game_screen.selection_cursor.select_control(@game_screen.roll_button, WEST)
+            @game_screen.selection_cursor.select_control(@game_screen.roll_button)
 
             # Hide all the dados
             @dados_cup.hide_all_dados()
@@ -166,7 +166,7 @@ module CincoDados
             if @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories()
 
                 #select the recommended control
-                @game_screen.selection_cursor.select_control(@current_player.player_scores.scores[get_recommended_score_category()],EAST)
+                @game_screen.selection_cursor.select_control(@current_player.player_scores.scores[get_recommended_score_category()])
 
 
                 # Disable the roll buton

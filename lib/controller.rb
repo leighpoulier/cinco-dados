@@ -6,15 +6,15 @@ module CincoDados
 
         def self.start()
 
-            @@reader = TTY::Reader.new(interrupt: Proc.new do
-                puts "Ctrl-C pressed: Exiting ... Goodbye!"
-                exit
-            end)
+            # @@reader = TTY::Reader.new(interrupt: Proc.new do
+            #     puts "Ctrl-C pressed: Exiting ... Goodbye!"
+            #     exit
+            # end)
             
-            @@reader.subscribe(self)
+            # @@reader.subscribe(self)
 
-            @@console = nil
-            @@cursor = nil
+            # @@console = nil
+            # @@cursor = nil
 
             # display main menu
             #New game
@@ -41,6 +41,8 @@ module CincoDados
             # ask for their names?
             
             while players.length < num_players
+
+                puts Regexp.escape("`~!@#$%^&*()-_=+[]{}\|;:'\",.<>\/?")
 
                 player_name = nil
                 while player_name.nil? || player_name.length < 1 || player_name.length > ScoreCard::PLAYER_SCORE_WIDTH || !(/[^`~!@#$%^&*()-_=+\[\]{}\\|;:'",.<>\/?A-Za-z0-9]/ =~ player_name).nil?
@@ -83,62 +85,46 @@ module CincoDados
         #     @@game
         # end
 
-        def self.keypress(event)  # implements subscription of TTY::Reader
-            # Logger.log.info("keypress event: key.name = #{event.key.name}, event.value = #{event.value}")
-            case
-            when event.key.name == :up || event.value == "w"
-                @@cursor.move(NORTH)
-            when event.key.name == :left || event.value == "a"
-                @@cursor.move(WEST)
-            when event.key.name == :down || event.value == "s"
-                @@cursor.move(SOUTH)
-            when event.key.name == :right || event.value == "d"
-                @@cursor.move(EAST)
-            when event.key.name == :return || event.key.name == :space
-                @@cursor.on_activate()
-            when event.key.name == :escape
-                Logger.log.info("Escape key pressed but not yet implemented")
-                @@console.display_message("Escape pressed but not yet implemented")
-            end
-        end
+        # def self.keypress(event)  # implements subscription of TTY::Reader
+        #     # Logger.log.info("keypress event: key.name = #{event.key.name}, event.value = #{event.value}")
+        #     case
+        #     when event.key.name == :up || event.value == "w"
+        #         @@cursor.move(NORTH)
+        #     when event.key.name == :left || event.value == "a"
+        #         @@cursor.move(WEST)
+        #     when event.key.name == :down || event.value == "s"
+        #         @@cursor.move(SOUTH)
+        #     when event.key.name == :right || event.value == "d"
+        #         @@cursor.move(EAST)
+        #     when event.key.name == :return || event.key.name == :space
+        #         @@cursor.on_activate()
+        #     when event.key.name == :escape
+        #         Logger.log.info("Escape key pressed but not yet implemented")
+        #         @@console.display_message("Escape pressed but not yet implemented")
+        #     end
+        # end
 
-        def self.display_message(message)
-            unless @@console.nil?
-                @@console.display_message(message)
-            end
-        end
-
-
-        def self.clear_message()
-            unless @@console.nil?
-                @@console.display_message("")
-            end
-        end
 
         def self.menu_main()
     
             @@menu_screen = MenuScreen.new(Config::GAME_SCREEN_WIDTH, Config::GAME_SCREEN_HEIGHT)
             @@menu_screen.setup_menu(:main)
     
-            @@cursor = @@menu_screen.selection_cursor
-            @@menu_screen.start(@@reader)
+            @@menu_screen.start()
 
-            # @@menu_screen.clean_up()
+            @@menu_screen.clean_up()
 
         end
 
         def self.menu_new_game()
 
             @@setup_menu_screen = MenuScreen.new(Config::GAME_SCREEN_WIDTH, Config::GAME_SCREEN_HEIGHT)
-            @@setup_menu_screen.setup_menu(:new_game)
+            @@setup_menu_screen.setup_menu(:player_count)
 
-            @@save_cursor = @@cursor
-            @@cursor = @@setup_menu_screen.selection_cursor
-
-            @@setup_menu_screen.start(@@reader)
-            @@cursor = @@save_cursor
-
-            # @@setup_menu_screen.clean_up()
+            @@new_game_data = {}
+            @@new_game_data.merge!(@@setup_menu_screen.start())
+            Logger.log.info("#{@@new_game_data}")
+            Logger.log.info("Player count: #{@@new_game_data[:player_count]}")
 
 
         end
@@ -161,10 +147,7 @@ module CincoDados
                 @@game.roll()
             })
 
-            @@cursor = @@game_screen.selection_cursor
-            @@console = @@game_screen.info_line
-
-            game_result = @@game.play(@@reader)
+            game_result = @@game.play(@@game_screen.reader)
 
             winning_player_result = game_result.sort_by do |player_result|
                 player_result[:totals][:grand_total]

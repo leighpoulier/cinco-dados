@@ -308,6 +308,7 @@ module CincoDados
             super(name,category)
             @player_scores = player_scores
             @dados_cup = nil
+            @selection_type = :none
         end
 
         def set_value(value)

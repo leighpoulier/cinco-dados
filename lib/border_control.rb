@@ -5,6 +5,9 @@ class BorderControl < Control
     attr_reader :enclosed_control
 
     def enclose_control()
+        if @enclosed_control.nil?
+            raise ConfigurationError.new("@enclosed_control is not set, no dimensions set, cannot decorate the selection cursor!")
+        end
         @width = @enclosed_control.width + 2 * (1 + @enclosed_control.x_margin)
         @height = @enclosed_control.height + 2 * (1 + @enclosed_control.y_margin)
         @x = @enclosed_control.x-@enclosed_control.x_margin-1
@@ -12,6 +15,9 @@ class BorderControl < Control
     end
 
     def decorate_control()
+        if @enclosed_control.nil?
+            raise ConfigurationError.new("@enclosed_control is not set, no dimensions set, cannot decorate the selection cursor!")
+        end
 
         initial_fill({char: :transparent, style: []})
 
@@ -59,28 +65,31 @@ class LockedBorder < BorderControl
         # @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
     end
 
-    def enclose_control()
-        @width = @enclosed_control.width + 2
-        @height = @enclosed_control.height + 2
-        @x = @enclosed_control.x-1
-        @y = @enclosed_control.y-1
+    # def enclose_control()
+    #     @width = @enclosed_control.width + 2
+    #     @height = @enclosed_control.height + 2
+    #     @x = @enclosed_control.x-1
+    #     @y = @enclosed_control.y-1
 
-    end
+    # end
 
 end
 
 class SelectionCursor < BorderControl
 
 
-    def initialize(control, name)
+    def initialize(screen, name)
+        @screen = screen
         @previously_enclosed_control = nil
-        select_control(control, nil)
+        @enclosed_control = nil
+        # select_control(control)
         super(name)
         set_position(@x,@y)
+        @style = [:green, :on_black]
         
     end
 
-    def select_control(control, direction)
+    def select_control(control)
         unless @enclosed_control.nil?
             # @enclosed_control.is_selected = false
             @enclosed_control.on_deselected
@@ -97,12 +106,8 @@ class SelectionCursor < BorderControl
         #     @enclosed_control.add_link(direction.opposite, @previously_enclosed_control, false)
         # end
 
-        enclose_control()
-        if @enclosed_control.is_a?(Score)
-            decorate_control(:none)
-        else
-            decorate_control()
-        end
+        enclose_control()                                   # sets the position and dimensions
+        decorate_control(@enclosed_control.selection_type)  # draws the box, for example
     end
 
     def decorate_control(type = :box)
@@ -111,8 +116,12 @@ class SelectionCursor < BorderControl
         # set the border characters
 
         super() # initial_fill({char: :transparent, style: [])
-
-        style = [:green, :on_black]
+        
+        if @enclosed_control.nil?
+            style = @style
+        else
+            style = @enclosed_control.border_style()
+        end
 
         case type
         when :sides
@@ -146,23 +155,29 @@ class SelectionCursor < BorderControl
     end
 
     def move(direction)
+        if @enclosed_control.nil?
+            raise ConfigurationError.new("@enclosed_control is not set, no links, cannot move!")
+        end
         if @enclosed_control.has_link(direction)
             # @enclosed_control = @enclosed_control.follow_link(direction)
             next_control = @enclosed_control.follow_link(direction)
             unless next_control.nil?
-                select_control(next_control, direction)
+                select_control(next_control)
             else
                 # raise StandardError.new("Cannot Move in direction: #{direction}")
-                Controller.display_message("Cannot Move in direction: #{direction}. #{@enclosed_control} has a link but it returns nil")
+                @screen.display_message("Cannot Move in direction: #{direction}. #{@enclosed_control} has a link but it returns nil")
             end
         else
             # raise StandardError.new("Cannot Move in direction: #{direction}")
-            Controller.display_message("Cannot Move in direction: #{direction}. #{@enclosed_control} has no link.")
+            @screen.display_message("Cannot Move in direction: #{direction}. #{@enclosed_control} has no link.")
         end
     end
 
 
     def on_activate()
+        if @enclosed_control.nil?
+            raise ConfigurationError.new("@enclosed_control is not set, cannot activate!")
+        end
         Logger.log.info("Selection Cursor activating control: #{@enclosed_control}")
         @enclosed_control.on_activate
 
@@ -171,6 +186,9 @@ class SelectionCursor < BorderControl
     
     # return information about available links for cursor navigation and their directions
     def get_status()
+        if @enclosed_control.nil?
+            raise ConfigurationError.new("@enclosed_control is not set, no status!")
+        end
         status = ""
         status << "#{@enclosed_control} (#{@enclosed_control.enabled ? "enabled" : "disabled"}): "
         status <<  "I can move"

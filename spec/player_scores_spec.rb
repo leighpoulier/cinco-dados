@@ -100,14 +100,24 @@ describe "PlayerScores" do
 
         end
         
-        it "correctly calculates a bonus" do
+        it "correctly calculates a successful bonus" do
             @player_scores = PlayerScores.new("name")
             (1..6).each do |value|
-                expect(@player_scores.bonus).to eq(0)
+                expect(@player_scores.bonus).to eq(nil)
             @player_scores.add_score(Config::SCORE_CATEGORIES[value -1], value * 3)
             end
             expect(@player_scores.subtotal_upper).to eq(63)
             expect(@player_scores.bonus).to eq(35)
+        end
+
+        it "correctly calculates a failed bonus" do
+            @player_scores = PlayerScores.new("name")
+            (1..6).each do |value|
+                expect(@player_scores.bonus).to eq(nil)
+            @player_scores.add_score(Config::SCORE_CATEGORIES[value -1], value * 2)
+            end
+            expect(@player_scores.subtotal_upper).to eq(42)
+            expect(@player_scores.bonus).to eq(0)
         end
 
 

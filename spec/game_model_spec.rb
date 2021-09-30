@@ -4,7 +4,7 @@ include(CincoDados)
 
 describe "Game Model" do
 
-    game_screen = CincoDados::GameScreen.new(80,30)
+    game_screen = CincoDados::GameScreen.new()
 
     players = [Player.new("test")]
 

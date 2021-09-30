@@ -204,9 +204,11 @@ module CincoDados
             repeats.times do 
                 sleep flash_delay
                 hide_all_dados()
+                hide_locks()
                 @game_screen.draw()
                 sleep flash_delay
                 show_all_dados()
+                show_locks()
                 @game_screen.draw()
             end
         end
@@ -251,6 +253,14 @@ module CincoDados
                 # end
                 dado.show()
             end
+        end
+
+        def hide_locks()
+            @dados.filter(&:locked?).each(&:hide_lock)
+        end
+
+        def show_locks()
+            @dados.filter(&:locked?).each(&:show_lock)
         end
 
         def to_s()

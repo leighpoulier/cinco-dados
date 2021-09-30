@@ -153,7 +153,7 @@ module CincoDados
 
             # while a new score isn't added, and the roll count < 3
             while @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories() && @current_player_roll_count < Config::MAX_ROLLS_PER_TURN
-                Controller.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Press Enter/Space to #{@game_screen.selection_cursor.enclosed_control.get_on_activate_description()}.")
+                @game_screen.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Press Enter/Space to #{@game_screen.selection_cursor.enclosed_control.get_on_activate_description()}.")
                 @game_screen.draw
                 reader.read_keypress
             end
@@ -179,7 +179,7 @@ module CincoDados
 
                 # Loop until player commits a score
                 while @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories()
-                    Controller.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
+                    @game_screen.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
                     # Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
 
                     @game_screen.draw

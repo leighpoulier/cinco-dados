@@ -122,6 +122,14 @@ module CincoDados
             return @locked
         end
 
+        def hide_lock()
+            @locked_border.hide
+        end
+
+        def show_lock()
+            @locked_border.show
+        end
+
         #override
         def on_activate()
             toggle_lock()

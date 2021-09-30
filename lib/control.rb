@@ -353,4 +353,41 @@ module CincoDados
             end
         end
     end
+
+    class TextControl < Control
+
+        def initialize(x, y, width, height, alignment, text)
+        
+            super(text)
+            set_position(x, y)
+            @width = width
+            @height = height
+            @alignment = alignment
+            @style = [:white, :on_black]
+            @fill = {char: :transparent , style: @style}
+            @text = text
+            decorate_control
+        end
+
+        def initial_fill()
+            super(@fill)
+        end
+
+        def decorate_control()
+            # Logger.log.info("entered decorate_control function for score #{self} with category #{category}")
+            initial_fill()
+            unless @text == ""
+
+                case @alignment
+                when :left
+                    @rows = Text.left_middle(@rows,@text,@style)
+                when :centre
+                    @rows = Text.centre_middle(@rows,@text,@style)
+                when :right
+                    @rows = Text.right_middle(@rows,@text,@style)
+                end
+            end
+        end
+
+    end
 end

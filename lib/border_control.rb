@@ -65,13 +65,13 @@ class LockedBorder < BorderControl
         # @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
     end
 
-    # def enclose_control()
-    #     @width = @enclosed_control.width + 2
-    #     @height = @enclosed_control.height + 2
-    #     @x = @enclosed_control.x-1
-    #     @y = @enclosed_control.y-1
-
-    # end
+    # override to ignore margin
+    def enclose_control()
+        @width = @enclosed_control.width + 2
+        @height = @enclosed_control.height + 2
+        @x = @enclosed_control.x-1
+        @y = @enclosed_control.y-1
+    end
 
 end
 

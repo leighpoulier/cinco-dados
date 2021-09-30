@@ -28,6 +28,18 @@ module CincoDados
             return self.apply_text_single(text,row,starting_column,style)
         end
 
+        def self.left_middle(rows,text,style)
+
+            self.sanitize_arguments_multi_line(rows,text)
+
+            width = rows[0].length
+
+            middle_row = self.middle_row(rows)
+            starting_column = 0
+            self.apply_text_multi(text, rows, middle_row, starting_column, style)
+
+        end
+
         def self.centre_middle(rows,text,style)
 
             # check for invalid inputs
@@ -51,7 +63,7 @@ module CincoDados
 
             middle_row = self.middle_row(rows)
             starting_column = self.start_column_right(text,width)
-            self.apply_text(text, rows[middle_row], starting_column, style)
+            self.apply_text_multi(text, rows, middle_row, starting_column, style)
 
         end
 

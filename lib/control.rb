@@ -209,7 +209,7 @@ module CincoDados
 
         def add_text_overlay(style)
 
-            @rows = Text.centre_middle(@rows,@text,style)
+            @rows = Text.multi_row_align(@rows,@text,:middle, :centre, style)
 
         end
 
@@ -375,13 +375,14 @@ module CincoDados
 
     class TextControl < Control
 
-        def initialize(x, y, width, height, alignment, text)
+        def initialize(x, y, width, height, vertical_alignment, horizontal_alignment, text)
         
             super(text)
             set_position(x, y)
             @width = width
             @height = height
-            @alignment = alignment
+            @vertical_alignment = vertical_alignment
+            @horizontal_alignment = horizontal_alignment
             @style = [:white, :on_black]
             @fill = {char: :transparent , style: @style}
             @text = text
@@ -397,14 +398,16 @@ module CincoDados
             initial_fill()
             unless @text == ""
 
-                case @alignment
-                when :left
-                    @rows = Text.left_middle(@rows,@text,@style)
-                when :centre
-                    @rows = Text.centre_middle(@rows,@text,@style)
-                when :right
-                    @rows = Text.right_middle(@rows,@text,@style)
-                end
+                rows = Text.multi_row_align(@rows, @text, @vertical_alignment, @horizontal_alignment, @style)
+
+                # case @alignment
+                # when :left
+                #     @rows = Text.left_middle(@rows,@text,@style)
+                # when :centre
+                #     @rows = Text.centre_middle(@rows,@text,@style)
+                # when :right
+                #     @rows = Text.right_middle(@rows,@text,@style)
+                # end
             end
         end
 

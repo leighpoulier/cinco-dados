@@ -292,6 +292,11 @@ module CincoDados
             @button_how_to_play = Button.new(MAIN_MENU_LEFT_MARGIN + 24, MAIN_MENU_TOP_MARGIN, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "How to Play")
             add_control(@button_how_to_play)
             @button_how_to_play.add_link(WEST, @button_new_game, true)
+
+
+            @button_how_to_play.register_event(:activate, ->() {
+                Controller.how_to_play()
+            })
     
             # create "High Scores" button and link it to "New Game" button
             @button_high_scores = Button.new(MAIN_MENU_LEFT_MARGIN, MAIN_MENU_TOP_MARGIN + 6, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "High Scores")
@@ -393,7 +398,7 @@ module CincoDados
             @banner2 = BannerText.new(7, "Name", @columns)
             add_control(@banner2)
 
-            @text_prompt = TextControl.new(19, 16, 42, 1, :left, "Please enter a name. Maximum 5 characters!")
+            @text_prompt = TextControl.new(19, 16, 42, 1, :top, :left, "Please enter a name. Maximum 5 characters!")
             add_control(@text_prompt)
 
 
@@ -446,7 +451,7 @@ module CincoDados
             # while !@exit_flag do
             while player_name.length < 1 || player_name.length > ScoreCard::PLAYER_SCORE_WIDTH || !Text.sanitize_string(player_name)
                 draw()
-                print @cursor.move_to(Text.start_column_centre(ScoreCard::PLAYER_SCORE_WIDTH, @columns),@text_prompt.y + 2)
+                print @cursor.move_to(Text.start_column(ScoreCard::PLAYER_SCORE_WIDTH, @columns, :centre),@text_prompt.y + 2)
                 print @cursor.show()
                 player_name = gets.strip
                 print @cursor.hide()
@@ -457,6 +462,31 @@ module CincoDados
 
             return player_name
 
+        end
+    end
+
+    class HowToPlayScreen < MenuScreen
+        def initialize()
+            super
+
+            @banner = BannerText.new(4, "How to Play", @columns)
+            add_control(@banner)
+
+            @paragraph1 = CentredTextControl.new(16, Config::GAME_SCREEN_WIDTH - 8, Config::GAME_SCREEN_HEIGHT - 2 - 16, :left, "Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt dolorem, placeat vitae totam in quam alias pariatur ullam nostrum accusantium ad error, eveniet odit cum fuga, libero corrupti animi voluptas.", Config::GAME_SCREEN_WIDTH)
+            add_control(@paragraph1)
+
+
+            # Add OK button
+            @button_exit = Button.new(32, MAIN_MENU_TOP_MARGIN + 8, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "OK")
+            add_control(@button_exit)
+
+            @button_exit.register_event(:activate, ->() {
+                @exit_flag = true
+            })
+            # Register it to handle Esc keypress
+            @escapecontrol = @button_exit
+
+            
         end
     end
 

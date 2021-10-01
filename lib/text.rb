@@ -16,7 +16,7 @@ module CincoDados
             self.sanitize_arguments_single_line(row,text)
 
             width = row.length
-            starting_column = self.start_column_centre(text.length,width)
+            starting_column = self.start_column(text.length,width, :centre)
             return self.apply_text_single(text,row,starting_column, style)
 
         end
@@ -24,25 +24,32 @@ module CincoDados
         def self.right_single(row,text,style)
             self.sanitize_arguments_single_line(row,text)
             width = row.length
-            starting_column = self.start_column_right(text.length,width)
+            starting_column = self.start_column(text.length,width, :right)
             return self.apply_text_single(text,row,starting_column,style)
         end
 
-        def self.left_middle(rows,text,style)
+        # def self.left_middle(rows,text,style)
 
-            self.sanitize_arguments_multi_line(rows,text)
+        #     self.sanitize_arguments_multi_line(rows,text)
 
-            width = rows[0].length
+        #     width = rows[0].length
 
-            middle_row = self.middle_row(rows)
-            starting_column = 0
+        #     middle_row = self.middle_row(rows)
+        #     starting_column = 0
 
-            rows[middle_row] = self.apply_text_single(text, rows[middle_row], starting_column, style)
-            return rows
-        end
+        #     rows[middle_row] = self.apply_text_single(text, rows[middle_row], starting_column, style)
+        #     return rows
+        # end
 
-        def self.centre_middle(rows,text,style)
+        def self.multi_row_align(rows,text,vertical_alignment,horizontal_alignment,style)
 
+            if !vertical_alignment.is_a?(Symbol) || ![:top, :middle, :bottom].include?(vertical_alignment)
+                raise ArgumentError.new("#{__method__}: Vertical alignment \"#{vertical_alignment}\" invalid: is_a #{vertical_alignment.class.name}. Must be one of :top, :middle, :bottom")
+            end
+            if !horizontal_alignment.is_a?(Symbol) || ![:left, :centre, :right].include?(horizontal_alignment)
+                raise ArgumentError.new("#{__method__}: Horizontal alignment \"#{horizontal_alignment}\" invalid: is_a #{horizontal_alignment.class.name}. Must be one of :left, :centre, :right")
+            end
+        
             # check for invalid inputs
             self.sanitize_arguments_multi_line(rows,text)
 
@@ -58,17 +65,18 @@ module CincoDados
                     raise ArgumentError.new("The minimum rows for text \"#{text}\" is #{text_rows.length}, you have asked for #{rows.length}.  Rows: #{text_rows}")
                 end
 
-                start_row = (rows.length - text_rows.length)/2
+                # start_row = (rows.length - text_rows.length)/2
+                start_row = self.start_row(text_rows.length, rows.length, vertical_alignment)
 
                 (0...text_rows.length).each do |text_row_counter|
 
-                    starting_column = (width - text_rows[text_row_counter].length)/2
+                    starting_column = self.start_column(text_rows[text_row_counter].length, width, horizontal_alignment)
                     rows[start_row + text_row_counter] = self.apply_text_single(text_rows[text_row_counter], rows[start_row + text_row_counter], starting_column, style)
                 end
             else
                 # fits on single row
-                middle_row = self.middle_row(rows)
-                starting_column = self.start_column_centre(text.length, width)
+                middle_row = self.start_row(1, rows.length, vertical_alignment)
+                starting_column = self.start_column(text.length, width, horizontal_alignment)
 
                 rows[middle_row] = self.apply_text_single(text, rows[middle_row], starting_column, style)
             end
@@ -82,10 +90,18 @@ module CincoDados
         def self.evenly_distrubuted_rows(text, target_row_count)
 
 
+
+
             Logger.log.info("#{__method__}: Attempting to evenly distribute \"#{text}\" in #{target_row_count} rows")
 
+            if target_row_count > text.split.length
+                Logger.log.info("#{__method__}: Word count: #{text.split.length} < target_row_count: #{target_row_count}.  Resetting target to word count")
+                target_row_count = text.split.length
+                Logger.log.info("#{__method__}: target_row_count #{target_row_count}")
+            end
 
             target_characters_per_line = text.length / target_row_count
+            Logger.log.info("#{__method__}: target_characters_per_line: #{target_characters_per_line}")
             
             continue_loop = true
             while continue_loop
@@ -94,24 +110,35 @@ module CincoDados
                 starting_offset = 0
                 split_at_character = target_characters_per_line
 
-
-                while split_at_character < text.length
+                while rows.length < target_row_count -1
+                    Logger.log.info("#{__method__}: rows.length: #{rows.length}, remaining text: #{text[starting_offset, split_at_character-starting_offset]}")
 
                     even_odd = 1
+    
                     while text[split_at_character] != " "
+                        Logger.log.info("#{__method__}: Split at character: #{split_at_character}: #{text[split_at_character]}")
                         if even_odd % 2 == 0
                             #fan out searching...
                             #move back one
+                            Logger.log.info("#{__method__}: even, old split_at_character: #{split_at_character}")
+                            Logger.log.info("#{__method__}: even, even_odd: #{even_odd}")
                             split_at_character -= even_odd
+                            Logger.log.info("#{__method__}: even, new split_at_character: #{split_at_character}")
                         else
                             #move forward two, etc.
+                            Logger.log.info("#{__method__}: odd, old split_at_character: #{split_at_character}")
+                            Logger.log.info("#{__method__}: odd, even_odd: #{even_odd}")
                             split_at_character += even_odd
+                            Logger.log.info("#{__method__}: odd, new split_at_character: #{split_at_character}")
                         end
                         if split_at_character == starting_offset
                             raise StandardError.new("This logic isn't right, split at character has reduced to 0")
                         end
                         even_odd += 1
+                        Logger.log.info("#{__method__}: even_odd updated to: #{even_odd}")
+
                     end
+                    Logger.log.info("Found space to split at character #{split_at_character}")
                     rows.push(text[starting_offset, split_at_character - starting_offset])
                     starting_offset = split_at_character + 1
                     split_at_character = starting_offset + target_characters_per_line
@@ -203,19 +230,19 @@ module CincoDados
             return words
         end
 
-        def self.right_middle(rows,text,style)
+        # def self.right_middle(rows,text,style)
 
-            self.sanitize_arguments_multi_line(rows,text)
+        #     self.sanitize_arguments_multi_line(rows,text)
 
-            width = rows[0].length
+        #     width = rows[0].length
 
-            middle_row = self.middle_row(rows)
-            starting_column = self.start_column_right(text.length,width)
+        #     middle_row = self.middle_row(rows)
+        #     starting_column = self.start_column_right(text.length,width)
 
-            rows[middle_row] = self.apply_text_single(text, row[middle_row], starting_column, style)
-            return rows
+        #     rows[middle_row] = self.apply_text_single(text, row[middle_row], starting_column, style)
+        #     return rows
 
-        end
+        # end
 
         def self.sanitize_arguments_common(row,text)
             if !row.instance_of?(Array)
@@ -274,16 +301,41 @@ module CincoDados
             return rows.map do |row| row.length end.tally.length == 1
         end
 
-        def self.middle_row(rows)
-            return (rows.length-1)/2
+        # def self.middle_row(rows)
+        #     return (rows.length-1)/2
+        # end
+
+        # def self.start_column_centre(text_width, width)
+        #     return (width - text_width)/2
+        # end
+
+        # def self.start_column_right(text_width, width)
+        #     return width - text_width
+        # end
+
+        def self.start_column(text_width, width, horiztonal_alignment)
+            case horiztonal_alignment
+
+            when :left
+                return 0
+            when :centre
+                return (width - text_width)/2
+            when :right
+                return width - text_width
+            end
+
         end
 
-        def self.start_column_centre(text_width, width)
-            return (width - text_width)/2
-        end
+        def self.start_row(text_rows, rows, vertical_alignment)
+            case vertical_alignment
 
-        def self.start_column_right(text_width, width)
-            return width - text_width
+            when :top
+                return 0
+            when :middle
+                return (rows - text_rows)/2
+            when :bottom
+                return rows - text_rows
+            end
         end
 
         def self.apply_text_single(text, row, starting_column, style)

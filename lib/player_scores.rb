@@ -309,7 +309,8 @@ module CincoDados
                     value_string = " " + value_string
                 end
                 # Logger.log.info("Decorating Score Control for score: #{self} with text: #{value_string} in style: #{@@style} height: #{@height} width: #{@width}")
-                @rows = Text.centre_middle(@rows,value_string,style)
+                # @rows = Text.centre_middle(@rows,value_string,style)
+                @rows = Text.multi_row_align(@rows, value_string, :middle, :centre, style)
                 # Logger.log.info("Resulting rows:\n#{@rows}")
             end
         end
@@ -423,7 +424,8 @@ module CincoDados
             @fill = {char: " ", style: style}
             initial_fill(@fill)
             
-            @rows = Text.centre_middle(@rows,@player.name,style)
+            # @rows = Text.centre_middle(@rows,@player.name,style)
+            @rows = Text.multi_row_align(@rows, @player.name, :middle, :centre, style)
 
             # Logger.log.info("PlayerName control has rows #{@rows}")
 

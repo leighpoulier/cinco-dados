@@ -179,6 +179,14 @@ module CincoDados
             return game_result
 
         end
+
+        def self.how_to_play()
+
+            @@how_to_play_screen = HowToPlayScreen.new()
+
+            @@how_to_play_screen.start()
+
+        end
     end
 
 end

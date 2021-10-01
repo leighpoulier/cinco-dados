@@ -5,6 +5,7 @@ GEM
       tty-color (~> 0.5)
     tty-color (0.6.0)
     tty-cursor (0.7.1)
+    tty-font (0.5.0)
     tty-logger (0.6.0)
       pastel (~> 0.8)
     tty-prompt (0.23.1)
@@ -23,6 +24,7 @@ PLATFORMS
 DEPENDENCIES
   pastel (~> 0.8.0)
   tty-cursor (~> 0.7.1)
+  tty-font (~> 0.5.0)
   tty-logger (~> 0.6.0)
   tty-prompt (~> 0.23.1)
   tty-reader (~> 0.9.0)

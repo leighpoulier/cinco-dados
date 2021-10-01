@@ -397,15 +397,15 @@ module CincoDados
             add_control(@text_prompt)
 
 
-            # Add back button
-            @button_exit = BackButton.new(32, MAIN_MENU_TOP_MARGIN + 8, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "Back")
-            add_control(@button_exit)
+            # # Add back button
+            # @button_exit = BackButton.new(32, MAIN_MENU_TOP_MARGIN + 8, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "Back")
+            # add_control(@button_exit)
 
-            @button_exit.register_event(:activate, ->() {
-                @exit_flag = true
-            })
-            # Register it to handle Esc keypress
-            @escapecontrol = @button_exit
+            # @button_exit.register_event(:activate, ->() {
+            #     @exit_flag = true
+            # })
+            # # Register it to handle Esc keypress
+            # @escapecontrol = @button_exit
 
             
         

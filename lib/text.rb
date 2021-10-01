@@ -50,10 +50,12 @@ module CincoDados
             width = rows[0].length
 
             if text.length > width # needs to wrap!
+
+                Logger.log.info("#{__method__}: Attempting to wrap text: \"#{text}\" in #{rows.length} rows")
                 minimum_rows = self.get_minimum_rows(text,width)
                 text_rows = self.evenly_distrubuted_rows(text,rows.length)
                 if text_rows.length > rows.length
-                    raise ArgumentError.new("The minimum rows for this text is #{text_rows.length}, you have asked for #{rows.length}")
+                    raise ArgumentError.new("The minimum rows for text \"#{text}\" is #{text_rows.length}, you have asked for #{rows.length}.  Rows: #{text_rows}")
                 end
 
                 start_row = (rows.length - text_rows.length)/2
@@ -70,45 +72,62 @@ module CincoDados
 
                 rows[middle_row] = self.apply_text_single(text, rows[middle_row], starting_column, style)
             end
+
+            Logger.log.info("#{__method__}: Wrapped text: #{rows}")
+
             return rows
 
         end
 
         def self.evenly_distrubuted_rows(text, target_row_count)
 
+
+            Logger.log.info("#{__method__}: Attempting to evenly distribute \"#{text}\" in #{target_row_count} rows")
+
+
             target_characters_per_line = text.length / target_row_count
+            
+            continue_loop = true
+            while continue_loop
+    
+                rows = []
+                starting_offset = 0
+                split_at_character = target_characters_per_line
 
-            rows = []
-            starting_offset = 0
 
-                
-            split_at_character = target_characters_per_line
+                while split_at_character < text.length
 
-            while split_at_character < text.length
-
-                even_odd = 1
-                while text[split_at_character] != " "
-                    if even_odd % 2 == 0
-                        #fan out searching...
-                        #move back one
-                        split_at_character -= even_odd
-                    else
-                        #move forward two, etc.
-                        split_at_character += even_odd
+                    even_odd = 1
+                    while text[split_at_character] != " "
+                        if even_odd % 2 == 0
+                            #fan out searching...
+                            #move back one
+                            split_at_character -= even_odd
+                        else
+                            #move forward two, etc.
+                            split_at_character += even_odd
+                        end
+                        if split_at_character == starting_offset
+                            raise StandardError.new("This logic isn't right, split at character has reduced to 0")
+                        end
+                        even_odd += 1
                     end
-                    if split_at_character == starting_offset
-                        raise StandardError.new("This logic isn't right, split at character has reduced to 0")
-                    end
-                    even_odd += 1
+                    rows.push(text[starting_offset, split_at_character - starting_offset])
+                    starting_offset = split_at_character + 1
+                    split_at_character = starting_offset + target_characters_per_line
+
                 end
-                rows.push(text[starting_offset, split_at_character - starting_offset])
-                starting_offset = split_at_character + 1
-                split_at_character = starting_offset + target_characters_per_line
+                
+                rows.push(text[starting_offset, text.length - starting_offset])
 
+                Logger.log.info("#{__method__}: Achieved #{rows.length} rows with target line length: #{target_characters_per_line}")
+                
+                if rows.length > target_row_count
+                    target_characters_per_line += 1
+                else
+                    continue_loop = false
+                end
             end
-            
-            rows.push(text[starting_offset, text.length - starting_offset])
-            
 
             return rows
             
@@ -120,10 +139,10 @@ module CincoDados
             
                 line_count = 1
                 words = self.split_text_into_words_with_max_width(text,width)
-
+                
                 rows = []
                 this_line = ""
-
+                
                 words.each do |next_word|
                     if this_line.length + 1 + next_word.length < width
                         if this_line.length == 0
@@ -137,10 +156,11 @@ module CincoDados
                     end
                 end
                 rows.push(this_line)
-
+                
             else
                 return 1 # No splitting required
             end
+            Logger.log.info("get_minimum_rows: #{rows}")
             return rows.length
         end
 
@@ -245,7 +265,7 @@ module CincoDados
 
             minimum_rows = self.get_minimum_rows(text, rows[0].length)
             if minimum_rows > rows.length
-                raise ArgumentError.new("minimum rows to display text: \"#{text}\" in width: #{rows[0].length} must be less than or equal to the nubmer of rows.  rows.length: #{rows.length}, minimum_rows: #{minimum_rows}")
+                raise ArgumentError.new("minimum rows to display text: \"#{text}\" in width: #{rows[0].length} must be less than or equal to the number of rows.  rows.length: #{rows.length}, minimum_rows: #{minimum_rows}")
             end
 
         end

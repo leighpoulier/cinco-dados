@@ -123,7 +123,7 @@ module CincoDados
 
         def <=>(other)
 
-            Logger.log.info("Comparing control #{self} of class #{self.class.name} with other control #{other} of class #{other.class.name}")
+            # Logger.log.info("Comparing control #{self} of class #{self.class.name} with other control #{other} of class #{other.class.name}")
 
             case
             when self.is_a?(BackgroundControl)

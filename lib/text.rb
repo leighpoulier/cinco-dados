@@ -59,20 +59,32 @@ module CincoDados
             if text.length > width # needs to wrap!
 
                 Logger.log.info("#{__method__}: Attempting to wrap text: \"#{text}\" in #{rows.length} rows")
-                minimum_rows = self.get_minimum_rows(text,width)
-                text_rows = self.evenly_distrubuted_rows(text,rows.length)
-                if text_rows.length > rows.length
-                    raise ArgumentError.new("The minimum rows for text \"#{text}\" is #{text_rows.length}, you have asked for #{rows.length}.  Rows: #{text_rows}")
+
+                if vertical_alignment == :top || vertical_alignment == :bottom
+                    # top or bottom vertical_alignment in minimum rows
+                    text_rows = get_minimum_rows(text, width)
+
+                elsif vertical_alignment == :middle
+                    # middle alignment in distrubuted rows.
+                    minimum_rows_count = self.get_minimum_rows_count(text,width)
+                    text_rows = self.get_evenly_distrubuted_rows(text,rows.length)
+                    if text_rows.length > rows.length
+                        raise ArgumentError.new("The minimum rows for text \"#{text}\" is #{text_rows.length}, you have asked for #{rows.length}.  Rows: #{text_rows}")
+                    end
+
                 end
 
-                # start_row = (rows.length - text_rows.length)/2
+                # calculate the vertical starting row
                 start_row = self.start_row(text_rows.length, rows.length, vertical_alignment)
 
+                # applay style to each character to build up styled character array
                 (0...text_rows.length).each do |text_row_counter|
 
                     starting_column = self.start_column(text_rows[text_row_counter].length, width, horizontal_alignment)
                     rows[start_row + text_row_counter] = self.apply_text_single(text_rows[text_row_counter], rows[start_row + text_row_counter], starting_column, style)
                 end
+
+
             else
                 # fits on single row
                 middle_row = self.start_row(1, rows.length, vertical_alignment)
@@ -87,21 +99,18 @@ module CincoDados
 
         end
 
-        def self.evenly_distrubuted_rows(text, target_row_count)
+        def self.get_evenly_distrubuted_rows(text, target_row_count)
 
-
-
-
-            Logger.log.info("#{__method__}: Attempting to evenly distribute \"#{text}\" in #{target_row_count} rows")
+            # Logger.log.info("#{__method__}: Attempting to evenly distribute \"#{text}\" in #{target_row_count} rows")
 
             if target_row_count > text.split.length
-                Logger.log.info("#{__method__}: Word count: #{text.split.length} < target_row_count: #{target_row_count}.  Resetting target to word count")
+                # Logger.log.info("#{__method__}: Word count: #{text.split.length} < target_row_count: #{target_row_count}.  Resetting target to word count")
                 target_row_count = text.split.length
-                Logger.log.info("#{__method__}: target_row_count #{target_row_count}")
+                # Logger.log.info("#{__method__}: target_row_count #{target_row_count}")
             end
 
             target_characters_per_line = text.length / target_row_count
-            Logger.log.info("#{__method__}: target_characters_per_line: #{target_characters_per_line}")
+            # Logger.log.info("#{__method__}: target_characters_per_line: #{target_characters_per_line}")
             
             continue_loop = true
             while continue_loop
@@ -111,34 +120,36 @@ module CincoDados
                 split_at_character = target_characters_per_line
 
                 while rows.length < target_row_count -1
-                    Logger.log.info("#{__method__}: rows.length: #{rows.length}, remaining text: #{text[starting_offset, split_at_character-starting_offset]}")
+                    # Logger.log.info("#{__method__}: rows.length: #{rows.length}, remaining text: #{text[starting_offset, split_at_character-starting_offset]}")
 
                     even_odd = 1
     
                     while text[split_at_character] != " "
-                        Logger.log.info("#{__method__}: Split at character: #{split_at_character}: #{text[split_at_character]}")
+                        # Logger.log.info("#{__method__}: Split at character: #{split_at_character}: #{text[split_at_character]}")
                         if even_odd % 2 == 0
                             #fan out searching...
                             #move back one
-                            Logger.log.info("#{__method__}: even, old split_at_character: #{split_at_character}")
-                            Logger.log.info("#{__method__}: even, even_odd: #{even_odd}")
+                            # Logger.log.info("#{__method__}: even, old split_at_character: #{split_at_character}")
+                            # Logger.log.info("#{__method__}: even, even_odd: #{even_odd}")
                             split_at_character -= even_odd
-                            Logger.log.info("#{__method__}: even, new split_at_character: #{split_at_character}")
+                            # Logger.log.info("#{__method__}: even, new split_at_character: #{split_at_character}")
                         else
                             #move forward two, etc.
-                            Logger.log.info("#{__method__}: odd, old split_at_character: #{split_at_character}")
-                            Logger.log.info("#{__method__}: odd, even_odd: #{even_odd}")
+                            # Logger.log.info("#{__method__}: odd, old split_at_character: #{split_at_character}")
+                            # Logger.log.info("#{__method__}: odd, even_odd: #{even_odd}")
                             split_at_character += even_odd
-                            Logger.log.info("#{__method__}: odd, new split_at_character: #{split_at_character}")
+                            # Logger.log.info("#{__method__}: odd, new split_at_character: #{split_at_character}")
                         end
                         if split_at_character == starting_offset
-                            raise StandardError.new("This logic isn't right, split at character has reduced to 0")
+                            raise StandardError.new("This logic isn't right, split at character has reduced to starting offset: #{starting_offset}")
+                        elsif split_at_character > (text.length - 1)
+                            raise StandardError.new("This logic isn't right, split at character has increased to the end: #{starting_offset} ")
                         end
                         even_odd += 1
-                        Logger.log.info("#{__method__}: even_odd updated to: #{even_odd}")
+                        # Logger.log.info("#{__method__}: even_odd updated to: #{even_odd}")
 
                     end
-                    Logger.log.info("Found space to split at character #{split_at_character}")
+                    # Logger.log.info("Found space to split at character #{split_at_character}")
                     rows.push(text[starting_offset, split_at_character - starting_offset])
                     starting_offset = split_at_character + 1
                     split_at_character = starting_offset + target_characters_per_line
@@ -147,7 +158,7 @@ module CincoDados
                 
                 rows.push(text[starting_offset, text.length - starting_offset])
 
-                Logger.log.info("#{__method__}: Achieved #{rows.length} rows with target line length: #{target_characters_per_line}")
+                # Logger.log.info("#{__method__}: Achieved #{rows.length} rows with target line length: #{target_characters_per_line}")
                 
                 if rows.length > target_row_count
                     target_characters_per_line += 1
@@ -162,12 +173,12 @@ module CincoDados
 
         def self.get_minimum_rows(text, width)
 
+            rows = []
             if text.length > width  #splitting required?
             
                 line_count = 1
                 words = self.split_text_into_words_with_max_width(text,width)
                 
-                rows = []
                 this_line = ""
                 
                 words.each do |next_word|
@@ -185,10 +196,14 @@ module CincoDados
                 rows.push(this_line)
                 
             else
-                return 1 # No splitting required
+                rows.push(text)
             end
             Logger.log.info("get_minimum_rows: #{rows}")
-            return rows.length
+            return rows
+        end
+
+        def self.get_minimum_rows_count(text, width)
+            return self.get_minimum_rows(text, width).length
         end
 
         def self.split_long_word(word, width)
@@ -290,9 +305,9 @@ module CincoDados
                 raise ArgumentError.new("text must be a String of at least length:1. text.length: #{text.length}")
             end
 
-            minimum_rows = self.get_minimum_rows(text, rows[0].length)
-            if minimum_rows > rows.length
-                raise ArgumentError.new("minimum rows to display text: \"#{text}\" in width: #{rows[0].length} must be less than or equal to the number of rows.  rows.length: #{rows.length}, minimum_rows: #{minimum_rows}")
+            minimum_rows_count = self.get_minimum_rows_count(text, rows[0].length)
+            if minimum_rows_count > rows.length
+                raise ArgumentError.new("minimum rows to display text: \"#{text}\" in width: #{rows[0].length} must be less than or equal to the number of rows.  rows.length: #{rows.length}, minimum_rows_count: #{minimum_rows_count}")
             end
 
         end

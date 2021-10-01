@@ -84,16 +84,21 @@ module CincoDados
         end
 
         def disable()
-            
             @enabled = false
-
         end
 
         def enable()
-
             @enabled = true
-        
         end
+
+        def enabled?()
+            @enabled
+        end
+
+        def disabled?()
+            !@enabled
+        end
+
 
 
         def on_selected()

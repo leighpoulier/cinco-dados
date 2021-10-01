@@ -12,6 +12,10 @@ module CincoDados
             @controls = []
             @columns = Config::GAME_SCREEN_WIDTH
             @rows = Config::GAME_SCREEN_HEIGHT
+            @current_page = 1
+            @min_page = 1
+            @max_page = 1
+
 
             @x = 0
             @y = 0
@@ -111,7 +115,9 @@ module CincoDados
             
 
             # draw each control
-            @controls.filter(&:visible).each do |control|
+            @controls.filter do |control|
+                control.on_pages().include?@current_page
+            end.filter(&:visible).each do |control|
                 control.draw(@cursor, @pastel, @x, @y)
             end
             print @cursor.move_to(@x, @y + @rows)
@@ -151,7 +157,6 @@ module CincoDados
                 end
             end
         end
-
 
         def clean_up()
             print @cursor.show
@@ -479,19 +484,55 @@ module CincoDados
     end
 
     class HowToPlayScreen < MenuScreen
+
+        HOW_TO_PLAY_BUTTON_TOP_MARGIN = 25
+        HOW_TO_PLAY_PARAGRAPH_TOP_MARGIN = 8
+        HOW_TO_PLAY_BUTTON_WIDTH = 10
+        HOW_TO_PLAY_BUTTON_HEIGHT = 3
+
         def initialize()
             super
 
-            @banner = BannerText.new(4, "How to Play", @columns)
-            add_control(@banner)
+            @current_page = 1
+            @max_page = 3
 
-            @paragraph1 = CentredTextControl.new(16, Config::GAME_SCREEN_WIDTH - 8, Config::GAME_SCREEN_HEIGHT - 2 - 16, :left, "Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt dolorem, placeat vitae totam in quam alias pariatur ullam nostrum accusantium ad error, eveniet odit cum fuga, libero corrupti animi voluptas.", Config::GAME_SCREEN_WIDTH)
+            @all_pages = [1,2,3]  #for the controls below
+
+            @selection_cursor.set_pages(@all_pages)
+
+            @banner = BannerText.new(1, "How to Play", @columns)
+            add_control(@banner)
+            @banner.set_pages(@all_pages)
+
+            @paragraph1 = ParagraphCentredTextControl.new(HOW_TO_PLAY_PARAGRAPH_TOP_MARGIN, Config::GAME_SCREEN_WIDTH - 4, :left, "Cinco Dados (Five Dice) is a game of chance played with five dice. Roll the dice up to 3 times in each turn to try and achieve certain combinations.", Config::GAME_SCREEN_WIDTH)
             add_control(@paragraph1)
 
+            @paragraph2 = ParagraphCentredTextControl.new(@paragraph1.y + @paragraph1.height + 1, Config::GAME_SCREEN_WIDTH - 4, :left, "Each player has 13 turns, which correspond to the 13 spaces on the score card. After the first roll, you can set aside any number of dice to keep, and roll the remainder. By selectively keeping some dice and rerolling others you can hopefully build up the required combinations by your 3rd roll.", Config::GAME_SCREEN_WIDTH)
+            add_control(@paragraph2)
 
-            # Add OK button
-            @button_exit = Button.new(32, MAIN_MENU_TOP_MARGIN + 8, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "OK")
+            @paragraph3 = ParagraphCentredTextControl.new(@paragraph2.y + @paragraph2.height + 1, Config::GAME_SCREEN_WIDTH - 4, :left, "The combinations listed on the score card are split into upper and lower sections. The upper section contains one space for each of the six dice values, and the target is to roll 3 dice of each value.  The score for these spaces is the addition of the values of those dice.  For example if you roll 3 fives, you score 15. If you roll 4 sixes, you score 24, and if you roll 1 three, you score 3.", Config::GAME_SCREEN_WIDTH)
+            add_control(@paragraph3)
+
+            @paragraph4 = ParagraphCentredTextControl.new(HOW_TO_PLAY_PARAGRAPH_TOP_MARGIN, Config::GAME_SCREEN_WIDTH - 4, :left, "If you achieve 3 of each dice value, your upper section total will be 63, and you will receive a bonus of 35 points.  If you don’t achieve 3 of a certain dice value, you can compensate by achieving more in a different category, as long as the upper total is 63 or more, you will achieve the bonus.", Config::GAME_SCREEN_WIDTH)
+            @paragraph4.set_page(2)
+            add_control(@paragraph4)
+            
+            @paragraph5 = ParagraphCentredTextControl.new(@paragraph4.y + @paragraph4.height + 1, Config::GAME_SCREEN_WIDTH - 4, :left, "The lower section contains generic 3 of a kind and 4 of a kind categories, and if achieved, the score here is the total of all dice, not just those which match.", Config::GAME_SCREEN_WIDTH)
+            @paragraph5.set_page(2)
+            add_control(@paragraph5)
+
+            @paragraph6 = ParagraphCentredTextControl.new(@paragraph5.y + @paragraph5.height + 1, Config::GAME_SCREEN_WIDTH - 4, :left, "Below that are fixed scores for full house (3 of one value, and 2 of another) worth 25 points, a small straight (any sequence of 4 numbers) worth 30 points, a large straight (any sequence of 5 numbers) worth 40 points, and Cinco Dados (5 of a kind) worth 50 points. The “chance” score is where you can place any roll which doesn’t achieve any combination, and scores the total of the dice.", Config::GAME_SCREEN_WIDTH)
+            @paragraph6.set_page(2)
+            add_control(@paragraph6)
+
+            @paragraph7 = ParagraphCentredTextControl.new(HOW_TO_PLAY_PARAGRAPH_TOP_MARGIN, Config::GAME_SCREEN_WIDTH - 4, :left, "If you don’t achieve any combination, and your chance score is already allocated, you can apply your roll to any line for a zero score.  You must place every roll somewhere on your score card, so a bit of strategy is required when choosing where to place your score!", Config::GAME_SCREEN_WIDTH)
+            @paragraph7.set_page(3)
+            add_control(@paragraph7)
+
+            # Add Exit button
+            @button_exit = Button.new(35, HOW_TO_PLAY_BUTTON_TOP_MARGIN, HOW_TO_PLAY_BUTTON_WIDTH, HOW_TO_PLAY_BUTTON_HEIGHT, "Exit")
             add_control(@button_exit)
+            @button_exit.set_pages(@all_pages)
 
             @button_exit.register_event(:activate, ->() {
                 @exit_flag = true
@@ -499,7 +540,73 @@ module CincoDados
             # Register it to handle Esc keypress
             @escapecontrol = @button_exit
 
+            # Add Next button
+            @button_next = Button.new(66, HOW_TO_PLAY_BUTTON_TOP_MARGIN, HOW_TO_PLAY_BUTTON_WIDTH, HOW_TO_PLAY_BUTTON_HEIGHT, "Next")
+            add_control(@button_next)
+            @button_next.set_pages(@all_pages)
+            @button_next.add_link(WEST, @button_exit, true)
+
+            @button_next.register_event(:activate, -> {
+                @current_page += 1
+                if @current_page > @max_page
+                    @current_page = @max_page
+                end
+            })
+
+            # Add Previous button
+            @button_previous = Button.new(4, HOW_TO_PLAY_BUTTON_TOP_MARGIN, HOW_TO_PLAY_BUTTON_WIDTH, HOW_TO_PLAY_BUTTON_HEIGHT, "Previous")
+            add_control(@button_previous)
+            @button_previous.set_pages(@all_pages)
+            @button_previous.add_link(EAST, @button_exit, true)
+            @button_previous.disable()
+            @button_previous.hide()
+
+            @button_previous.register_event(:activate, -> {
+                @current_page -= 1
+                if @current_page < @min_page
+                    @current_page = @min_page
+                end
+            })
+
             
+        end
+
+        # override
+        def start()
+
+            
+            @exit_flag = false
+            while !@exit_flag do
+                draw()
+                @reader.read_keypress
+                Logger.log.info("Read keypress in menu_screen #{self.inspect}")
+
+                if @current_page == @max_page
+                    @button_next.disable()
+                    @button_next.hide()
+                    if @selection_cursor.enclosed_control.equal?(@button_next)
+                        @selection_cursor.select_control(@button_exit)
+                    end
+                else
+                    if @button_next.disabled?
+                        @button_next.enable()
+                        @button_next.show()
+                    end
+                end
+
+                if @current_page == @min_page
+                    @button_previous.disable()
+                    @button_previous.hide()
+                    if @selection_cursor.enclosed_control.equal?(@button_previous)
+                        @selection_cursor.select_control(@button_exit)
+                    end
+                else
+                    if @button_previous.disabled?
+                        @button_previous.enable()
+                        @button_previous.show()
+                    end
+                end
+            end
         end
     end
 

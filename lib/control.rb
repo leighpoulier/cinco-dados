@@ -53,7 +53,7 @@ module CincoDados
         CROSS_BOLD_VERTICAL_LIGHT_HORIZONTAL = "\u{2542}"
         CROSS_BOLD_VERTICAL_BOLD_HORIZONTAL = "\u{254B}"
 
-        attr_reader :height, :width, :x, :y, :screen, :x_margin, :y_margin, :visible, :selection_type, :border_style
+        attr_reader :height, :width, :x, :y, :screen, :x_margin, :y_margin, :visible, :selection_type, :border_style, :on_pages
         # attr_accessor :is_selected
 
         def initialize(name)
@@ -64,6 +64,7 @@ module CincoDados
             @y_margin = 0
             # @printed_rows = 0
             @visible = true
+            @on_pages = [1]
             @selection_type = :box
             @border_style = [:green, :on_black]
             # @pastel = Pastel.new
@@ -119,6 +120,31 @@ module CincoDados
 
         def set_border_style(style)
             @border_style = style
+        end
+
+
+        def set_fill_style(style)
+            @fill[:style] = style
+        end
+
+        def set_fill_style_selected(style)
+            @fill_selected[:style] = style
+        end
+
+        def set_text_style(style)
+            @text_style = style
+        end
+
+        def set_text_style_selected(style)
+            @text_style_selected = style
+        end
+
+        def set_pages(pages)
+            @on_pages = pages
+        end
+
+        def set_page(page)
+            @on_pages = [page]
         end
 
         def <=>(other)
@@ -192,11 +218,11 @@ module CincoDados
             @width = width
             @height = height
             @text = text
-            @enabled = true
             @events = {}
             
             @fill = {char: BLOCK_FULL, style: [:white, :on_black]}
             @fill_selected = {char: BLOCK_FULL, style: [:green, :on_black]}
+            @fill_disabled = {char: BLOCK_SHADED, style: [:white, :on_black]}
 
             @text_style = [:white, :on_black, :inverse]
             @text_style_selected = [:green, :on_black, :inverse]
@@ -243,30 +269,13 @@ module CincoDados
 
         def disable()
             super()
-            @fill[:char] = BLOCK_SHADED
-            initial_fill(@fill)
+            initial_fill(@fill_disabled)
         end
 
         def enable()
             super()
             initial_fill(@fill)
             add_text_overlay(@text_style)
-        end
-
-        def set_fill_style(style)
-            @fill[:style] = style
-        end
-
-        def set_fill_style_selected(style)
-            @fill_selected[:style] = style
-        end
-
-        def set_text_style(style)
-            @text_style = style
-        end
-
-        def set_text_style_selected(style)
-            @text_style_selected = style
         end
 
 
@@ -420,6 +429,18 @@ module CincoDados
             @x = (screen_width - width)/ 2
             super(@x, y, width, height, vertical_alignment, horizontal_alignment, text)
 
+
+        end
+
+    end
+
+
+    class ParagraphCentredTextControl < CentredTextControl
+
+        def initialize(y, width, horizontal_alignment, text, screen_width)
+
+            height = Text.get_minimum_rows_count(text, width)
+            super(y, width, height, :top, horizontal_alignment, text, screen_width)
 
         end
 

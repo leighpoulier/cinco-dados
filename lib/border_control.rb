@@ -1,127 +1,24 @@
 require_relative "control"
 
+
 class BorderControl < Control
 
-    attr_reader :enclosed_control
+    def initialize(name, height, width)
 
-    def enclose_control()
-        if @enclosed_control.nil?
-            raise ConfigurationError.new("@enclosed_control is not set, no dimensions set, cannot decorate the selection cursor!")
-        end
-        @width = @enclosed_control.width + 2 * (1 + @enclosed_control.x_margin)
-        @height = @enclosed_control.height + 2 * (1 + @enclosed_control.y_margin)
-        @x = @enclosed_control.x-@enclosed_control.x_margin-1
-        @y = @enclosed_control.y-@enclosed_control.y_margin-1
-    end
-
-    def decorate_control()
-        if @enclosed_control.nil?
-            raise ConfigurationError.new("@enclosed_control is not set, no dimensions set, cannot decorate the selection cursor!")
-        end
-
-        initial_fill({char: :transparent, style: []})
-
-    end
-
-
-end
-
-class LockedBorder < BorderControl
-    
-    def initialize(control, name)
-
-        @enclosed_control = control
-        enclose_control()
         super(name)
-        set_position(@x, @y)
-        decorate_control()
+        @height = height
+        @width = width
+
+
     end
 
-    def decorate_control()
-        # set the border characters
-
-        super  # initial_fill({char: :transparent, style: [])
-
-        style = [:red, :on_black]
-
-        # [1,@width-2].each do |col|
-        #     @rows[0][col] = { char: "\u{2501}", style: style}  #top row
-        #     @rows[@height - 1][col] = { char: "\u{2501}", style: style} #bottom row
-        # end
-
-        [2].each do |row|
-            @rows[row][0] = { char: "\u{2503}", style: style}  #left side full bar
-            @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side full bar
-        end
-        [3].each do |row|
-            @rows[row][0] = { char: "\u{2579}", style: style}  #left side top half bar
-            @rows[row][width - 1] = { char: "\u{2579}", style: style}  #right side top half bar
-        end
-
-
-        # @rows[0][0] = { char: "\u{250F}", style: style} #top left corner
-        # @rows[0][@width - 1] = { char: "\u{2513}", style: style} #top right corner
-        # @rows[@height - 1][0] = { char: "\u{2517}", style: style} #bottom left corner
-        # @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
-    end
-
-    # override to ignore margin
-    def enclose_control()
-        @width = @enclosed_control.width + 2
-        @height = @enclosed_control.height + 2
-        @x = @enclosed_control.x-1
-        @y = @enclosed_control.y-1
-    end
-
-end
-
-class SelectionCursor < BorderControl
-
-
-    def initialize(screen, name)
-        @screen = screen
-        @previously_enclosed_control = nil
-        @enclosed_control = nil
-        # select_control(control)
-        super(name)
-        set_position(@x,@y)
-        @style = [:green, :on_black]
-        
-    end
-
-    def select_control(control)
-        unless @enclosed_control.nil?
-            # @enclosed_control.is_selected = false
-            @enclosed_control.on_deselected
-            @previously_enclosed_control = @enclosed_control  #save for linking backwards below
-        end
-        @enclosed_control = control
-        # @enclosed_control.is_selected = true
-        @enclosed_control.on_selected
-
-        # use the opposite direction link on the target control to return to the last control.  
-        # Logger.log.info("Inside select_control, direction: #{direction.inspect}")
-        # unless direction.nil?
-        #     Logger.log.info("Overwrite link on #{enclosed_control} with #{direction.opposite}")
-        #     @enclosed_control.add_link(direction.opposite, @previously_enclosed_control, false)
-        # end
-
-        enclose_control()                                   # sets the position and dimensions
-        decorate_control(@enclosed_control.selection_type)  # draws the box, for example
-    end
-
-    def decorate_control(type = :box)
+    def decorate_control(type = :box, style)
         #style can be :box :sides :none
 
         # set the border characters
 
-        super() # initial_fill({char: :transparent, style: [])
-        
-        if @enclosed_control.nil?
-            style = @style
-        else
-            style = @enclosed_control.border_style()
-        end
+        initial_fill({char: :transparent, style: style})
+
 
         case type
         when :sides
@@ -154,6 +51,132 @@ class SelectionCursor < BorderControl
         end
     end
 
+
+end
+class EnclosingBorderControl < BorderControl
+
+    attr_reader :enclosed_control
+
+    def enclose_control()
+        if @enclosed_control.nil?
+            raise ConfigurationError.new("@enclosed_control is not set, no dimensions set, cannot decorate the selection cursor!")
+        end
+        @width = @enclosed_control.width + 2 * (1 + @enclosed_control.x_margin)
+        @height = @enclosed_control.height + 2 * (1 + @enclosed_control.y_margin)
+        @x = @enclosed_control.x-@enclosed_control.x_margin-1
+        @y = @enclosed_control.y-@enclosed_control.y_margin-1
+    end
+
+    def decorate_control(selection_type, style)
+        if @enclosed_control.nil?
+            raise ConfigurationError.new("@enclosed_control is not set, no dimensions set, cannot decorate the enclosing border cursor!")
+        end
+        
+        super
+
+    end
+
+
+end
+
+class LockedBorder < EnclosingBorderControl
+
+
+    
+    def initialize(control, name)
+
+        @enclosed_control = control
+        enclose_control()
+        set_position(@x, @y)
+        super(name, @height, @width)
+        decorate_control()
+    end
+
+    def decorate_control()
+        # set the border characters
+
+        
+
+        style = [:red, :on_black]
+        initial_fill({char: :transparent, style: style})
+
+        # [1,@width-2].each do |col|
+        #     @rows[0][col] = { char: "\u{2501}", style: style}  #top row
+        #     @rows[@height - 1][col] = { char: "\u{2501}", style: style} #bottom row
+        # end
+
+        [2].each do |row|
+            @rows[row][0] = { char: "\u{2503}", style: style}  #left side full bar
+            @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side full bar
+        end
+        [3].each do |row|
+            @rows[row][0] = { char: "\u{2579}", style: style}  #left side top half bar
+            @rows[row][width - 1] = { char: "\u{2579}", style: style}  #right side top half bar
+        end
+
+
+        # @rows[0][0] = { char: "\u{250F}", style: style} #top left corner
+        # @rows[0][@width - 1] = { char: "\u{2513}", style: style} #top right corner
+        # @rows[@height - 1][0] = { char: "\u{2517}", style: style} #bottom left corner
+        # @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
+    end
+
+    # override to ignore margin
+    def enclose_control()
+        @width = @enclosed_control.width + 2
+        @height = @enclosed_control.height + 2
+        @x = @enclosed_control.x-1
+        @y = @enclosed_control.y-1
+    end
+
+end
+
+class SelectionCursor < EnclosingBorderControl
+
+
+    def initialize(screen, name)
+        @screen = screen
+        @previously_enclosed_control = nil
+        @enclosed_control = nil
+        # select_control(control)
+        super(name, 0, 0)
+        set_position(@x,@y)
+        @style = [:green, :on_black]
+        
+    end
+
+    def select_control(control)
+        unless @enclosed_control.nil?
+            # @enclosed_control.is_selected = false
+            @enclosed_control.on_deselected
+            # @previously_enclosed_control = @enclosed_control  #save for linking backwards below
+        end
+        @enclosed_control = control
+        # @enclosed_control.is_selected = true
+        @enclosed_control.on_selected
+
+        # use the opposite direction link on the target control to return to the last control.  
+        # Logger.log.info("Inside select_control, direction: #{direction.inspect}")
+        # unless direction.nil?
+        #     Logger.log.info("Overwrite link on #{enclosed_control} with #{direction.opposite}")
+        #     @enclosed_control.add_link(direction.opposite, @previously_enclosed_control, false)
+        # end
+
+        enclose_control()                                   # sets the position and dimensions
+
+                
+        if @enclosed_control.nil?
+            style = @style
+        else
+            style = @enclosed_control.border_style()
+        end
+
+        decorate_control(@enclosed_control.selection_type, style)  # draws the box, for example
+
+
+    end
+
+
     def move(direction)
         if @enclosed_control.nil?
             raise ConfigurationError.new("@enclosed_control is not set, no links, cannot move!")
@@ -165,11 +188,11 @@ class SelectionCursor < BorderControl
                 select_control(next_control)
             else
                 # raise StandardError.new("Cannot Move in direction: #{direction}")
-                @screen.display_message("Cannot Move in direction: #{direction}. #{@enclosed_control} has a link but it returns nil")
+                Logger.log.warn("Cannot Move in direction: #{direction}. #{@enclosed_control} has a link but it returns nil")
             end
         else
             # raise StandardError.new("Cannot Move in direction: #{direction}")
-            @screen.display_message("Cannot Move in direction: #{direction}. #{@enclosed_control} has no link.")
+            Logger.log.warn("Cannot Move in direction: #{direction}. #{@enclosed_control} has no link.")
         end
     end
 
@@ -208,6 +231,17 @@ class SelectionCursor < BorderControl
         end
         status <<  "."
         return status
+    end
+
+end
+
+class ModalBorder < BorderControl
+
+    def initialize(name, modal, margin)
+        super(name, modal.rows - 2 * margin, modal.columns - 4 * margin)
+        set_position(margin, margin)
+        @style = [:white, :on_black]
+        decorate_control(:box, @style)
     end
 
 end

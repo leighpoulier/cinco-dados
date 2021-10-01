@@ -24,9 +24,15 @@ module CincoDados
         # these categories correspond to methods - so don't change them!
         ROW_HEADINGS_TOTALS = {subtotal_upper: "Subtotal", bonus: "Bonus (min #{Config::UPPER_SCORE_BONUS_THRESHOLD})",total_upper: "Upper Total", total_lower: "Lower Total", grand_total: "GRAND TOTAL" }
 
-        def initialize(x, y, players, game_screen)
+        def initialize(x, y, game_screen)
             super(x, y, "score_card")
             @game_screen = game_screen
+
+            @players = []
+
+            @style = [:white, :on_black]
+            @initial_fill = {char: :transparent, style: @style}
+
             @score_categories_upper = Config.nice_categories_upper()
             @score_categories_lower = Config.nice_categories_lower()
             @score_categories = @score_categories_upper.merge(@score_categories_lower)
@@ -36,22 +42,34 @@ module CincoDados
 
             @row_internal_borders_at = [COLUMN_TOP_BORDER_WIDTH + 1, COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 1, COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 4, COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 6,  COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 6 + @score_categories_lower.length + 1, COLUMN_TOP_BORDER_WIDTH + 1 + @score_categories_upper.length + 6 + @score_categories_lower.length + 3 ]
     
-            @width = ROW_LEFT_BORDER_WIDTH + @row_heading_text_width + (players.length * (PLAYER_SCORE_WIDTH + ROW_INTERNAL_BORDER_WIDTH)) + ROW_RIGHT_BORDER_WIDTH
             @height = SCORE_CARD_HEIGHT
 
-            @column_internal_borders_at = [ROW_LEFT_BORDER_WIDTH + @row_heading_text_width]
-            (0...players.length).each do |player_counter|
-                @column_internal_borders_at << ROW_LEFT_BORDER_WIDTH + @row_heading_text_width + (PLAYER_SCORE_WIDTH + COLUMN_INTERNAL_BORDER_WIDTH) * player_counter
-            end
             @category_row_locations = {}
-            decorate_control(players)
         end
 
-        def decorate_control(players)
+        def add_player(player)
 
-            style = [:white, :on_black]
+            @players.push(player)
+            
+            @width = ROW_LEFT_BORDER_WIDTH + @row_heading_text_width + (@players.length * (PLAYER_SCORE_WIDTH + ROW_INTERNAL_BORDER_WIDTH)) + ROW_RIGHT_BORDER_WIDTH
 
-            initial_fill({char: :transparent, style: style})
+            @column_internal_borders_at = [ROW_LEFT_BORDER_WIDTH + @row_heading_text_width]
+            (0...@players.length).each do |player_counter|
+                @column_internal_borders_at << ROW_LEFT_BORDER_WIDTH + @row_heading_text_width + (PLAYER_SCORE_WIDTH + COLUMN_INTERNAL_BORDER_WIDTH) * player_counter
+            end
+
+            decorate_control(@style)
+
+        end
+
+        def decorate_control(style)
+
+            if @players.length < 1
+                raise ConfigurationError.new("Can't decorate Score Card control if there if there are no players added")
+            end
+
+
+            initial_fill(@initial_fill)
 
             # horizontal border (top and bottom)
 
@@ -81,47 +99,67 @@ module CincoDados
 
 
             # Row headers (category names) and horizontal borders
-            decorate_rows(style)
+            decorate_rows(@style)
 
 
             # Column headers (player names) and vertical internal borders
-            decorate_columns(players, style)
-            Logger.log.info("@category_row_locations = #{@category_row_locations}")
+            decorate_columns(@style)
+            # Logger.log.info("@category_row_locations = #{@category_row_locations}")
 
         end
 
         def decorate_rows(style)
-            top_offset = @row_internal_borders_at[0]
+            top_offset = COLUMN_TOP_BORDER_WIDTH
             left_offset = ROW_LEFT_BORDER_WIDTH
             heading_width = @row_heading_text_width
+
+            # save position for player name controls
+            @category_row_locations[:player_name] = top_offset
+            top_offset+=1
+
+            # border under player names
             decorate_horizontal_line_bold(style, top_offset)
             top_offset+=1
+
+            # upper categories
             decorate_categories(@score_categories_upper, style, heading_width, top_offset, left_offset)
             top_offset+=@score_categories_upper.length
             decorate_horizontal_line(style, top_offset)
             top_offset+=1
+
+            # upper subtotal
             decorate_text_right(ROW_HEADINGS_TOTALS[:subtotal_upper], style, heading_width, top_offset, left_offset)
             @category_row_locations[:subtotal_upper] = top_offset
             top_offset+=1
+
+            # upper bonus
             decorate_text_right(ROW_HEADINGS_TOTALS[:bonus], style, heading_width, top_offset, left_offset)
             @category_row_locations[:bonus] = top_offset
             top_offset+=1
             decorate_horizontal_line(style, top_offset)
             top_offset+=1
+
+            # upper total
             decorate_text_right(ROW_HEADINGS_TOTALS[:total_upper], style, heading_width, top_offset, left_offset)
             @category_row_locations[:total_upper] = top_offset
             top_offset+=1
             decorate_horizontal_line_bold(style, top_offset)
             top_offset+=1
+
+            # lower categories
             decorate_categories(@score_categories_lower, style, heading_width, top_offset, left_offset)
             top_offset+=@score_categories_lower.length
             decorate_horizontal_line(style, top_offset)
             top_offset+=1
+
+            # lower total
             decorate_text_right(ROW_HEADINGS_TOTALS[:total_lower], style, heading_width, top_offset, left_offset)
             @category_row_locations[:total_lower] = top_offset
             top_offset+=1
             decorate_horizontal_line_bold(style, top_offset)
             top_offset+=1
+
+            # grand total
             decorate_text_right(ROW_HEADINGS_TOTALS[:grand_total], style, heading_width, top_offset, left_offset)
             @category_row_locations[:grand_total] = top_offset
             top_offset+=1
@@ -129,11 +167,6 @@ module CincoDados
 
         def decorate_categories(categories, style, width, top_offset, left_offset)
             categories.each do |category, category_nice|
-                # category_text=category.to_s.gsub("_", " ").split.each do |word| 
-                #     unless ["a", "of", "in", "and", "or"].include?(word)
-                #         word.capitalize!
-                #     end
-                # end.join(" ")
                 decorate_text_right(category_nice, style, width, top_offset, left_offset)
                 @category_row_locations[category] = top_offset
                 top_offset+=1
@@ -228,14 +261,14 @@ module CincoDados
             decorate_text(text, style, width, top_offset, left_offset, :right)
         end
 
-        def decorate_columns(players, style)
+        def decorate_columns(style)
 
             # starting column
             left_offset = ROW_LEFT_BORDER_WIDTH + @row_heading_text_width
             counter = 0
 
             # repeat for each player
-            players.each do |player|
+            @players.each do |player|
                 # If the first player column, make a bold vertical border to separate from the category labels. Otherwise, a light border
                 if counter == 0
                     decorate_vertical_line_bold(style, left_offset)
@@ -245,17 +278,19 @@ module CincoDados
 
                 # Move one column to the left to position the column header (player name)
                 left_offset+=1
-                # Place the player name
-                decorate_player_name(player.name, style, PLAYER_SCORE_WIDTH, COLUMN_TOP_BORDER_WIDTH, left_offset)
 
                 # Set players scores left offset at the current column
                 player.set_player_scores_column(left_offset)
                 # Logger.log.info("#{player.name} player_scores_column: #{player.player_scores_column}")
 
-                #build a hash of positions for each score control in the current column with the saved category row locations from when they were placed.
+                # Build a hash of positions for each score control in the current column with the saved category row locations from when they were placed.
                 positions = {}
+                # Place the player name
+                positions[:player_name] = {x: left_offset + @x, y: @category_row_locations[:player_name] + @y}
+                # decorate_text(player.name, style, PLAYER_SCORE_WIDTH, COLUMN_TOP_BORDER_WIDTH, left_offset)
+
                 Config::SCORE_CATEGORIES.each do |category|
-                    #add @x and @y to get absolute positions
+                    #add @x and @y to get positions relative to the screen which will draw them
                     positions[category] = {x: left_offset + @x, y: @category_row_locations[category] + @y}
                 end
                 #add in the headings
@@ -339,14 +374,8 @@ module CincoDados
 
         end
 
-        def decorate_player_name(player_name, style, width, top_offset, left_offset)
-
-            decorate_text(player_name, style, width, top_offset, left_offset)
-
-        end
-
-        def update_scores(players)
-            players.each do |player|
+        def update_scores()
+            @players.each do |player|
                 player.update_player_scores()
             end
         end

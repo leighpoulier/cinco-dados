@@ -10,12 +10,11 @@ module CincoDados
         def initialize(game_screen, dados_count)
             @game_screen = game_screen
             @dados = []
-            @dados_values = []
             @scores = {}
 
             previous_dado = nil
             (0...dados_count).each do |dados_counter|
-                dado = Dado.new(game_screen, Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
+                dado = Dado.new(game_screen, self, Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
                 @dados.push(dado)
                 game_screen.add_control(dado)
                 unless previous_dado.nil?
@@ -23,7 +22,8 @@ module CincoDados
                 end
                 previous_dado = dado
             end
-            # roll_dados_no_delay()
+
+            update_dados_values()
         end
 
 
@@ -169,9 +169,7 @@ module CincoDados
                 @game_screen.draw()
             end
 
-            @dados_values = @dados.map do |dado|
-                dado.value
-            end
+            update_dados_values()
 
             # @dados_values = [6,6,6,6,6]
             
@@ -188,6 +186,14 @@ module CincoDados
                 return true
             else
                 return false
+            end
+
+        end
+
+        def update_dados_values()
+
+            @dados_values = @dados.map do |dado|
+                dado.value
             end
 
         end
@@ -261,6 +267,15 @@ module CincoDados
 
         def show_locks()
             @dados.filter(&:locked?).each(&:show_lock)
+        end
+
+        def all_locked?()
+            @dados.each do |dado|
+                if !dado.locked?
+                    return false
+                end
+            end
+            return true
         end
 
         def to_s()

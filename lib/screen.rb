@@ -2,15 +2,21 @@ require "pastel"
 require "tty-cursor"
 
 module CincoDados
+
     class Screen
 
-        
 
-        attr_reader :columns, :rows, :info_line, :selection_cursor, :reader
-        def initialize()
+        attr_reader :columns, :rows, :selection_cursor, :reader
+
+        def initialize
             @controls = []
             @columns = Config::GAME_SCREEN_WIDTH
             @rows = Config::GAME_SCREEN_HEIGHT
+
+            @x = 0
+            @y = 0
+
+            @background_style = [:black]
 
             @cursor = TTY::Cursor
             print @cursor.move_to
@@ -30,16 +36,15 @@ module CincoDados
             @selection_cursor = SelectionCursor.new(self, "cursor")
             add_control(@selection_cursor)
 
-            # create info_line
-            @info_line = InfoLine.new(columns, rows-1)
-            add_control(@info_line)
-
             @escapecontrol = nil
-
 
         end
 
+
         def add_control(control)
+            if !control.is_a?(Control)
+                raise ArgumentError.new("What the hell are you doing? To add a control to the screen, it must actually be a control")
+            end
             if !@controls.include?(control)
                 @controls.push(control)
                 @controls.sort!
@@ -67,13 +72,6 @@ module CincoDados
             end
         end
 
-        def set_info_line(info_line_control)
-            if info_line_control.instance_of? InfoLine
-                @info_line = info_line_control
-            else
-                raise ArgumentError.new("Control must be an instance of InfoLine to assign as info_line")
-            end
-        end
 
         def set_selection_cursor(selection_cursor_control)
             if selection_cursor_control.instance_of? SelectionCursor
@@ -86,16 +84,12 @@ module CincoDados
 
         def draw()
             # clear screen
-            system("clear")
-
-            # draw background
-            (0..(@rows-1)).each do |row|
-                (0..(@columns-1)).each do |column|
-                    print @pastel.black(Control::BLOCK_FULL)
-                end
-                print "\n"
+            if self.is_a?(FullScreen)
+                system("clear")
             end
 
+
+            draw_background()
             
 
             # #print row numbers
@@ -118,9 +112,20 @@ module CincoDados
 
             # draw each control
             @controls.filter(&:visible).each do |control|
-                control.draw(@cursor, @pastel)
+                control.draw(@cursor, @pastel, @x, @y)
             end
-            print @cursor.move_to(0, @rows)
+            print @cursor.move_to(@x, @y + @rows)
+        end
+
+        def draw_background()
+            Logger.log.info("Printing the background from row #{@y} to #{@y + @rows -1} and column #{@x} to #{@x + @columns -1}")
+            print @cursor.move_to(@x, @y)
+            (@y..(@y + @rows-1)).each do |row|
+                (@x..(@x + @columns-1)).each do |column|
+                    print @pastel.decorate(Control::BLOCK_FULL, *@background_style)
+                end
+                print @cursor.move(-1 * @columns, -1)
+            end
         end
 
 
@@ -148,6 +153,38 @@ module CincoDados
         end
 
 
+        def clean_up()
+            print @cursor.show
+        end
+
+
+
+    end
+    class FullScreen < Screen
+
+        
+
+        attr_reader :info_line
+        def initialize()
+   
+            super
+
+            # create info_line
+            @info_line = InfoLine.new(columns, rows-1)
+            add_control(@info_line)
+
+        end
+
+
+        def set_info_line(info_line_control)
+            if info_line_control.instance_of? InfoLine
+                @info_line = info_line_control
+            else
+                raise ArgumentError.new("Control must be an instance of InfoLine to assign as info_line")
+            end
+        end
+
+
         def display_message(message)
             @info_line.display_message(message)
  
@@ -160,13 +197,9 @@ module CincoDados
         end
 
 
-        def clean_up()
-            print @cursor.show
-        end
-
     end
 
-    class GameScreen < Screen
+    class GameScreen < FullScreen
 
         attr_reader :roll_button
 
@@ -202,7 +235,7 @@ module CincoDados
 
     end
 
-    class MenuScreen < Screen
+    class MenuScreen < FullScreen
 
         MAIN_MENU_LEFT_MARGIN = 20
         MAIN_MENU_TOP_MARGIN = 16
@@ -408,16 +441,15 @@ module CincoDados
             add_control(@banner)
 
             player_name = ""
-            regex = "^" + Regexp.escape("`~!@#$%^&*()-_=+[]{}\|;:'\",.<>\/?") + "0-9a-zA-z"
-            
-            @exit_flag = false
+
+            # @exit_flag = false
             # while !@exit_flag do
-            while player_name.length < 1 || player_name.length > ScoreCard::PLAYER_SCORE_WIDTH || !(/[#{regex}]/ =~ player_name).nil?
+            while player_name.length < 1 || player_name.length > ScoreCard::PLAYER_SCORE_WIDTH || !Text.sanitize_string(player_name)
                 draw()
-                @cursor.move_to(0,0)
-                @cursor.show()
+                print @cursor.move_to(Text.start_column_centre(ScoreCard::PLAYER_SCORE_WIDTH, @columns),@text_prompt.y + 2)
+                print @cursor.show()
                 player_name = gets.strip
-                @cursor.hide()
+                print @cursor.hide()
                 # @reader.read_keypress
                 Logger.log.info("Read keypress in menu_screen #{self.inspect}")
                 # end
@@ -426,6 +458,72 @@ module CincoDados
             return player_name
 
         end
+    end
+
+    class Modal < Screen
+
+        MODAL_BUTTON_HEIGHT = 3
+        MODAL_BUTTON_WIDTH = 10
+
+        def initialize()
+
+            super
+
+            @columns = Config::MODAL_SCREEN_WIDTH
+            @rows = Config::MODAL_SCREEN_HEIGHT
+
+            @x = (Config::GAME_SCREEN_WIDTH - @columns) / 2
+            @y = (Config::GAME_SCREEN_HEIGHT - @rows) / 2
+
+            @background_style = [:black]
+
+            @response = nil
+
+            Logger.log.info ("Created new Modal")
+
+        end
+
+        def yes_no(prompt)
+
+            border = ModalBorder.new("modal_border", self, 1)
+            add_control(border)
+
+            text_prompt = CentredTextControl.new(3, Config::MODAL_SCREEN_WIDTH - 2, 3, :centre, prompt, Config::MODAL_SCREEN_WIDTH)
+            add_control(text_prompt)
+
+            yes_button = Button.new(7, 9, MODAL_BUTTON_WIDTH, MODAL_BUTTON_HEIGHT, "Yes")
+            yes_button.register_event(:activate, -> {
+                @response = true
+                Logger.log.info("Modal response = #{@response}")
+            })
+            yes_button.set_fill_style_selected([:yellow, :on_black])
+            yes_button.set_text_style_selected([:yellow, :on_black, :inverse])
+            yes_button.set_border_style([:yellow, :on_black])
+            add_control(yes_button)
+
+            
+            no_button = Button.new(22, 9, MODAL_BUTTON_WIDTH, MODAL_BUTTON_HEIGHT, "No")
+            no_button.add_link(WEST, yes_button, true)
+            no_button.register_event(:activate, -> {
+                @response = false
+            })
+            add_control(no_button)
+            @selection_cursor.select_control(no_button)
+
+            @escapecontrol = no_button
+
+            @response = nil
+            while @response.nil?
+                draw()
+                reader.read_keypress
+                Logger.log.info("Modal response = #{@response}")
+                Logger.log.info("Read keypress in menu_screen #{self.inspect}")
+            end
+
+            return @response
+
+        end
+
     end
 
 end

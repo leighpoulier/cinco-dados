@@ -8,21 +8,26 @@ module CincoDados
 
         attr_reader :scores, :totals
 
-        def initialize(player_name)
+        def initialize(game, player)
+            @game = game
+            @player = player
+            Logger.log.info("PlayerScores holds a @player variable which currently points to #{@player} with name #{@player.name}")
             @scores = {}
+
+            # Add a control for the player's name at the top of the score card
+
+            player_name_control = PlayerName.new(@game, @player)
+            @scores[:player_name] = player_name_control
 
             previous_score = nil
             Config::SCORE_CATEGORIES.each do |category|
                 # create new score object
-                new_score = Score.new(self, player_name + "_" + category.to_s, category)
+                new_score = Score.new(self, player.name + "_" + category.to_s, category)
 
                 # link it to the above score object (for navigation as control)
                 unless previous_score.nil?
                     new_score.add_link(NORTH, previous_score, true)
                 end
-
-                # fill control
-                new_score.initial_fill
 
                 # add to @scores hash
                 @scores[category] = new_score
@@ -31,8 +36,7 @@ module CincoDados
                 previous_score = new_score
             end
             ScoreCard::ROW_HEADINGS_TOTALS.keys.each do |row_headings_totals_category|
-                new_total = Total.new(player_name + "_" + row_headings_totals_category.to_s, row_headings_totals_category)
-                new_total.initial_fill
+                new_total = Total.new(player.name + "_" + row_headings_totals_category.to_s, row_headings_totals_category)
                 @scores[row_headings_totals_category] = new_total
             end
             # Logger.log.info("scores: #{@scores}")
@@ -118,7 +122,9 @@ module CincoDados
         end
         
         def full_card?()
-            @scores.values.map do |score|
+            @scores.values.filter do |score|
+                score.is_a?(Score)
+            end.map do |score|
                 score.value
             end.tally[nil].nil?
         end
@@ -160,9 +166,13 @@ module CincoDados
                 raise ArgumentError.new("hash must contain the same keys as Config::SCORE_CATEGORIES. positions.keys: #{positions.keys}")
             end
             positions.each do |category, position|
-                # Logger.log.info("setting position for score category: #{category}, for score: #{@scores[category]}, to [ #{position[:x]}, #{position[:y]} }")
+                Logger.log.info("setting position for score category: #{category}, for score: #{@scores[category]}, to [ #{position[:x]}, #{position[:y]} }")
                 @scores[category].set_position(position[:x], position[:y])
-                game_screen.add_control(@scores[category])
+
+                # check if this control has already been added to the screen (in case scores have already been positioned), and if not, add them
+                unless game_screen.has_control?(@scores[category])
+                    game_screen.add_control(@scores[category])
+                end
                 
                 # link each selectable score (not totals) to the button to WEST
                 if @scores[category].instance_of?(Score)
@@ -191,6 +201,10 @@ module CincoDados
             @scores.each do |category, score|
                 score.update_score()
             end
+        end
+
+        def update_name_control()
+            @scores[:player_name].update_score()
         end
 
         def update_totals()
@@ -266,6 +280,8 @@ module CincoDados
             @value = nil
             @width = ScoreCard::PLAYER_SCORE_WIDTH
             @height = ScoreCard::PLAYER_SCORE_HEIGHT
+
+            initial_fill(@fill)
         end
 
         def set_value(value)
@@ -280,13 +296,13 @@ module CincoDados
             decorate_control(@value, @style)
         end
 
-        def initial_fill()
-            super(@fill)
-        end
+        # def initial_fill()
+        #     super(@fill)
+        # end
 
         def decorate_control(value, style)
-            # Logger.log.info("entered decorate_control function for score #{self} with category #{category}")
-            initial_fill()
+            Logger.log.info("entered decorate_control function for score #{self} with category #{@category}")
+            initial_fill(@fill)
             unless value.nil?
                 value_string = value.to_s
                 while value_string.length < 3
@@ -351,11 +367,15 @@ module CincoDados
 
         def on_activate()
             dados_value = @dados_cup.scores[@category]
-            # if dados_value == 0
-            #     # somehow display an "are you sure" modal?
-            # else
-                @player_scores.add_score(@category, dados_value )
-            # end
+            if dados_value == 0
+                # somehow display an "are you sure" modal?
+                modal = Modal.new()
+                if modal.yes_no("Are you sure you want to record a zero score for #{Config::nice_categories()[@category]}?")
+                    @player_scores.add_score(@category, dados_value)
+                end
+            else
+                @player_scores.add_score(@category, dados_value)
+            end
         end
 
         #override
@@ -374,5 +394,40 @@ module CincoDados
         def set_value(value)
             return @value = value
         end
+    end
+
+    class PlayerName < ScoreCardCell
+
+        def initialize(game, player)  # category only :player_name
+            super(player.name, :player_name)
+            @game = game
+            @player = player
+            @fill = {char: :transparent , style: @style}
+
+            # Logger.log.info("PlayerName object passed in player: #{player} with name :#{player.name}")
+
+        end
+
+        def update_score()
+            decorate_control()
+        end
+
+        def decorate_control()
+            
+            if @game.current_player == @player && @game.player_count > 1
+                style = [:bright_blue, :on_black]
+            else
+                style = [:white, :on_black]
+            end
+            
+            @fill = {char: " ", style: style}
+            initial_fill(@fill)
+            
+            @rows = Text.centre_middle(@rows,@player.name,style)
+
+            # Logger.log.info("PlayerName control has rows #{@rows}")
+
+        end
+
     end
 end

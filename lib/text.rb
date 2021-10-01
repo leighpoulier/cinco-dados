@@ -16,7 +16,7 @@ module CincoDados
             self.sanitize_arguments_single_line(row,text)
 
             width = row.length
-            starting_column = self.start_column_centre(text,width)
+            starting_column = self.start_column_centre(text.length,width)
             return self.apply_text_single(text,row,starting_column, style)
 
         end
@@ -24,7 +24,7 @@ module CincoDados
         def self.right_single(row,text,style)
             self.sanitize_arguments_single_line(row,text)
             width = row.length
-            starting_column = self.start_column_right(text,width)
+            starting_column = self.start_column_right(text.length,width)
             return self.apply_text_single(text,row,starting_column,style)
         end
 
@@ -36,8 +36,9 @@ module CincoDados
 
             middle_row = self.middle_row(rows)
             starting_column = 0
-            self.apply_text_multi(text, rows, middle_row, starting_column, style)
 
+            rows[middle_row] = self.apply_text_single(text, rows[middle_row], starting_column, style)
+            return rows
         end
 
         def self.centre_middle(rows,text,style)
@@ -48,11 +49,138 @@ module CincoDados
             # get the rows width, since passing the check above, all rows must be the same length
             width = rows[0].length
 
-            middle_row = self.middle_row(rows)
-            starting_column = self.start_column_centre(text, width)
+            if text.length > width # needs to wrap!
+                minimum_rows = self.get_minimum_rows(text,width)
+                text_rows = self.evenly_distrubuted_rows(text,rows.length)
+                if text_rows.length > rows.length
+                    raise ArgumentError.new("The minimum rows for this text is #{text_rows.length}, you have asked for #{rows.length}")
+                end
 
+                start_row = (rows.length - text_rows.length)/2
+
+                (0...text_rows.length).each do |text_row_counter|
+
+                    starting_column = (width - text_rows[text_row_counter].length)/2
+                    rows[start_row + text_row_counter] = self.apply_text_single(text_rows[text_row_counter], rows[start_row + text_row_counter], starting_column, style)
+                end
+            else
+                # fits on single row
+                middle_row = self.middle_row(rows)
+                starting_column = self.start_column_centre(text.length, width)
+
+                rows[middle_row] = self.apply_text_single(text, rows[middle_row], starting_column, style)
+            end
+            return rows
+
+        end
+
+        def self.evenly_distrubuted_rows(text, target_row_count)
+
+            target_characters_per_line = text.length / target_row_count
+
+            rows = []
+            starting_offset = 0
+
+                
+            split_at_character = target_characters_per_line
+
+            while split_at_character < text.length
+
+                even_odd = 1
+                while text[split_at_character] != " "
+                    if even_odd % 2 == 0
+                        #fan out searching...
+                        #move back one
+                        split_at_character -= even_odd
+                    else
+                        #move forward two, etc.
+                        split_at_character += even_odd
+                    end
+                    if split_at_character == starting_offset
+                        raise StandardError.new("This logic isn't right, split at character has reduced to 0")
+                    end
+                    even_odd += 1
+                end
+                rows.push(text[starting_offset, split_at_character - starting_offset])
+                starting_offset = split_at_character + 1
+                split_at_character = starting_offset + target_characters_per_line
+
+            end
             
-            return self.apply_text_multi(text, rows, middle_row, starting_column, style)
+            rows.push(text[starting_offset, text.length - starting_offset])
+            
+
+            return rows
+            
+        end
+
+        def self.get_minimum_rows(text, width)
+
+            if text.length > width  #splitting required?
+            
+                line_count = 1
+                words = self.split_text_into_words_with_max_width(text,width)
+
+                rows = []
+                this_line = ""
+
+                words.each do |next_word|
+                    if this_line.length + 1 + next_word.length < width
+                        if this_line.length == 0
+                            this_line <<  next_word
+                        else
+                            this_line << " " << next_word
+                        end
+                    else
+                        rows.push(this_line)
+                        this_line = next_word
+                    end
+                end
+                rows.push(this_line)
+
+            else
+                return 1 # No splitting required
+            end
+            return rows.length
+        end
+
+        def self.split_long_word(word, width)
+            if word.length > width
+                replacement_words = []
+                consumed_characters = 0
+                while consumed_characters < word.length
+                    remaining_characters = word.length - consumed_characters
+                    if remaining_characters > width
+                        replacement_words.push(word[consumed_characters, width -1 ] + "-")
+                        consumed_characters += (width -1)
+                    else
+                        replacement_words.push(word[consumed_characters, remaining_characters])
+                        consumed_characters += remaining_characters
+                    end
+                end
+                return replacement_words
+            else
+                return [word]
+            end
+
+        end
+
+        def self.split_text_into_words_with_max_width(text, width)
+            words = text.split
+            words_index = 0
+            while words_index < words.length
+                if words[words_index].length > width
+                    puts "long word #{words[words_index]}"
+                    replacement_words = self.split_long_word(words[words_index], width)
+                    words.delete_at(words_index)
+                    puts "replacing with #{replacement_words}"
+                    words.insert(words_index, *replacement_words)
+                    words_index += replacement_words.length
+                else
+                    words_index += 1
+                end
+            end
+            return words
         end
 
         def self.right_middle(rows,text,style)
@@ -62,8 +190,10 @@ module CincoDados
             width = rows[0].length
 
             middle_row = self.middle_row(rows)
-            starting_column = self.start_column_right(text,width)
-            self.apply_text_multi(text, rows, middle_row, starting_column, style)
+            starting_column = self.start_column_right(text.length,width)
+
+            rows[middle_row] = self.apply_text_single(text, row[middle_row], starting_column, style)
+            return rows
 
         end
 
@@ -111,8 +241,11 @@ module CincoDados
                 
             if text.length < 1
                 raise ArgumentError.new("text must be a String of at least length:1. text.length: #{text.length}")
-            elsif text.length > rows[0].length
-                raise ArgumentError.new("text length must be less than or equal to the max row length.  text.length: #{text.length}, row length: #{rows[0].length}")
+            end
+
+            minimum_rows = self.get_minimum_rows(text, rows[0].length)
+            if minimum_rows > rows.length
+                raise ArgumentError.new("minimum rows to display text: \"#{text}\" in width: #{rows[0].length} must be less than or equal to the nubmer of rows.  rows.length: #{rows.length}, minimum_rows: #{minimum_rows}")
             end
 
         end
@@ -125,20 +258,12 @@ module CincoDados
             return (rows.length-1)/2
         end
 
-        def self.start_column_centre(text, width)
-            # return ((width-1)/2 - (text.length-1)/2)
-            # return ((width-1)/2 - (text.length)/2)
-            if text.length == width
-                return 0
-            elsif (width % 2) == (text.length % 2)
-                return (width/2 - text.length/2)
-            else
-                return ((width)/2 - (text.length+1)/2)
-            end
+        def self.start_column_centre(text_width, width)
+            return (width - text_width)/2
         end
 
-        def self.start_column_right(text, width)
-            return width - text.length
+        def self.start_column_right(text_width, width)
+            return width - text_width
         end
 
         def self.apply_text_single(text, row, starting_column, style)
@@ -148,11 +273,11 @@ module CincoDados
             return row
         end
 
-        def self.apply_text_multi(text, rows, middle_row, starting_column, style)
-            (0...text.length).each do |char_count|
-                rows[middle_row][starting_column + char_count] = {char: text[char_count], style: style}
-            end
-            return rows
+        def self.sanitize_string(string)
+
+            regex = "^" + Regexp.escape("`~!@#$%^&*()-_=+[]{}\|;:'\",.<>\/?") + "0-9a-zA-z" + "\u{A0}-\u{FE}"
+            return (/[#{regex}]/ =~ string).nil?
+
         end
     end
 

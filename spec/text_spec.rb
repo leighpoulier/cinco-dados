@@ -87,3 +87,64 @@ describe "All same width" do
 
 end
 
+
+# describe "#get_minimum_rows"
+
+#     it "should correctly determine the minimum lines of text without breaking words" do
+        
+#         expect(Text.get_minimum_rows("Lots of long text that needs to be wrapped in a certain width of bla bla blasdlf really long text", 15)).to eq()
+
+
+#     end
+
+# end
+
+describe "#split_long_words" do
+
+    it "should correctly split a long word into chunks according to width" do
+        expect(Text.split_long_word("Supercalifragilisticexpialidocious", 6)).to eq(["Super-", "calif-", "ragil-", "istic-", "expia-", "lidoc-", "ious",])
+    end
+
+    it "should do nothing for a word less than the width" do
+        expect(Text.split_long_word("Short", 5)).to eq(["Short"])
+    end
+
+end
+
+describe "#split_text_into_words_with_max_width" do
+    it "should split text containing long words correctly" do
+        expect(Text.split_text_into_words_with_max_width("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 12)).to eq(["This", "is", "a", "really", "long", "sentence", "and", "some", "of", "the", "words", "are", "longer", "than", "permitted,", "for", "example", "Supercalifr-", "agilisticex-", "pialidocious", "is", "waaaaaaay", "too", "long"])
+    end
+end
+
+describe "#get_minimum_rows" do
+    it "should calculate the rows to contain a paragraph" do
+        expect(Text.get_minimum_rows("Please enter a name. Maximum 5 characters!", 42)).to eq(1)
+        expect(Text.get_minimum_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 12)).to eq(15)
+        expect(Text.get_minimum_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 20)).to eq(9)
+        expect(Text.get_minimum_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 30)).to eq(6)
+        expect(Text.get_minimum_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 40)).to eq(5)
+    end
+
+end
+
+
+describe "#evenly_distributed_rows" do
+    it "should distrubute text evenly across multiple rows" do
+        expect(Text.evenly_distrubuted_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 5)).to eq(["This is a really long sentence", "and some of the words are longer", "than permitted, for example", "Supercalifragilisticexpialidocious", "is waaaaaaay too long"])
+    end
+end
+
+describe "#centre_middle " do
+    style = [:white, :on_black]
+    rows = [
+        Array.new(40, {char: :transparent, style: style}),
+        Array.new(40, {char: :transparent, style: style}),
+        Array.new(40, {char: :transparent, style: style}),
+        Array.new(40, {char: :transparent, style: style}),
+        Array.new(40, {char: :transparent, style: style}),
+        ]
+    it "should distribte text in a box" do
+        expect(Text.centre_middle(rows, "This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long" , [:white, :on_black])).to eq(5)
+    end
+end

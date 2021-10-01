@@ -6,16 +6,18 @@ module CincoDados
 
         attr_reader :player_scores, :name, :player_scores_column, :roll_count, :player_name
 
-        def initialize(name)
+        def initialize(game, name)
             unless name.is_a?(String)
                 raise ArgumentError.new("Please provide a string for your name.  provided name is a #{name.class.name}")
             end
             if name.length > 5
                 raise ArgumentError.new("Maximum Length of name is 5 characters.  Provided name \"#{name}\" length: #{name.length}")
             end
+            @game = game
             @name = name
-            @player_scores = PlayerScores.new(@name)
-            @player_name = PlayerName.new(@name)
+
+            # PlayerScores needs a reference to the game, so the player name can know if it is the current player.
+            @player_scores = PlayerScores.new(@game, self)
         end
 
         def add_score(category, score)
@@ -47,6 +49,10 @@ module CincoDados
             @player_scores.update_scores()
         end
 
+        def update_player_name_control()
+            @player_scores.update_name_control()
+        end
+
         def test_update_player_scores()
             @player_scores.test_update_all_scores()
         end
@@ -60,21 +66,22 @@ module CincoDados
         end
     end
 
-    class PlayerName < Control
+    # Moved this to the player_scores
+    # class PlayerName < Control
 
-        def initialize(name)
-            super(name)
-            @value = name
-            @style = [:white, :on_black]
-            @fill = {char: :transparent , style: @style}
-            @width = ScoreCard::PLAYER_SCORE_WIDTH
-            @height = ScoreCard::PLAYER_SCORE_HEIGHT
-        end
+    #     def initialize(name)
+    #         super(name)
+    #         @value = name
+    #         @style = [:white, :on_black]
+    #         @fill = {char: :transparent , style: @style}
+    #         @width = ScoreCard::PLAYER_SCORE_WIDTH
+    #         @height = ScoreCard::PLAYER_SCORE_HEIGHT
+    #     end
 
-        def position_name(game_screen, x, y)
-            set_position(position[:x], position[:y])
-            game_screen.add_control(@scores[category])
-        end
+    #     def position_name(game_screen, x, y)
+    #         set_position(position[:x], position[:y])
+    #         game_screen.add_control(@scores[category])
+    #     end
 
-    end
+    # end
 end

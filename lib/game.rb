@@ -11,18 +11,34 @@ module CincoDados
     class Game
 
 
-        attr_reader :players, :current_player, :dados_cup, :score_card, :current_player_roll_count, :current_player_turn_complete
+        attr_reader :players, :current_player, :dados_cup, :score_card, :current_player, :current_player_roll_count, :current_player_turn_complete
 
-        def initialize(game_screen, players)
+        def initialize(game_screen)
             @game_screen = game_screen
 
-            if players.length < 1 || players.length > 4
-                raise ArgumentError.new("Only 1-4 players are accepted")
-            end
+            # if players.length < 1 || players.length > 4
+            #     raise ArgumentError.new("Only 1-4 players are accepted")
+            # end
 
-            @players = players
-            @current_player = players[0]
-            @current_player_index = 0
+            
+            # adding players comes later.  moved this initialisation until after first player added.
+                # @players = players
+                # @current_player = players[0]
+
+                # link the dados cup to the the players score cells for hypothetical display
+                # @players.each do |player|
+                #     Logger.log.info("Set dados_cup #{@dados_cup} on player: #{player}")
+                #     player.player_scores.set_dados_cup(@dados_cup)
+                # end
+
+                # # create score card
+                # # requires a reference to game_screen so it can pass it to the score controls   
+                # @score_card = ScoreCard.new(38,1,@players, @game_screen)
+                # @game_screen.add_control(@score_card)
+                
+
+            @players = []
+            @current_player = nil
             @current_player_roll_count = 0
             @turn_counter = 0
             
@@ -34,18 +50,33 @@ module CincoDados
                 dado.add_link(EAST, @game_screen.roll_button, false)
             end
 
-            # link the dados cup to the the players score cells for hypothetical display
-            @players.each do |player|
-                Logger.log.info("Set dados_cup #{@dados_cup} on player: #{player}")
-                player.player_scores.set_dados_cup(@dados_cup)
-            end
-            
-            # create score card
+
+            # create score card, empty to start with.  Players must be added to it as they are added to the game
             # requires a reference to game_screen so it can pass it to the score controls   
-            @score_card = ScoreCard.new(38,1,@players, @game_screen)
+            @score_card = ScoreCard.new(38,1,@game_screen)
             @game_screen.add_control(@score_card)
+
             
-            # set_roll_button_link()
+        end
+
+        def add_player(player)
+            @players.push(player)
+
+            if @players.length == 1
+                Logger.log.info("First player added. Set current player to #{player}")
+                @current_player = player
+            end
+
+            @score_card.add_player(player)
+
+            # link the dados cup to the the players score cells for hypothetical display
+            Logger.log.info("Set dados_cup #{@dados_cup} on player: #{player}")
+            player.player_scores.set_dados_cup(@dados_cup)
+
+        end
+
+        def player_count()
+            return @players.length
         end
 
         def turns_remaining?()
@@ -130,11 +161,12 @@ module CincoDados
         def play_turn(reader)
             @current_player_roll_count = 0
             @current_player_count_empty_categories = @current_player.player_scores.count_empty_categories()
-            # Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
+            Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
 
-
-            # Set the link on the button to the appropriate column based on @current_player
-            # set_roll_button_link()
+            # Update the player name headings for highlighting current player
+            @players.each do |player|
+                player.update_player_name_control()
+            end
 
             # Enable the roll button in case it was disabled after the previous turn
             @game_screen.roll_button.enable()
@@ -209,6 +241,10 @@ module CincoDados
         end
 
         def play(reader)
+
+            if @players.length < 1
+                raise ConfigurationError.new("Can't start playing with less than 1 player!")
+            end
 
             while turns_remaining?() do 
                 

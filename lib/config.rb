@@ -11,6 +11,9 @@ module CincoDados
     GAME_SCREEN_TOP_MARGIN = 4
     GAME_SCREEN_DADOS_VERTICAL_SPACING = 1
 
+    MODAL_SCREEN_WIDTH = 40
+    MODAL_SCREEN_HEIGHT = 16
+
 
     DADOS_COUNT = 5
 
@@ -63,7 +66,7 @@ module CincoDados
     MAX_ROLLS_PER_TURN = 3
 
 
-        # convert the categories lists (symbols) into nice printable strings.  Returns a hash of { :category => "category_nice" }
+        # convert the categories lists (symbols) into nice printable strings.  Returns a hash of { :category => "category nice" }
         def self.nice_categories_upper()
 
             return Config::SCORE_CATEGORIES_UPPER.zip(Config::SCORE_CATEGORIES_UPPER.map do |category|
@@ -85,6 +88,11 @@ module CincoDados
                 end.join(" ").sub("Three of","3 of").sub("Four of","4 of")
             end).to_h
         end
+
+        def self.nice_categories()
+            return self.nice_categories_upper().merge(self.nice_categories_lower())
+        end
+
 
     end
 end

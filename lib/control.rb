@@ -85,12 +85,12 @@ module CincoDados
             end
         end
 
-        def draw(cursor, pastel)
+        def draw(cursor, pastel, x_offset, y_offset)
             if @x.nil? || @y.nil?
                 raise ConfigurationError.new("Unable to draw control: #{self} with x: #{@x.inspect} and y: #{@y.inspect}")
             end
             # Logger.log.info("Drawing control: #{self} at x:#{@x} y:#{@y} with rows: #{@rows.length}")
-            print cursor.move_to(@x, @y)
+            print cursor.move_to(@x + x_offset, @y + y_offset)
             @rows.each do |row|
                 row.each do |charhash|
                     if charhash[:char] == :transparent
@@ -117,7 +117,13 @@ module CincoDados
             return "class=#{self.class}, name=#{@name}"
         end
 
+        def set_border_style(style)
+            @border_style = style
+        end
+
         def <=>(other)
+
+            Logger.log.info("Comparing control #{self} of class #{self.class.name} with other control #{other} of class #{other.class.name}")
 
             case
             when self.is_a?(BackgroundControl)
@@ -189,11 +195,8 @@ module CincoDados
             @enabled = true
             @events = {}
             
-            @fill_style = [:white, :on_black]
-            @fill_style_selected = [:green, :on_black]
-
-            @fill = {char: BLOCK_FULL, style: @fill_style}
-            @fill_selected = {char: BLOCK_FULL, style: @fill_style_selected}
+            @fill = {char: BLOCK_FULL, style: [:white, :on_black]}
+            @fill_selected = {char: BLOCK_FULL, style: [:green, :on_black]}
 
             @text_style = [:white, :on_black, :inverse]
             @text_style_selected = [:green, :on_black, :inverse]
@@ -240,8 +243,8 @@ module CincoDados
 
         def disable()
             super()
-            fill = {char: BLOCK_SHADED, style: @fill_style}
-            initial_fill(fill)
+            @fill[:char] = BLOCK_SHADED
+            initial_fill(@fill)
         end
 
         def enable()
@@ -249,6 +252,23 @@ module CincoDados
             initial_fill(@fill)
             add_text_overlay(@text_style)
         end
+
+        def set_fill_style(style)
+            @fill[:style] = style
+        end
+
+        def set_fill_style_selected(style)
+            @fill_selected[:style] = style
+        end
+
+        def set_text_style(style)
+            @text_style = style
+        end
+
+        def set_text_style_selected(style)
+            @text_style_selected = style
+        end
+
 
 
         
@@ -281,8 +301,7 @@ module CincoDados
         def initialize(x, y, width, height, text)
             super
             @border_style = [:yellow, :on_black]
-            @fill_style_selected = [:yellow, :on_black]
-            @fill_selected = {char: BLOCK_FULL, style: @fill_style_selected}
+            @fill_selected = {char: BLOCK_FULL, style: [:yellow, :on_black]}
             @text_style_selected = [:yellow, :on_black, :inverse]
         end
 
@@ -366,7 +385,7 @@ module CincoDados
             @style = [:white, :on_black]
             @fill = {char: :transparent , style: @style}
             @text = text
-            decorate_control
+            decorate_control()
         end
 
         def initial_fill()
@@ -387,6 +406,18 @@ module CincoDados
                     @rows = Text.right_middle(@rows,@text,@style)
                 end
             end
+        end
+
+    end
+
+    class CentredTextControl < TextControl
+
+        def initialize(y, width, height, alignment, text,screen_width)
+
+            @x = (screen_width - width)/ 2
+            super(@x, y, width, height, alignment, text)
+
+
         end
 
     end

@@ -14,7 +14,7 @@ module CincoDados
         attr_reader :value
 
 
-        def initialize(game_screen, x, y, name)
+        def initialize(game_screen, dados_cup, x, y, name)
 
 
             super(name)
@@ -22,6 +22,7 @@ module CincoDados
             @@full_block = "\u{2588}"
             @@pip = "\u{2584}"
             @game_screen = game_screen
+            @dados_cup = dados_cup
             @width = WIDTH
             @height = HEIGHT
             @x_margin = X_MARGIN
@@ -36,6 +37,7 @@ module CincoDados
             # initial_fill(@@full_block)
 
             @prng = Random.new
+            @value = @prng.rand(6) + 1
 
             @rows[height-1] = Array.new(@width, {char: "\u{1FB0E}", style: style})  #bottom half row
             
@@ -110,12 +112,26 @@ module CincoDados
             @locked_border.show
             @locked = true
             # Logger.log.info("New Locked Border: " + @locked_border.name + ", " + @locked_border.inspect)
+
+            enable_disable_roll_button()
+
         end
 
         def remove_lock()
             # @game_screen.delete_control(@locked_border)
             @locked_border.hide
             @locked = false
+
+            enable_disable_roll_button()
+
+        end
+
+        def enable_disable_roll_button()
+            if @dados_cup.all_locked?
+                @game_screen.roll_button.disable
+            else
+                @game_screen.roll_button.enable
+            end
         end
 
         def locked?

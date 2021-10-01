@@ -415,10 +415,10 @@ module CincoDados
 
     class CentredTextControl < TextControl
 
-        def initialize(y, width, height, alignment, text,screen_width)
+        def initialize(y, width, height, vertical_alignment, horizontal_alignment, text,screen_width)
 
             @x = (screen_width - width)/ 2
-            super(@x, y, width, height, alignment, text)
+            super(@x, y, width, height, vertical_alignment, horizontal_alignment, text)
 
 
         end

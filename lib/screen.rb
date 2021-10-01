@@ -210,7 +210,20 @@ module CincoDados
 
             # create roll button
             @roll_button = RollButton.new(20, 14, 8, 3, "ROLL")
-            add_control(@roll_button)        
+            add_control(@roll_button)
+            
+            @exit_button = BackButton.new(0,0,6,3,"Exit")
+            add_control(@exit_button)
+            @exit_button.hide()
+            @escapecontrol = @exit_button
+            @exit_button.register_event(:activate, -> {
+                modal = Modal.new()
+                if modal.yes_no("Are you sure you want to quit?")
+                    @game.set_exit_flag()
+                    
+                    Logger.log.info("Set game exit flag")
+                end
+            })
                 
             @selection_cursor.select_control(@roll_button)
             # set_selection_cursor(selection_cursor)
@@ -518,13 +531,12 @@ module CincoDados
             border = ModalBorder.new("modal_border", self, 1)
             add_control(border)
 
-            text_prompt = CentredTextControl.new(3, Config::MODAL_SCREEN_WIDTH - 2, 3, :centre, prompt, Config::MODAL_SCREEN_WIDTH)
+            text_prompt = CentredTextControl.new(3, Config::MODAL_SCREEN_WIDTH - 2, 3, :middle, :centre, prompt, Config::MODAL_SCREEN_WIDTH)
             add_control(text_prompt)
 
             yes_button = Button.new(7, 9, MODAL_BUTTON_WIDTH, MODAL_BUTTON_HEIGHT, "Yes")
             yes_button.register_event(:activate, -> {
                 @response = true
-                Logger.log.info("Modal response = #{@response}")
             })
             yes_button.set_fill_style_selected([:yellow, :on_black])
             yes_button.set_text_style_selected([:yellow, :on_black, :inverse])
@@ -546,10 +558,12 @@ module CincoDados
             while @response.nil?
                 draw()
                 reader.read_keypress
-                Logger.log.info("Modal response = #{@response}")
-                Logger.log.info("Read keypress in menu_screen #{self.inspect}")
+                # Logger.log.info("Modal response = #{@response}")
+                # Logger.log.info("Read keypress in menu_screen #{self.inspect}")
             end
 
+
+            Logger.log.info("Modal response = #{@response}")
             return @response
 
         end

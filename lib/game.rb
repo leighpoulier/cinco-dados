@@ -41,6 +41,7 @@ module CincoDados
             @current_player = nil
             @current_player_roll_count = 0
             @turn_counter = 0
+            @exit_flag = false
             
             # create the dados cup
             @dados_cup = DadosCup.new(@game_screen, Config::DADOS_COUNT)
@@ -87,6 +88,11 @@ module CincoDados
             end
             Logger.log.info("No Player Turns Remaining - end of game")
             return false
+        end
+
+        def set_exit_flag()
+            @exit_flag = true
+            Logger.log.info("#{__method__}: exit_flag: #{@exit_flag}")
         end
 
         def set_roll_button_link()
@@ -184,7 +190,7 @@ module CincoDados
 
 
             # while a new score isn't added, and the roll count < 3
-            while @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories() && @current_player_roll_count < Config::MAX_ROLLS_PER_TURN
+            while !@exit_flag && @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories() && @current_player_roll_count < Config::MAX_ROLLS_PER_TURN
                 @game_screen.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Press Enter/Space to #{@game_screen.selection_cursor.enclosed_control.get_on_activate_description()}.")
                 @game_screen.draw
                 reader.read_keypress
@@ -195,7 +201,7 @@ module CincoDados
 
             # 3 turns are over, but still no score added
             # Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
-            if @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories()
+            if  !@exit_flag && @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories()
 
                 #select the recommended control
                 @game_screen.selection_cursor.select_control(@current_player.player_scores.scores[get_recommended_score_category()])
@@ -210,7 +216,7 @@ module CincoDados
                 @dados_cup.disable_all_dados()
 
                 # Loop until player commits a score
-                while @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories()
+                while  !@exit_flag && @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories()
                     @game_screen.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
                     # Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
 
@@ -246,7 +252,7 @@ module CincoDados
                 raise ConfigurationError.new("Can't start playing with less than 1 player!")
             end
 
-            while turns_remaining?() do 
+            while turns_remaining?() && !@exit_flag do 
                 
                 # @@game_screen.draw()
                 
@@ -258,14 +264,18 @@ module CincoDados
 
             @game_screen.draw
 
-            game_results = []
+            if turns_remaining?()
+                return nil
+            else
 
-            players.each do |player|
-                game_results.push({name: player.name}.merge(player.get_all_scores()))
+                game_results = []
+
+                players.each do |player|
+                    game_results.push({name: player.name}.merge(player.get_all_scores()))
+                end
+
+                return game_results
             end
-
-            return game_results
-            
 
         end
 

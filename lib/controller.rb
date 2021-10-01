@@ -129,14 +129,16 @@ module CincoDados
                 # high score processing
 
                 # then it returns up the stack to the main menu
-            
-                winning_player_result = game_result.sort_by do |player_result|
-                    player_result[:totals][:grand_total]
-                end.last
-    
-                Logger.log.info("The winner is: #{winning_player_result[:name]} with score #{winning_player_result[:totals][:grand_total]}")
-    
-
+                
+                if game_result.nil?  # Game was aborted
+                    Logger.log.info("Game aborted, no winner")
+                else  # game was fully completed, results returned
+                    winning_player_result = game_result.sort_by do |player_result|
+                        player_result[:totals][:grand_total]
+                    end.last
+                    
+                    Logger.log.info("The winner is: #{winning_player_result[:name]} with score #{winning_player_result[:totals][:grand_total]}")
+                end
             end
 
         end

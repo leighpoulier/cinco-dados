@@ -162,7 +162,7 @@ module CincoDados
             @game_screen.draw()
             
             unlocked_dados.each do |dado|
-                # sleep delay
+                sleep delay
                 dado.roll
                 # @game_screen.add_control(dado)
                 dado.show

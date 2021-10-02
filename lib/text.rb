@@ -56,12 +56,9 @@ module CincoDados
             # get the rows width, since passing the check above, all rows must be the same length
             width = rows[0].length
 
+            Logger.log.info("#{__method__}: Input text: \"#{text}\" with length: #{text.length} rows")
             input_text_rows = text.split("\n")
-
-            # input_text_rows_max_width = 0
-            #     if input_text_row.length > input_text_rows_max_width
-            #     input_text_rows_max_width = input_text_row.length
-
+            Logger.log.info("#{__method__}: Split input text on \\n to become #{input_text_rows}\" with rows: #{input_text_rows.length}")
 
 
             input_text_rows_split_into_subrows = []
@@ -69,20 +66,24 @@ module CincoDados
 
                 if input_text_row.length > width # needs to wrap!
 
-                    Logger.log.info("#{__method__}: Attempting to wrap text: \"#{text}\" in #{rows.length} rows")
+                    Logger.log.info("#{__method__}: Attempting to wrap text: \"#{input_text_row}\" with length: #{input_text_row.length} in width #{width}")
 
                     if vertical_alignment == :top || vertical_alignment == :bottom
 
                         # top or bottom vertical_alignment in minimum rows
-                        input_text_row_split_into_subrows = get_minimum_rows(text, width)
+                        input_text_row_split_into_subrows = get_minimum_rows(input_text_row, width)
+                        Logger.log.info("#{__method__}: Split into: \"#{input_text_row_split_into_subrows}\" with rows: #{input_text_row_split_into_subrows.length}")
 
                     elsif vertical_alignment == :middle
                         # middle alignment in distrubuted rows.
-                        minimum_rows_count = self.get_minimum_rows_count(text,width)
-                        input_text_row_split_into_subrows = self.get_evenly_distrubuted_rows(text,minimum_rows_count)
-                        if input_text_row_split_into_subrows.length > rows.length
-                            raise ArgumentError.new("#{__method__}: Attempted to distribute \"#{input_text_row}\" into #{minimum_rows_count} rows but ended up with #{input_text_row_split_into_subrows.length} rows.  Rows: #{input_text_row_split_into_subrows}")
-                        end
+
+                        minimum_rows_count = self.get_minimum_rows_count(input_text_row,width)
+                        Logger.log.info("#{__method__}: Middle aligning: minimum_rows_count of #{input_text_row} is #{minimum_rows_count}")
+
+                        input_text_row_split_into_subrows = self.get_evenly_distrubuted_rows(input_text_row,minimum_rows_count)
+                        Logger.log.info("#{__method__}: Distributed into: #{input_text_row_split_into_subrows} with rows: #{input_text_row_split_into_subrows.length}")
+
+
 
                     end
 
@@ -90,6 +91,12 @@ module CincoDados
 
                 else
                     input_text_rows_split_into_subrows.push(input_text_row)
+                    Logger.log.info("#{__method__}: Wrapping text: \"#{input_text_row}\" not necessary.  Added row #{input_text_row}")
+                end
+
+
+                if input_text_rows_split_into_subrows.length > rows.length
+                    raise ArgumentError.new("#{__method__}: Attempted to distribute \"#{text}\" into #{rows.length} rows but ended up with #{input_text_rows_split_into_subrows.length} rows.  Rows: #{input_text_rows_split_into_subrows}")
                 end
 
             end

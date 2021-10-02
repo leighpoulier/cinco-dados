@@ -241,8 +241,11 @@ end
 
 class ModalBorder < BorderControl
 
+    attr_reader :margin
+
     def initialize(name, modal, margin)
         super(name, modal.rows - 2 * margin, modal.columns - 4 * margin)
+        @margin = margin
         set_position(margin, margin)
         @style = [:white, :on_black]
         decorate_control(:box, @style)

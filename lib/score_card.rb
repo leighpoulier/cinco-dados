@@ -33,7 +33,7 @@ module CincoDados
             @style = [:white, :on_black]
             @initial_fill = {char: :transparent, style: @style}
 
-            @score_categories_upper = Config.nice_categories_upper()
+            @score_categories_upper = Config.unicode_dice_nice_categories_upper()
             @score_categories_lower = Config.nice_categories_lower()
             @score_categories = @score_categories_upper.merge(@score_categories_lower)
             @row_heading_text_width = @score_categories.values.map do |category|

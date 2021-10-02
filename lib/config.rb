@@ -46,20 +46,7 @@ module CincoDados
         sixes: "\u{2685}",
     }
 
-    # SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING = SCORE_CATEGORIES.map.with_index.sort_by do |value, index|
-    #      ((SCORE_CATEGORIES.length+1)/2 - 1 - index).abs 
-    # end.map(&:first)
 
-    # SCORE_CATEGORIES_EXCLUDE_FROM_RECOMMENDATION = 
-    # [
-    #     :chance,
-    # ]
-
-    SCORE_CATEGORIES_BONUS_MINIMUMS = SCORE_CATEGORIES_UPPER.map.with_index do |category, index|
-        [category, (index+1) * 3]
-    end.to_h
-
-    
     SCORE_FULL_HOUSE = 25
     SCORE_SMALL_STRAIGHT = 30
     SCORE_LARGE_STRAIGHT = 40
@@ -73,29 +60,61 @@ module CincoDados
 
     MAX_HIGH_SCORE_ENTRIES = 10
 
+    SCORE_CATEGORIES_LOWER_FIXED =
+    {
+        :full_house => SCORE_FULL_HOUSE,
+        :small_straight => SCORE_SMALL_STRAIGHT,
+        :large_straight => SCORE_LARGE_STRAIGHT,
+        :cinco_dados => SCORE_CINCO_DADOS,
+    }
+
+    SCORE_CATEGORIES_LOWER_VARIABLE = 
+    [
+        :three_of_a_kind,
+        :four_of_a_kind, 
+        :chance,
+    ]
+
+    SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING = SCORE_CATEGORIES.map.with_index.sort_by do |value, index|
+         ((SCORE_CATEGORIES.length+1)/2 - 1 - index).abs 
+    end.map(&:first)
+
+    # SCORE_CATEGORIES_EXCLUDE_FROM_RECOMMENDATION = 
+    # [
+    #     :chance,
+    # ]
+
+    SCORE_CATEGORIES_BONUS_MINIMUMS = SCORE_CATEGORIES_UPPER.map.with_index do |category, index|
+        [category, (index+1) * 3]
+    end.to_h
+
+    
+
 
 
 
         # convert the categories lists (symbols) into nice printable strings.  Returns a hash of { :category => "category nice" }
         def self.nice_categories_upper()
 
-            nice_categories_upper =  Config::SCORE_CATEGORIES_UPPER.zip(Config::SCORE_CATEGORIES_UPPER.map do |category|
+            return nice_categories_upper =  Config::SCORE_CATEGORIES_UPPER.zip(Config::SCORE_CATEGORIES_UPPER.map do |category|
                 category.to_s.gsub("_"," ").split.each do |word|
-                    unless ["a", "of", "in", "and", "or"].include?(word)
+                    unless ["a", "of", "and", "or"].include?(word)
                         word.capitalize!
                     end
                 end
                 .join(" ")
-                # .sub("three of","3 of")
-                # .sub("four of","4 of")
             end).to_h
 
-            UNICODE_DICE.each do |category, unicode|
-                # nice_categories_upper[category] = unicode * 3 + " " * (8-nice_categories_upper[category].length) + nice_categories_upper[category]
-                nice_categories_upper[category] = nice_categories_upper[category] + " " + unicode * 3 
-            end
 
-            return nice_categories_upper
+        end
+
+        def self.unicode_dice_nice_categories_upper()
+
+            nice_categories_upper = self.nice_categories_upper()
+
+            return nice_categories_upper.each do |category, nice_category|
+                nice_categories_upper[category] = nice_category + " " + UNICODE_DICE[category] * 3
+            end
 
         end
 

@@ -79,14 +79,14 @@ module CincoDados
         end
 
         def bonus(hypothetical = {})
-            if full_section?(Config::SCORE_CATEGORIES_UPPER, hypothetical)
-                if subtotal_upper(hypothetical) >= Config::UPPER_SCORE_BONUS_THRESHOLD
-                    return Config::UPPER_SCORE_BONUS_SCORE
-                else
-                    return 0
-                end
+            if subtotal_upper(hypothetical) >= Config::UPPER_SCORE_BONUS_THRESHOLD
+                return Config::UPPER_SCORE_BONUS_SCORE
             else
-                return nil
+                if full_section?(Config::SCORE_CATEGORIES_UPPER, hypothetical)
+                    return 0
+                else
+                    return nil
+                end
             end
         end
 

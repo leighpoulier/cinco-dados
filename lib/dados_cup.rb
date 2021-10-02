@@ -11,8 +11,10 @@ module CincoDados
             @game_screen = game_screen
             @dados = []
             @scores = {}
+            # initial dado stats for dado randomness statistical analysis
             @dados_stats = {roll1: 0, roll2: 0, roll3: 0, roll4: 0, roll5: 0, roll6: 0}
 
+            # create the 5 dados
             previous_dado = nil
             (0...dados_count).each do |dados_counter|
                 dado = Dado.new(game_screen, self, Config::GAME_SCREEN_LEFT_MARGIN, Config::GAME_SCREEN_TOP_MARGIN + dados_counter * (Dado::HEIGHT + Config::GAME_SCREEN_DADOS_VERTICAL_SPACING ), "dado" + dados_counter.to_s)
@@ -133,7 +135,7 @@ module CincoDados
             return 0
         end
 
-        # returns the sum of all dice, used for "chance" as well as inside the of_a_kind method
+        # returns the sum of all dados, used for "chance" as well as inside the of_a_kind method
         def sum(dados_values)
             return dados_values.sum
         end

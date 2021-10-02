@@ -15,12 +15,16 @@ module CincoDados
 
         def self.menu_main()
     
-            @@menu_screen = MainMenuScreen.new()
+            @@main_menu_screen = MainMenuScreen.new()
             
-            @@menu_screen.start()
+            @@main_menu_screen.start()
 
-            @@menu_screen.clean_up()
+            @@main_menu_screen.clean_up()
 
+        end
+
+        def self.main_menu_screen()
+            @@main_menu_screen
         end
 
         def self.menu_new_game()
@@ -32,8 +36,10 @@ module CincoDados
 
             unless @@player_count.nil?
 
-                # players = []
+                # Create an array to hold the player names
                 player_names = []
+
+                # Get a player name for each player
                 (0...@@player_count).each do |player_counter|
                     @@player_name_menu_screen = PlayerNameMenuScreen.new()
 

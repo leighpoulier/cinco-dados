@@ -15,6 +15,7 @@ module CincoDados
             @current_page = 1
             @min_page = 1
             @max_page = 1
+            @exit_flag = false
 
 
             @x = 0
@@ -29,8 +30,16 @@ module CincoDados
             @pastel = Pastel.new
 
             @reader = TTY::Reader.new(interrupt: Proc.new do
-                puts "Ctrl-C pressed: Exiting ... Goodbye!"
-                exit
+                modal = Modal.new()
+                if modal.yes_no("Ctrl-C pressed.\n\nAre you sure you want to quit?")
+                    @exit_flag = true
+                    if self.is_a?(GameScreen) 
+                        @game.set_exit_flag()
+                    end
+                    unless self.is_a?(MainMenuScreen)
+                        Controller.main_menu_screen.set_exit_flag()
+                    end
+                end
             end)
 
             @reader.subscribe(self)
@@ -144,19 +153,19 @@ module CincoDados
         def keypress(event)  # implements subscription of TTY::Reader
             Logger.log.info("keypress event: key.name = #{event.key.name}, event.value = #{event.value}")
             case
-            when event.key.name == :up || event.value == "w"
+            when event.key.name == :up || event.value == "w" || event.value == "W"
                 unless @selection_cursor.nil?
                     @selection_cursor.move(NORTH)
                 end
-            when event.key.name == :left || event.value == "a"
+            when event.key.name == :left || event.value == "a" || event.value == "A"
                 unless @selection_cursor.nil?
                     @selection_cursor.move(WEST)
                 end
-            when event.key.name == :down || event.value == "s"
+            when event.key.name == :down || event.value == "s" || event.value == "S"
                 unless @selection_cursor.nil?
                     @selection_cursor.move(SOUTH)
                 end
-            when event.key.name == :right || event.value == "d"
+            when event.key.name == :right || event.value == "d" || event.value == "D"
                 unless @selection_cursor.nil?
                     @selection_cursor.move(EAST)
                 end
@@ -230,12 +239,14 @@ module CincoDados
             super
             @game = nil
 
+            # Add a cursor to the screen
             add_selection_cursor()
 
             # create roll button
             @roll_button = RollButton.new(22, 14, 8, 3, "ROLL")
             add_control(@roll_button)
             
+            # Add a hidden exit button, only activated by the Escape key
             @exit_button = BackButton.new(0,0,6,3,"Exit")
             add_control(@exit_button)
             @exit_button.hide()
@@ -249,8 +260,8 @@ module CincoDados
                 end
             })
                 
+            # Ensure the the roll button is selected at the start of the game
             @selection_cursor.select_control(@roll_button)
-            # set_selection_cursor(selection_cursor)
 
         end
 
@@ -258,8 +269,14 @@ module CincoDados
             @game = game
 
 
-            # link (screen) button to (game) middle dado
+            # link (screen) roll button west to (game) middle dado
             @roll_button.add_link(WEST, @game.dados_cup.dados[2], false)
+
+            # link (screen) roll button north to (game) top dado
+            @roll_button.add_link(NORTH, @game.dados_cup.dados[0], false)
+
+            # link (screen) roll button south to (game) middle dado
+            @roll_button.add_link(SOUTH, @game.dados_cup.dados[4], false)
 
             # register activate event for roll button
             @roll_button.register_event(:activate, ->() {
@@ -289,7 +306,7 @@ module CincoDados
         def start()
 
             
-            @exit_flag = false
+            # @exit_flag = false
             while !@exit_flag do
                 draw()
                 @reader.read_keypress
@@ -355,13 +372,22 @@ module CincoDados
 
 
             @button_exit.register_event(:activate, ->() {
-                @exit_flag = true
+                modal = Modal.new()
+                if modal.yes_no("Are you sure you want to exit?")
+                    @exit_flag = true
+                end
             })
             @escapecontrol = @button_exit
 
             @selection_cursor.select_control(@button_new_game)
 
             display_message("Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
+        end
+
+
+        def set_exit_flag()
+            @exit_flag = true
+            Logger.log.info("#{__method__}: game exit_flag: #{@exit_flag}")
         end
 
 
@@ -433,7 +459,7 @@ module CincoDados
         def get_player_count()
 
             
-            @exit_flag = false
+            # @exit_flag = false
             while !@exit_flag do
                 draw()
                 @reader.read_keypress
@@ -629,7 +655,7 @@ module CincoDados
         def start()
 
             
-            @exit_flag = false
+            # @exit_flag = false
             while !@exit_flag do
                 draw()
                 @reader.read_keypress
@@ -709,6 +735,7 @@ module CincoDados
             # Register it to handle Esc keypress
             @escapecontrol = @button_exit
 
+            display_message("Press Enter/Space/Escape to exit")
             
         
         end
@@ -749,7 +776,7 @@ module CincoDados
             border = ModalBorder.new("modal_border", self, 1)
             add_control(border)
 
-            text_prompt = CentredTextControl.new(3, MODAL_SCREEN_WIDTH - 2, 3, :middle, :centre, prompt, MODAL_SCREEN_WIDTH)
+            text_prompt = CentredTextControl.new(3, MODAL_SCREEN_WIDTH - border.margin * 4 - 8, 4, :middle, :centre, prompt, MODAL_SCREEN_WIDTH)
             add_control(text_prompt)
 
             yes_button = Button.new(7, 9, MODAL_BUTTON_WIDTH, MODAL_BUTTON_HEIGHT, "Yes")

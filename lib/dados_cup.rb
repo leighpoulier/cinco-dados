@@ -5,12 +5,13 @@ require_relative "dado"
 module CincoDados
     class DadosCup
 
-        attr_reader :dados, :scores
+        attr_reader :dados, :scores, :dados_stats
 
         def initialize(game_screen, dados_count)
             @game_screen = game_screen
             @dados = []
             @scores = {}
+            @dados_stats = {roll1: 0, roll2: 0, roll3: 0, roll4: 0, roll5: 0, roll6: 0}
 
             previous_dado = nil
             (0...dados_count).each do |dados_counter|
@@ -161,7 +162,7 @@ module CincoDados
             @game_screen.draw()
             
             unlocked_dados.each do |dado|
-                sleep delay
+                # sleep delay
                 dado.roll
                 # @game_screen.add_control(dado)
                 dado.show
@@ -276,6 +277,12 @@ module CincoDados
                 end
             end
             return true
+        end
+
+        def increment_dados_stats(value)
+            Logger.log.info("#{__method__}: Increment dados_stats for dado: #{value}, current: #{@dados_stats[value]}")
+            @dados_stats[value] += 1
+            Logger.log.info("#{__method__}: Increment dados_stats for dado: #{value}, new: #{@dados_stats[value]}")
         end
 
         def to_s()

@@ -62,6 +62,7 @@ module CincoDados
                 reset_pips_to_blank()
 
                 @value = @prng.rand(6) + 1
+                @dados_cup.increment_dados_stats("roll#{@value}".to_sym)
 
                 if @value < 1 || @value > 6 || !@value.instance_of?(Integer)
                     raise DadosError.new("Invalid dado @value: #{@value}")

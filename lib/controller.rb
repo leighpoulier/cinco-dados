@@ -1,91 +1,17 @@
 require_relative "game"
 require_relative "screen"
+require "json"
 module CincoDados
     class Controller
 
 
         def self.start()
 
-            # @@reader = TTY::Reader.new(interrupt: Proc.new do
-            #     puts "Ctrl-C pressed: Exiting ... Goodbye!"
-            #     exit
-            # end)
-            
-            # @@reader.subscribe(self)
-
-            # @@console = nil
-            # @@cursor = nil
-
-            # display main menu
-            #New game
-            #High Scores
-            #Exit
 
             self.menu_main()
-
-            # exit
-
-            # # new game setup screen
-
-            # # get number of players
-            # num_players = nil
-            # while num_players.nil? || num_players < 1 || num_players > 4
-            #     print "enter number of players: (1-4) "
-            #     num_players = gets.to_i
-            #     # p num_players
-            # end
-            # puts
-            
-            # players = []
-
-            # # ask for their names?
-            
-            # while players.length < num_players
-
-
-            #     player_name = nil
-            #     while player_name.nil? || player_name.length < 1 || player_name.length > ScoreCard::PLAYER_SCORE_WIDTH || !(/[^#{regex}]/ =~ player_name).nil?
-            #         print "Enter player #{players.length + 1} name: (max 5 characters) "
-            #         player_name = gets.strip
-            #         p player_name
-            #     end
-
-            #     # add the player to the list
-            #     players.push(Player.new(player_name))
-            # end
                     
 
-
-
         end
-
-        # def self.screen()
-        #     @@game_screen
-        # end
-
-        # def self.game()
-        #     @@game
-        # end
-
-        # def self.keypress(event)  # implements subscription of TTY::Reader
-        #     # Logger.log.info("keypress event: key.name = #{event.key.name}, event.value = #{event.value}")
-        #     case
-        #     when event.key.name == :up || event.value == "w"
-        #         @@cursor.move(NORTH)
-        #     when event.key.name == :left || event.value == "a"
-        #         @@cursor.move(WEST)
-        #     when event.key.name == :down || event.value == "s"
-        #         @@cursor.move(SOUTH)
-        #     when event.key.name == :right || event.value == "d"
-        #         @@cursor.move(EAST)
-        #     when event.key.name == :return || event.key.name == :space
-        #         @@cursor.on_activate()
-        #     when event.key.name == :escape
-        #         Logger.log.info("Escape key pressed but not yet implemented")
-        #         @@console.display_message("Escape pressed but not yet implemented")
-        #     end
-        # end
-
 
         def self.menu_main()
     
@@ -121,24 +47,9 @@ module CincoDados
                     Logger.log.info("Player Names: #{player_names.to_s}")
                 end
 
-                game_result = main_game(player_names)
-                Logger.log.info("#{game_result}")
+                main_game(player_names)
 
-                # congratulations message
-
-                # high score processing
-
-                # then it returns up the stack to the main menu
-                
-                if game_result.nil?  # Game was aborted
-                    Logger.log.info("Game aborted, no winner")
-                else  # game was fully completed, results returned
-                    winning_player_result = game_result.sort_by do |player_result|
-                        player_result[:totals][:grand_total]
-                    end.last
-                    
-                    Logger.log.info("The winner is: #{winning_player_result[:name]} with score #{winning_player_result[:totals][:grand_total]}")
-                end
+               
             end
 
         end
@@ -157,17 +68,19 @@ module CincoDados
                 # Player requires a reference to the game, so that the player_name control can know if it is the current player.
                 player = Player.new(@@game, player_name)
 
-                # player.add_score(:cinco_dados, Config::SCORE_CINCO_DADOS)
-                # player.add_score(:large_straight, Config:: SCORE_LARGE_STRAIGHT)
-                # player.add_score(:small_straight, Config:: SCORE_SMALL_STRAIGHT)
-                # player.add_score(:full_house, Config:: SCORE_FULL_HOUSE)
-                # player.add_score(:four_of_a_kind, 3000)
-                # player.add_score(:three_of_a_kind, 30)
-                # player.add_score(:sixes, 30)
-                # player.add_score(:fives, 25)
-                # player.add_score(:fours, 16)
-                # player.add_score(:threes, 9)
-                # player.add_score(:twos, 4)
+                player.add_score(:cinco_dados, Config::SCORE_CINCO_DADOS)
+                player.add_score(:large_straight, Config:: SCORE_LARGE_STRAIGHT)
+                player.add_score(:small_straight, Config:: SCORE_SMALL_STRAIGHT)
+                player.add_score(:full_house, Config:: SCORE_FULL_HOUSE)
+                player.add_score(:four_of_a_kind, 30)
+                player.add_score(:three_of_a_kind, 30)
+                player.add_score(:sixes, 30)
+                player.add_score(:fives, 25)
+                player.add_score(:fours, 16)
+                player.add_score(:threes, 9)
+                player.add_score(:twos, 4)
+                player.add_score(:ones, 3)
+                # player.add_score(:chance, 30)
 
                 @@game.add_player(player)
             end
@@ -187,6 +100,129 @@ module CincoDados
             @@how_to_play_screen = HowToPlayScreen.new()
 
             @@how_to_play_screen.start()
+
+        end
+
+        def self.high_scores()
+
+            @@high_scores_screen = HighScoresScreen.new()
+            @@high_scores_screen.start()
+
+        end
+
+        def self.load_high_scores()
+
+            # attempt to open high scores json file.
+            begin
+                high_scores_json = File.open("high_scores.json", "r").read
+            rescue => e
+                # if e.class == Errno::ENOENT  # file not found
+                    # create new file
+                    high_scores_json = ""
+                    # else
+
+            # else
+            # ensure
+            end
+
+            # attempt to parse json file into json
+            begin
+                high_scores = JSON.parse(high_scores_json, {symbolize_names: true})
+            rescue
+                high_scores = {}
+            end
+            
+            Logger.log.info("#{__method__}: Loaded high scores: #{@high_scores}")
+
+            return high_scores.values.sort_by do |high_score|
+                high_score[:score]
+            end.reverse
+        end
+
+        def self.save_high_scores(high_scores_array)
+
+
+            high_scores = high_scores_array.map.with_index do |high_score, index|
+                [("high_score_%02d" % (index + 1)).to_sym, high_score]
+            end.to_h
+            
+            Logger.log.info("#{__method__}: New high scores hash: #{@high_scores}")
+
+            # begin
+                high_scores_json = JSON.generate(high_scores)
+            # rescue
+                
+            # end
+
+
+            
+            
+            # attempt to save high scores json file.
+            begin
+                file = File.open("high_scores.json", "w")
+                file.write(high_scores_json)
+            rescue => e
+            
+                # unable to open file for writing?
+            
+            # else
+            # ensure
+        
+            end
+
+
+        end
+
+        def self.load_dados_stats()
+
+            # attempt to open high scores json file.
+            begin
+                dados_stats_json = File.open("dados_stats.json", "r").read
+            rescue => e
+                # if e.class == Errno::ENOENT  # file not found
+                    # create new file
+                    dados_stats_json = ""
+                    # else
+
+            # else
+            # ensure
+            end
+
+            # attempt to parse json file into json
+            begin
+                dados_stats = JSON.parse(dados_stats_json, {symbolize_names: true})
+            rescue
+                dados_stats = {}
+            end
+            
+            Logger.log.info("#{__method__}: Loaded dados_stats: #{dados_stats}")
+
+            return dados_stats
+        end
+
+        def self.save_dados_stats(dados_stats)
+
+                # begin
+                    dados_stats_json = JSON.generate(dados_stats)
+                # rescue
+                    
+                # end
+
+                
+                # attempt to save high scores json file.
+                begin
+                    file = File.open("dados_stats.json", "w")
+                    file.write(dados_stats_json)
+                rescue => e
+                
+                    # unable to open file for writing?
+                
+                # else
+                # ensure
+                
+
+                end
+
 
         end
     end

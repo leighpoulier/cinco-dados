@@ -42,6 +42,7 @@ module CincoDados
             @current_player_roll_count = 0
             @turn_counter = 0
             @exit_flag = false
+            @new_high_scores = false
             
             # create the dados cup
             @dados_cup = DadosCup.new(@game_screen, Config::DADOS_COUNT)
@@ -252,6 +253,9 @@ module CincoDados
                 raise ConfigurationError.new("Can't start playing with less than 1 player!")
             end
 
+
+            # game loop
+
             while turns_remaining?() && !@exit_flag do 
                 
                 # @@game_screen.draw()
@@ -264,17 +268,118 @@ module CincoDados
 
             @game_screen.draw
 
-            if turns_remaining?()
+
+            dados_stats = Controller.load_dados_stats
+            Logger.log.info("#{__method__}: Loaded dados stats: #{dados_stats}")
+            Logger.log.info("#{__method__}: Dados_stats: #{@dados_cup.dados_stats}")
+            @dados_cup.dados_stats.each do |value, stat|
+                if dados_stats[value].nil?
+                    dados_stats[value] = @dados_cup.dados_stats[value]
+                else
+                    dados_stats[value] = dados_stats[value] + @dados_cup.dados_stats[value]
+                end
+            end
+            Logger.log.info("#{__method__}: New dados stats: #{dados_stats}")
+            Controller.save_dados_stats(dados_stats)
+
+
+
+
+            if turns_remaining?()  # game aborted before finishing, no high score processing or congratulatory messages
                 return nil
             else
 
-                game_results = []
+                @dados_cup.hide_all_dados()
+                @game_screen.roll_button.hide()
+                @game_screen.selection_cursor.hide()
+                @game_screen.draw()
+                # sleep 5
 
-                players.each do |player|
-                    game_results.push({name: player.name}.merge(player.get_all_scores()))
+
+                # sort the players by final score
+                players_sorted = players.sort_by do |player|
+                    player.get_score(:grand_total)
+                end.reverse
+
+
+
+                # high score processing
+
+                #load high scores
+                @high_scores_array = Controller.load_high_scores()  #array is already sorted reverse
+
+                # mark all scores as old
+                @high_scores_array.each do |high_score|
+                    high_score[:new] = false
                 end
 
-                return game_results
+                # check each player_score game result element to see if it qualifies to be added to the high scores
+                players_sorted.each do |player|
+
+                    # if the player result qualifies to be added to the high score
+                    if @high_scores_array.length < Config::MAX_HIGH_SCORE_ENTRIES || player.get_score(:grand_total) > @high_scores_array.last[:score]
+
+                        Logger.log.info("#{__method__}: Adding player_result #{player}: #{player.get_score(:grand_total)} to the high_scores_array")
+
+                        # flag for congratulations message
+                        player.set_new_high_score()
+                        @new_high_scores = true
+
+                        # add it
+                        @high_scores_array.push({name: player.name(), score: player.get_score(:grand_total), new: true})
+
+                        # sort the high scores
+                        @high_scores_array = @high_scores_array.sort_by do |high_score|
+                            high_score[:score]
+                        end.reverse
+
+                        #truncate the array if necessary
+                        if @high_scores_array.length > Config::MAX_HIGH_SCORE_ENTRIES
+                            @high_scores_array = @high_scores_array[0, Config::MAX_HIGH_SCORE_ENTRIES]
+                        end
+
+                        Logger.log.info("#{__method__}: @high_scores_array: #{@high_score_array}")
+                    end
+                end
+
+                Controller.save_high_scores(@high_scores_array)
+
+
+                
+                # congratulations message
+                score_table = []
+
+                if players.length > 1  # multiplayer game
+                    # players_sorted = players.sort_by do |player|
+                    #     player.get_score(:grand_total)
+                    # end.reverse
+                    congratulations_message = "Congratulations #{players_sorted.first.name}!\n\nYou Win!"
+                    players_sorted.each do |player|
+                        if score_table.length == 0
+                            score_table_line = "1st"
+                        elsif score_table.length == 1
+                            score_table_line = "2nd"
+                        elsif score_table.length == 2
+                            score_table_line = "3rd"
+                        else
+                            score_table_line = "#{score_table.length + 1}th"
+                        end
+                        score_table_line << ":%4d  %-5s #{player.new_high_score?() ? " HIGH SCORE" : "" }" % [player.get_score(:grand_total),player.name]
+                        score_table.push(score_table_line)
+                    end
+
+                else  # single player game
+                    congratulations_message = "Congratulations #{@players.first.name}!\n\nYou scored #{@players.first.get_score(:grand_total)}!#{@players.first.new_high_score?() ? "\nNEW HIGH SCORE" : "" }"
+                end
+
+                modal = Modal.new()
+                modal.final_scores(congratulations_message, score_table)
+
+                if @new_high_scores
+                    Controller.high_scores()
+                end
+
+
             end
 
         end

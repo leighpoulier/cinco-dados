@@ -40,9 +40,9 @@ module CincoDados
 
     SCORE_CATEGORIES = SCORE_CATEGORIES_UPPER + SCORE_CATEGORIES_LOWER
 
-    SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING = SCORE_CATEGORIES.map.with_index.sort_by do |value, index|
-         ((SCORE_CATEGORIES.length+1)/2 - 1 - index).abs 
-    end.map(&:first)
+    # SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING = SCORE_CATEGORIES.map.with_index.sort_by do |value, index|
+    #      ((SCORE_CATEGORIES.length+1)/2 - 1 - index).abs 
+    # end.map(&:first)
 
     SCORE_CATEGORIES_EXCLUDE_FROM_RECOMMENDATION = 
     [
@@ -65,6 +65,8 @@ module CincoDados
 
     MAX_ROLLS_PER_TURN = 3
 
+    MAX_HIGH_SCORE_ENTRIES = 10
+
 
         # convert the categories lists (symbols) into nice printable strings.  Returns a hash of { :category => "category nice" }
         def self.nice_categories_upper()
@@ -74,7 +76,10 @@ module CincoDados
                     unless ["a", "of", "in", "and", "or"].include?(word)
                         word.capitalize!
                     end
-                end.join(" ").sub("three of","3 of").sub("four of","4 of")
+                end
+                .join(" ")
+                # .sub("three of","3 of")
+                # .sub("four of","4 of")
             end).to_h
         end
 
@@ -85,7 +90,10 @@ module CincoDados
                     unless ["a", "of", "in", "and", "or"].include?(word)
                         word.capitalize!
                     end
-                end.join(" ").sub("Three of","3 of").sub("Four of","4 of")
+                end
+                .join(" ")
+                .sub("Three of","3 of")
+                .sub("Four of","4 of")
             end).to_h
         end
 

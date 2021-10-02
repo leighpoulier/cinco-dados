@@ -422,6 +422,21 @@ module CincoDados
 
     end
 
+    class InvertedTextControl < TextControl
+    
+        def initialize(x, y, width, height, vertical_alignment, horizontal_alignment, text) 
+
+            super
+            @style = [:black, :on_green]
+            @fill = {char: " " , style: @style}
+            Logger.log.info("#{__method__}: Set @fill for control #{self} to #{@fill}")
+            decorate_control()
+
+        end
+    
+    
+    end
+
     class CentredTextControl < TextControl
 
         def initialize(y, width, height, vertical_alignment, horizontal_alignment, text,screen_width)

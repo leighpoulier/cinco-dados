@@ -15,6 +15,7 @@ module CincoDados
             end
             @game = game
             @name = name
+            @new_high_score = false
 
             # PlayerScores needs a reference to the game, so the player name can know if it is the current player.
             @player_scores = PlayerScores.new(@game, self)
@@ -59,6 +60,14 @@ module CincoDados
 
         def get_all_scores()
             return @player_scores.get_all_scores()
+        end
+
+        def set_new_high_score()
+            @new_high_score = true
+        end
+
+        def new_high_score?()
+            @new_high_score
         end
 
         def to_s()

@@ -12,7 +12,11 @@ class BorderControl < Control
 
     end
 
-    def decorate_control(type = :box, style)
+    def set_style(style)
+        @style = style
+    end
+
+    def decorate_control(type = :box, style = @style)
         #style can be :box :sides :none
 
         # set the border characters

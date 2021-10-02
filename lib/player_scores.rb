@@ -43,7 +43,7 @@ module CincoDados
         end
 
         def valid_category?(category)
-            Config::SCORE_CATEGORIES.include?(category)
+            (Config::SCORE_CATEGORIES + ScoreCard::ROW_HEADINGS_TOTALS.keys).include?(category)
         end
 
         def add_score(category, score)

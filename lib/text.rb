@@ -56,42 +56,61 @@ module CincoDados
             # get the rows width, since passing the check above, all rows must be the same length
             width = rows[0].length
 
-            if text.length > width # needs to wrap!
+            input_text_rows = text.split("\n")
 
-                Logger.log.info("#{__method__}: Attempting to wrap text: \"#{text}\" in #{rows.length} rows")
+            # input_text_rows_max_width = 0
+            #     if input_text_row.length > input_text_rows_max_width
+            #     input_text_rows_max_width = input_text_row.length
 
-                if vertical_alignment == :top || vertical_alignment == :bottom
-                    # top or bottom vertical_alignment in minimum rows
-                    text_rows = get_minimum_rows(text, width)
 
-                elsif vertical_alignment == :middle
-                    # middle alignment in distrubuted rows.
-                    minimum_rows_count = self.get_minimum_rows_count(text,width)
-                    text_rows = self.get_evenly_distrubuted_rows(text,rows.length)
-                    if text_rows.length > rows.length
-                        raise ArgumentError.new("The minimum rows for text \"#{text}\" is #{text_rows.length}, you have asked for #{rows.length}.  Rows: #{text_rows}")
+
+            input_text_rows_split_into_subrows = []
+            input_text_rows.each do |input_text_row|
+
+                if input_text_row.length > width # needs to wrap!
+
+                    Logger.log.info("#{__method__}: Attempting to wrap text: \"#{text}\" in #{rows.length} rows")
+
+                    if vertical_alignment == :top || vertical_alignment == :bottom
+
+                        # top or bottom vertical_alignment in minimum rows
+                        input_text_row_split_into_subrows = get_minimum_rows(text, width)
+
+                    elsif vertical_alignment == :middle
+                        # middle alignment in distrubuted rows.
+                        minimum_rows_count = self.get_minimum_rows_count(text,width)
+                        input_text_row_split_into_subrows = self.get_evenly_distrubuted_rows(text,minimum_rows_count)
+                        if input_text_row_split_into_subrows.length > rows.length
+                            raise ArgumentError.new("#{__method__}: Attempted to distribute \"#{input_text_row}\" into #{minimum_rows_count} rows but ended up with #{input_text_row_split_into_subrows.length} rows.  Rows: #{input_text_row_split_into_subrows}")
+                        end
+
                     end
 
+                    input_text_rows_split_into_subrows.push(*input_text_row_split_into_subrows)
+
+                else
+                    input_text_rows_split_into_subrows.push(input_text_row)
                 end
 
-                # calculate the vertical starting row
-                start_row = self.start_row(text_rows.length, rows.length, vertical_alignment)
-
-                # applay style to each character to build up styled character array
-                (0...text_rows.length).each do |text_row_counter|
-
-                    starting_column = self.start_column(text_rows[text_row_counter].length, width, horizontal_alignment)
-                    rows[start_row + text_row_counter] = self.apply_text_single(text_rows[text_row_counter], rows[start_row + text_row_counter], starting_column, style)
-                end
-
-
-            else
-                # fits on single row
-                middle_row = self.start_row(1, rows.length, vertical_alignment)
-                starting_column = self.start_column(text.length, width, horizontal_alignment)
-
-                rows[middle_row] = self.apply_text_single(text, rows[middle_row], starting_column, style)
             end
+
+
+            # calculate the vertical starting row
+            start_row = self.start_row(input_text_rows_split_into_subrows.length, rows.length, vertical_alignment)
+
+            # apply style to each character to build up styled character array
+            (0...input_text_rows_split_into_subrows.length).each do |input_text_row_counter|
+                starting_column = self.start_column(input_text_rows_split_into_subrows[input_text_row_counter].length, width, horizontal_alignment)
+                rows[start_row + input_text_row_counter] = self.apply_text_single(input_text_rows_split_into_subrows[input_text_row_counter], rows[start_row + input_text_row_counter], starting_column, style)
+            end
+
+
+                # else
+                #     # fits on single row
+                #     middle_row = self.start_row(1, rows.length, vertical_alignment)
+                #     starting_column = self.start_column(text.length, width, horizontal_alignment)
+                #     rows[middle_row] = self.apply_text_single(text, rows[middle_row], starting_column, style)
+                # end
 
             Logger.log.info("#{__method__}: Wrapped text: #{rows}")
 
@@ -307,7 +326,7 @@ module CincoDados
 
             minimum_rows_count = self.get_minimum_rows_count(text, rows[0].length)
             if minimum_rows_count > rows.length
-                raise ArgumentError.new("minimum rows to display text: \"#{text}\" in width: #{rows[0].length} must be less than or equal to the number of rows.  rows.length: #{rows.length}, minimum_rows_count: #{minimum_rows_count}")
+                raise ArgumentError.new("minimum rows to display text: \"#{text}\" with width #{text.length} in width: #{rows[0].length} must be less than or equal to the number of rows.  rows.length: #{rows.length}, minimum_rows_count: #{minimum_rows_count}")
             end
 
         end

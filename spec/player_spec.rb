@@ -12,8 +12,8 @@ describe "Player" do
 
     it "starts with an empty scorecard" do
 
-        values_tally = player.player_scores.scores.values.map do |score|
-            score.value
+        values_tally = player.player_scores.scores.values.map do |score_table_line|
+            score_table_line.value
         end.tally
 
         expect(values_tally.length).to eq(1)

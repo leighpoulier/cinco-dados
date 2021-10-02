@@ -36,10 +36,7 @@ module CincoDados
             @reader.subscribe(self)
             Logger.log.info("Logger subscribed to #{self.inspect}")
 
-            # create selection cursor
-            @selection_cursor = SelectionCursor.new(self, "cursor")
-            add_control(@selection_cursor)
-
+            @selection_cursor = nil
             @escapecontrol = nil
 
         end
@@ -54,9 +51,11 @@ module CincoDados
                 @controls.sort!
                 # Logger.log.info("new @controls order #{@controls.join(", ")}")
 
-                if @selection_cursor.enclosed_control.nil? && !control.equal?(@selection_cursor) && control.is_a?(Button)
-                    @selection_cursor.select_control(control)
-                    Logger.log.info("Automatically selected control #{control} because it's a #{control.class.name} and selection cursor was empty")
+                unless @selection_cursor.nil?
+                    if @selection_cursor.enclosed_control.nil? && !control.equal?(@selection_cursor) && control.is_a?(Button)
+                        @selection_cursor.select_control(control)
+                        Logger.log.info("Automatically selected control #{control} because it's a #{control.class.name} and selection cursor was empty")
+                    end
                 end
             else
                 raise ArgumentError.new("control #{control} already exists in controls array #{@controls}")
@@ -74,6 +73,13 @@ module CincoDados
             else
                 raise ArgumentError.new("No such control in controls array")
             end
+        end
+
+        def add_selection_cursor()
+            # create selection cursor
+            @selection_cursor = SelectionCursor.new(self, "cursor")
+            add_control(@selection_cursor)
+
         end
 
 
@@ -139,15 +145,25 @@ module CincoDados
             Logger.log.info("keypress event: key.name = #{event.key.name}, event.value = #{event.value}")
             case
             when event.key.name == :up || event.value == "w"
-                @selection_cursor.move(NORTH)
+                unless @selection_cursor.nil?
+                    @selection_cursor.move(NORTH)
+                end
             when event.key.name == :left || event.value == "a"
-                @selection_cursor.move(WEST)
+                unless @selection_cursor.nil?
+                    @selection_cursor.move(WEST)
+                end
             when event.key.name == :down || event.value == "s"
-                @selection_cursor.move(SOUTH)
+                unless @selection_cursor.nil?
+                    @selection_cursor.move(SOUTH)
+                end
             when event.key.name == :right || event.value == "d"
-                @selection_cursor.move(EAST)
+                unless @selection_cursor.nil?
+                    @selection_cursor.move(EAST)
+                end
             when event.key.name == :return || event.key.name == :space
-                @selection_cursor.on_activate()
+                unless @selection_cursor.nil?
+                    @selection_cursor.on_activate()
+                end
             when event.key.name == :escape
                 if @escapecontrol.nil?
                     Logger.log.info("Escape key pressed but no control registered")
@@ -212,6 +228,7 @@ module CincoDados
             super
             @game = nil
 
+            add_selection_cursor()
 
             # create roll button
             @roll_button = RollButton.new(20, 14, 8, 3, "ROLL")
@@ -293,6 +310,8 @@ module CincoDados
 
             super
 
+            add_selection_cursor()
+
             @banner = BannerText.new(4, "Cinco Dados", @columns)
             add_control(@banner)
 
@@ -321,6 +340,11 @@ module CincoDados
             add_control(@button_high_scores)
             @button_high_scores.add_link(NORTH, @button_new_game, true)
 
+            @button_high_scores.register_event(:activate, ->() {
+                Controller.high_scores()
+            })
+
+
             # create "Exit" button and link it to "How to Play" and "High Scores" buttons
             @button_exit = Button.new(MAIN_MENU_LEFT_MARGIN + 24, MAIN_MENU_TOP_MARGIN + 6, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "Exit")
             add_control(@button_exit)
@@ -347,7 +371,10 @@ module CincoDados
 
 
         def initialize()
+
             super
+
+            add_selection_cursor()
 
             @player_count = nil
 
@@ -416,46 +443,55 @@ module CincoDados
             @banner2 = BannerText.new(7, "Name", @columns)
             add_control(@banner2)
 
-            @text_prompt = TextControl.new(19, 16, 42, 1, :top, :left, "Please enter a name. Maximum 5 characters!")
+            @text_prompt = TextControl.new(19, 16, 42, 1, :top, :centre, "Please enter a name. Maximum 5 characters!")
             add_control(@text_prompt)
+
+            @name_border = BorderControl.new("name_border", ScoreCard::PLAYER_SCORE_HEIGHT + 2, ScoreCard::PLAYER_SCORE_WIDTH + 4)
+            @name_border.set_position((Config::GAME_SCREEN_WIDTH - @name_border.width)/2,@text_prompt.y + 3)
+            @name_border.set_style([:green, :on_black])
+            @name_border.decorate_control()
+            add_control(@name_border)
+
+            @text_prompt2 = TextControl.new(19, @text_prompt.y + 8, 42, 1, :top, :centre, "Press Enter to accept")
+            add_control(@text_prompt2)
 
 
             # Add OK button
-            @button_exit = Button.new(32, MAIN_MENU_TOP_MARGIN + 8, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "OK")
-            add_control(@button_exit)
+            # @button_exit = Button.new(32, MAIN_MENU_TOP_MARGIN + 8, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "OK")
+            # add_control(@button_exit)
 
-            @button_exit.register_event(:activate, ->() {
-                @exit_flag = true
-            })
-            # Register it to handle Esc keypress
-            @escapecontrol = @button_exit
+            # @button_exit.register_event(:activate, ->() {
+            #     @exit_flag = true
+            # })
+            # # Register it to handle Esc keypress
+            # @escapecontrol = @button_exit
 
             
         
         end
 
-        def keypress(event)  # implements subscription of TTY::Reader
-            Logger.log.info("keypress event: key.name = #{event.key.name}, event.value = #{event.value}")
-            case
-            when event.key.name == :up
-                @selection_cursor.move(NORTH)
-            when event.key.name == :left
-                @selection_cursor.move(WEST)
-            when event.key.name == :down
-                @selection_cursor.move(SOUTH)
-            when event.key.name == :right
-                @selection_cursor.move(EAST)
-            when event.key.name == :return
-                @selection_cursor.on_activate()
-            when event.key.name == :escape
-                if @escapecontrol.nil?
-                    Logger.log.info("Escape key pressed but no control registered")
-                    @info_line.display_message("Escape pressed but no control registered")
-                else
-                    @escapecontrol.on_activate()
-                end
-            end
-        end
+        # def keypress(event)  # implements subscription of TTY::Reader
+        #     Logger.log.info("keypress event: key.name = #{event.key.name}, event.value = #{event.value}")
+        #     case
+        #     when event.key.name == :up
+        #         @selection_cursor.move(NORTH)
+        #     when event.key.name == :left
+        #         @selection_cursor.move(WEST)
+        #     when event.key.name == :down
+        #         @selection_cursor.move(SOUTH)
+        #     when event.key.name == :right
+        #         @selection_cursor.move(EAST)
+        #     when event.key.name == :return
+        #         @selection_cursor.on_activate()
+        #     when event.key.name == :escape
+        #         if @escapecontrol.nil?
+        #             Logger.log.info("Escape key pressed but no control registered")
+        #             @info_line.display_message("Escape pressed but no control registered")
+        #         else
+        #             @escapecontrol.on_activate()
+        #         end
+        #     end
+        # end
 
         def get_player_name(player_number)
 
@@ -469,8 +505,10 @@ module CincoDados
             # while !@exit_flag do
             while player_name.length < 1 || player_name.length > ScoreCard::PLAYER_SCORE_WIDTH || !Text.sanitize_string(player_name)
                 draw()
-                print @cursor.move_to(Text.start_column(ScoreCard::PLAYER_SCORE_WIDTH, @columns, :centre),@text_prompt.y + 2)
+                print @cursor.move_to(Text.start_column(ScoreCard::PLAYER_SCORE_WIDTH, @columns, :centre),@text_prompt.y + 4)
                 print @cursor.show()
+                print @pastel.decorate("     ",:green, :on_black)
+                print @cursor.move(-5,0)
                 player_name = gets.strip
                 print @cursor.hide()
                 # @reader.read_keypress
@@ -491,7 +529,10 @@ module CincoDados
         HOW_TO_PLAY_BUTTON_HEIGHT = 3
 
         def initialize()
+
             super
+
+            add_selection_cursor()
 
             @current_page = 1
             @max_page = 3
@@ -507,7 +548,7 @@ module CincoDados
             @paragraph1 = ParagraphCentredTextControl.new(HOW_TO_PLAY_PARAGRAPH_TOP_MARGIN, Config::GAME_SCREEN_WIDTH - 4, :left, "Cinco Dados (Five Dice) is a game of chance played with five dice. Roll the dice up to 3 times in each turn to try and achieve certain combinations.", Config::GAME_SCREEN_WIDTH)
             add_control(@paragraph1)
 
-            @paragraph2 = ParagraphCentredTextControl.new(@paragraph1.y + @paragraph1.height + 1, Config::GAME_SCREEN_WIDTH - 4, :left, "Each player has 13 turns, which correspond to the 13 spaces on the score card. After the first roll, you can set aside any number of dice to keep, and roll the remainder. By selectively keeping some dice and rerolling others you can hopefully build up the required combinations by your 3rd roll.", Config::GAME_SCREEN_WIDTH)
+            @paragraph2 = ParagraphCentredTextControl.new(@paragraph1.y + @paragraph1.height + 1, Config::GAME_SCREEN_WIDTH - 4, :left, "Each player has 13 turns, which correspond to the 13 spaces on the score card. After the first roll of each turn, you can set aside any number of dice to keep, and roll the remainder. By selectively keeping some dice and rerolling others you can hopefully build up the required combinations by your 3rd roll.", Config::GAME_SCREEN_WIDTH)
             add_control(@paragraph2)
 
             @paragraph3 = ParagraphCentredTextControl.new(@paragraph2.y + @paragraph2.height + 1, Config::GAME_SCREEN_WIDTH - 4, :left, "The combinations listed on the score card are split into upper and lower sections. The upper section contains one space for each of the six dice values, and the target is to roll 3 dice of each value.  The score for these spaces is the addition of the values of those dice.  For example if you roll 3 fives, you score 15. If you roll 4 sixes, you score 24, and if you roll 1 three, you score 3.", Config::GAME_SCREEN_WIDTH)
@@ -610,6 +651,57 @@ module CincoDados
         end
     end
 
+    class HighScoresScreen < MenuScreen 
+
+        HIGH_SCORE_LEFT_MARGIN = 30
+        HIGH_SCORE_WIDTH = 20
+
+        def initialize()
+            super
+            add_selection_cursor()
+
+            @banner1 = BannerText.new(4, "High Scores", @columns)
+            add_control(@banner1)
+
+
+            @high_score_array = Controller.load_high_scores()  # Array is already sorted reverse
+
+            y_offset = @banner1.y + @banner1.height + 2
+            @high_score_array.each_with_index do |high_score, index|
+                
+                if high_score[:new] == true
+                    add_control(InvertedTextControl.new(HIGH_SCORE_LEFT_MARGIN, y_offset, HIGH_SCORE_WIDTH, 1, :top, :left, "#{"%2s." % (index + 1).to_s}  #{high_score[:score]}  #{high_score[:name]}"))
+                else
+                    add_control(TextControl.new(HIGH_SCORE_LEFT_MARGIN, y_offset, HIGH_SCORE_WIDTH, 1, :top, :left, "#{"%2s." % (index + 1).to_s}  #{high_score[:score]}  #{high_score[:name]}"))
+                end
+                y_offset += 1
+
+            end
+
+
+            # @name_border = BorderControl.new("name_border", ScoreCard::PLAYER_SCORE_HEIGHT + 2, ScoreCard::PLAYER_SCORE_WIDTH + 4)
+            # @name_border.set_position((Config::GAME_SCREEN_WIDTH - @name_border.width)/2,@text_prompt.y + 3)
+            # @name_border.set_style([:green, :on_black])
+            # @name_border.decorate_control()
+            # add_control(@name_border)
+
+
+            # Add Exit button
+            @button_exit = Button.new(32, MAIN_MENU_TOP_MARGIN + 8, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "Exit")
+            add_control(@button_exit)
+
+            @button_exit.register_event(:activate, ->() {
+                @exit_flag = true
+            })
+            # Register it to handle Esc keypress
+            @escapecontrol = @button_exit
+
+            
+        
+        end
+
+    end
+
     class Modal < Screen
 
         MODAL_BUTTON_HEIGHT = 3
@@ -618,6 +710,8 @@ module CincoDados
         def initialize()
 
             super
+
+            add_selection_cursor()
 
             @columns = Config::MODAL_SCREEN_WIDTH
             @rows = Config::MODAL_SCREEN_HEIGHT
@@ -635,13 +729,14 @@ module CincoDados
 
         def yes_no(prompt)
 
+
             border = ModalBorder.new("modal_border", self, 1)
             add_control(border)
 
             text_prompt = CentredTextControl.new(3, Config::MODAL_SCREEN_WIDTH - 2, 3, :middle, :centre, prompt, Config::MODAL_SCREEN_WIDTH)
             add_control(text_prompt)
 
-            yes_button = Button.new(7, 9, MODAL_BUTTON_WIDTH, MODAL_BUTTON_HEIGHT, "Yes")
+            yes_button = Button.new(15, 9, MODAL_BUTTON_WIDTH, MODAL_BUTTON_HEIGHT, "Yes")
             yes_button.register_event(:activate, -> {
                 @response = true
             })
@@ -670,7 +765,56 @@ module CincoDados
             end
 
 
-            Logger.log.info("Modal response = #{@response}")
+            Logger.log.info("#{__method__}: Modal response = #{@response}")
+            return @response
+
+        end
+
+        def final_scores(prompt, score_table)
+
+            @rows = @rows + score_table.length
+            @x = 1
+            @y = (Config::GAME_SCREEN_HEIGHT - @rows) / 2
+            @columns = Config::MODAL_SCREEN_WIDTH - 3
+
+            border = ModalBorder.new("modal_border", self, 1)
+            add_control(border)
+
+            text_prompt = CentredTextControl.new(3, Config::MODAL_SCREEN_WIDTH - 2, 4, :middle, :centre, prompt, @columns)
+            add_control(text_prompt)
+
+            y_offset = text_prompt.y + text_prompt.height + 1
+            if score_table.length > 0
+                score_table.each do |score_table_line|
+                    add_control(CentredTextControl.new(y_offset, Config::MODAL_SCREEN_WIDTH - 12, 1,:top, :left, score_table_line, @columns))
+                    y_offset += 1
+                end
+                y_offset += 1
+            end
+
+            ok_button = Button.new((@columns - MODAL_BUTTON_WIDTH)/2, y_offset + 1, MODAL_BUTTON_WIDTH, MODAL_BUTTON_HEIGHT, "OK")
+            ok_button.register_event(:activate, -> {
+                @response = true
+            })
+            # ok_button.set_fill_style_selected([:yellow, :on_black])
+            # ok_button.set_text_style_selected([:yellow, :on_black, :inverse])
+            # ok_button.set_border_style([:yellow, :on_black])
+            add_control(ok_button)
+
+            @selection_cursor.select_control(ok_button)
+
+            @escapecontrol = ok_button
+
+            @response = nil
+            while @response.nil?
+                draw()
+                reader.read_keypress
+                # Logger.log.info("Modal response = #{@response}")
+                # Logger.log.info("Read keypress in menu_screen #{self.inspect}")
+            end
+
+
+            Logger.log.info("#{__method__}: Modal response = #{@response}")
             return @response
 
         end

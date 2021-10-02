@@ -176,6 +176,8 @@ module CincoDados
 
         def clean_up()
             print @cursor.show
+            system("clear")
+            puts("Goodbye!")
         end
 
 
@@ -231,7 +233,7 @@ module CincoDados
             add_selection_cursor()
 
             # create roll button
-            @roll_button = RollButton.new(20, 14, 8, 3, "ROLL")
+            @roll_button = RollButton.new(22, 14, 8, 3, "ROLL")
             add_control(@roll_button)
             
             @exit_button = BackButton.new(0,0,6,3,"Exit")
@@ -346,7 +348,7 @@ module CincoDados
 
 
             # create "Exit" button and link it to "How to Play" and "High Scores" buttons
-            @button_exit = Button.new(MAIN_MENU_LEFT_MARGIN + 24, MAIN_MENU_TOP_MARGIN + 6, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "Exit")
+            @button_exit = BackButton.new(MAIN_MENU_LEFT_MARGIN + 24, MAIN_MENU_TOP_MARGIN + 6, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, "Exit")
             add_control(@button_exit)
             @button_exit.add_link(NORTH, @button_how_to_play, true)
             @button_exit.add_link(WEST, @button_high_scores, true)
@@ -358,6 +360,8 @@ module CincoDados
             @escapecontrol = @button_exit
 
             @selection_cursor.select_control(@button_new_game)
+
+            display_message("Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
         end
 
 
@@ -395,25 +399,33 @@ module CincoDados
             # Register it to handle Esc keypress
             @escapecontrol = @button_exit
             
-
+            # Add the buttons 1, 2, 3, 4
             @player_count_buttons = []
             (0...4).each do |counter|
                 @player_count_buttons.push(Button.new(SETUP_MENU_PLAYER_COUNT_BUTTON_LEFT_MARGIN + (counter * (SETUP_MENU_PLAYER_COUNT_BUTTON_WIDTH + 6)), MAIN_MENU_TOP_MARGIN + 2, SETUP_MENU_PLAYER_COUNT_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT, (counter + 1).to_s))
+                
+                # Add links for cursor navigation
                 unless counter == 0
                     @player_count_buttons[counter].add_link(WEST, @player_count_buttons[counter-1], true)
                 end
                 @player_count_buttons[counter].add_link(SOUTH, @button_exit, false)
+
+                # register event for button activation
                 @player_count_buttons[counter].register_event(:activate, ->() {
                     @player_count = counter + 1
                     @exit_flag = true
                 })
+
+                # add control to screen
                 add_control(@player_count_buttons[counter])
             end
 
+            # add exit button
             @button_exit.add_link(NORTH, @player_count_buttons[0], false)
 
-
+            # initial select button 1
             @selection_cursor.select_control(@player_count_buttons[0])
+            display_message("Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
 
         end
 
@@ -608,6 +620,7 @@ module CincoDados
                     @current_page = @min_page
                 end
             })
+            display_message("Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
 
             
         end
@@ -704,6 +717,9 @@ module CincoDados
 
     class Modal < Screen
 
+        MODAL_SCREEN_WIDTH = 40
+        MODAL_SCREEN_HEIGHT = 16
+    
         MODAL_BUTTON_HEIGHT = 3
         MODAL_BUTTON_WIDTH = 10
 
@@ -713,8 +729,8 @@ module CincoDados
 
             add_selection_cursor()
 
-            @columns = Config::MODAL_SCREEN_WIDTH
-            @rows = Config::MODAL_SCREEN_HEIGHT
+            @columns = MODAL_SCREEN_WIDTH
+            @rows = MODAL_SCREEN_HEIGHT
 
             @x = (Config::GAME_SCREEN_WIDTH - @columns) / 2
             @y = (Config::GAME_SCREEN_HEIGHT - @rows) / 2
@@ -733,10 +749,10 @@ module CincoDados
             border = ModalBorder.new("modal_border", self, 1)
             add_control(border)
 
-            text_prompt = CentredTextControl.new(3, Config::MODAL_SCREEN_WIDTH - 2, 3, :middle, :centre, prompt, Config::MODAL_SCREEN_WIDTH)
+            text_prompt = CentredTextControl.new(3, MODAL_SCREEN_WIDTH - 2, 3, :middle, :centre, prompt, MODAL_SCREEN_WIDTH)
             add_control(text_prompt)
 
-            yes_button = Button.new(15, 9, MODAL_BUTTON_WIDTH, MODAL_BUTTON_HEIGHT, "Yes")
+            yes_button = Button.new(7, 9, MODAL_BUTTON_WIDTH, MODAL_BUTTON_HEIGHT, "Yes")
             yes_button.register_event(:activate, -> {
                 @response = true
             })
@@ -775,18 +791,18 @@ module CincoDados
             @rows = @rows + score_table.length
             @x = 1
             @y = (Config::GAME_SCREEN_HEIGHT - @rows) / 2
-            @columns = Config::MODAL_SCREEN_WIDTH - 3
+            @columns = MODAL_SCREEN_WIDTH - 3
 
             border = ModalBorder.new("modal_border", self, 1)
             add_control(border)
 
-            text_prompt = CentredTextControl.new(3, Config::MODAL_SCREEN_WIDTH - 2, 4, :middle, :centre, prompt, @columns)
+            text_prompt = CentredTextControl.new(3, MODAL_SCREEN_WIDTH - 2, 4, :middle, :centre, prompt, @columns)
             add_control(text_prompt)
 
             y_offset = text_prompt.y + text_prompt.height + 1
             if score_table.length > 0
                 score_table.each do |score_table_line|
-                    add_control(CentredTextControl.new(y_offset, Config::MODAL_SCREEN_WIDTH - 12, 1,:top, :left, score_table_line, @columns))
+                    add_control(CentredTextControl.new(y_offset, MODAL_SCREEN_WIDTH - 12, 1,:top, :left, score_table_line, @columns))
                     y_offset += 1
                 end
                 y_offset += 1

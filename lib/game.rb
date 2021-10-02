@@ -192,7 +192,8 @@ module CincoDados
 
             # while a new score isn't added, and the roll count < 3
             while !@exit_flag && @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories() && @current_player_roll_count < Config::MAX_ROLLS_PER_TURN
-                @game_screen.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Press Enter/Space to #{@game_screen.selection_cursor.enclosed_control.get_on_activate_description()}.")
+                rolls_left = Config::MAX_ROLLS_PER_TURN - @current_player_roll_count
+                @game_screen.display_message("#{@current_player}'s turn. #{rolls_left} #{rolls_left > 1 ? "rolls" : "roll"} left.  Press Enter/Space to #{@game_screen.selection_cursor.enclosed_control.get_on_activate_description()}.")
                 @game_screen.draw
                 reader.read_keypress
             end

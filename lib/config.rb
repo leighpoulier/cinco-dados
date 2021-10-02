@@ -11,9 +11,6 @@ module CincoDados
     GAME_SCREEN_TOP_MARGIN = 4
     GAME_SCREEN_DADOS_VERTICAL_SPACING = 1
 
-    MODAL_SCREEN_WIDTH = 40
-    MODAL_SCREEN_HEIGHT = 16
-
 
     DADOS_COUNT = 5
 
@@ -40,14 +37,23 @@ module CincoDados
 
     SCORE_CATEGORIES = SCORE_CATEGORIES_UPPER + SCORE_CATEGORIES_LOWER
 
+    UNICODE_DICE = {
+        ones: "\u{2680}",
+        twos: "\u{2681}",
+        threes: "\u{2682}",
+        fours: "\u{2683}",
+        fives: "\u{2684}",
+        sixes: "\u{2685}",
+    }
+
     # SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING = SCORE_CATEGORIES.map.with_index.sort_by do |value, index|
     #      ((SCORE_CATEGORIES.length+1)/2 - 1 - index).abs 
     # end.map(&:first)
 
-    SCORE_CATEGORIES_EXCLUDE_FROM_RECOMMENDATION = 
-    [
-        :chance,
-    ]
+    # SCORE_CATEGORIES_EXCLUDE_FROM_RECOMMENDATION = 
+    # [
+    #     :chance,
+    # ]
 
     SCORE_CATEGORIES_BONUS_MINIMUMS = SCORE_CATEGORIES_UPPER.map.with_index do |category, index|
         [category, (index+1) * 3]
@@ -68,10 +74,12 @@ module CincoDados
     MAX_HIGH_SCORE_ENTRIES = 10
 
 
+
+
         # convert the categories lists (symbols) into nice printable strings.  Returns a hash of { :category => "category nice" }
         def self.nice_categories_upper()
 
-            return Config::SCORE_CATEGORIES_UPPER.zip(Config::SCORE_CATEGORIES_UPPER.map do |category|
+            nice_categories_upper =  Config::SCORE_CATEGORIES_UPPER.zip(Config::SCORE_CATEGORIES_UPPER.map do |category|
                 category.to_s.gsub("_"," ").split.each do |word|
                     unless ["a", "of", "in", "and", "or"].include?(word)
                         word.capitalize!
@@ -81,6 +89,14 @@ module CincoDados
                 # .sub("three of","3 of")
                 # .sub("four of","4 of")
             end).to_h
+
+            UNICODE_DICE.each do |category, unicode|
+                # nice_categories_upper[category] = unicode * 3 + " " * (8-nice_categories_upper[category].length) + nice_categories_upper[category]
+                nice_categories_upper[category] = nice_categories_upper[category] + " " + unicode * 3 
+            end
+
+            return nice_categories_upper
+
         end
 
 

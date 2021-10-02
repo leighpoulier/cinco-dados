@@ -309,10 +309,6 @@ module CincoDados
                 #load high scores
                 @high_scores_array = Controller.load_high_scores()  #array is already sorted reverse
 
-                # mark all scores as old
-                @high_scores_array.each do |high_score|
-                    high_score[:new] = false
-                end
 
                 # check each player_score game result element to see if it qualifies to be added to the high scores
                 players_sorted.each do |player|

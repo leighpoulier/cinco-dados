@@ -478,7 +478,7 @@ module CincoDados
             # # Register it to handle Esc keypress
             # @escapecontrol = @button_exit
 
-            
+            display_message("Press enter to accept")
         
         end
 
@@ -666,8 +666,8 @@ module CincoDados
 
     class HighScoresScreen < MenuScreen 
 
-        HIGH_SCORE_LEFT_MARGIN = 30
-        HIGH_SCORE_WIDTH = 20
+        HIGH_SCORE_LEFT_MARGIN = 32
+        HIGH_SCORE_WIDTH = 16
 
         def initialize()
             super

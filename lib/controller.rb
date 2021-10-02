@@ -136,7 +136,13 @@ module CincoDados
 
             return high_scores.values.sort_by do |high_score|
                 high_score[:score]
-            end.reverse
+            end
+            .reverse
+            .each do |high_score|
+                high_score[:new] = false
+            end
+
+
         end
 
         def self.save_high_scores(high_scores_array)

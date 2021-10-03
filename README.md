@@ -51,7 +51,7 @@
 
 Cinco Dados is going to be my take on this game and is dedicated to my partner, who is Mexican, and with whom i play it often in real life.  It is aimed at people who would like to take a few minutes of leasure time, and can be played either alone or with friends. The game involves rolling five dados up to 3 times to achieve certain combinations, such as matching or sequentially numbered dados, and strategically inserting those rolls into the available slots on the score card to maximise your score. 
 
-The application is intended to fulfil social and entertainment needs for anyone who enjoys casual games, whether solo or with friends. A single player game provides around 10-15 minutes of fun, and a proportinally longer amount of time for more players as play is passed between players after every turn. The application is intended as a direct substitue for five real dados and a paper score card. It can be used by anyone who may not have access to five real dados, or have a convenient space to roll five dados easily.  It is much easier to play Cinco Dados on a computer when you don't have access to dados or a flat surface, such as while travelling.
+The application is intended to fulfil social and entertainment needs for anyone who enjoys casual games, whether solo or with friends. A single player game provides around 10-15 minutes of fun, and a proportinally longer amount of time for more players as play is passed between players after every turn. The application is intended as a direct substitute for five real dados and a paper score card. It can be used by anyone who may not have access to five real dados, or have a convenient space to roll five dados easily.  It is much easier to play Cinco Dados on a computer when you don't have access to dados or a flat surface, such as while travelling.
 
 A visual representation of the dados on screen simulates real dados on a table top.  A tabular depiction of the score card similar in appearance to a paper score card increases realism and user engagement. The score card provides automatic score calculation based on the rolled dados values, and keeps a running total of these scores for each player, and declares a winner at the end of the game.  How convenient!
 
@@ -66,11 +66,11 @@ Navigation throughout the application is intended to be accomplished solely with
 
 #### 2. Dice
 
-During the main game, the five dados are "rolled" to generate the required combinations.  The dados will be represented visually; displayed using a grid of white and black Unicode chacters that can be represented in the terminal.  The values of the dados are generated from five seperate psuedo-random number generators; one for each dados. The action of dados rolling is simulated by animating the dados in a sequence.  A "locking" enables the user to select which dados to roll again and which to keep, simulating adding or removing real dados to a dados cup before rolling.
+During the main game, the five dados are "rolled" to generate the required combinations.  The dados will be represented visually; displayed using a grid of white and black Unicode chacters that can be represented in the terminal.  The values of the dados are generated from five seperate psuedo-random number generators; one for each dado. The action of rolling the dados is simulated by animating the dados in a sequence.  A "locking" function enables the user to select which dados to roll again and which to keep, simulating adding or removing real dados to or from a dados cup before rolling.
 
 #### 3. Score Card
 
-While the game is in progress, roughly half of the screen is taken up with the score card.  The table is automatically generated and widens to accomodate the number of players in the current game.  It displays the list of available score categories, and includes a score in those categories that have already had dados rolls allocated.  It calculates and displays the subtotals of the top and bottom secions, applies a bonus for the top section if applicable, and calculates the grand total. There is one column for every player, with their name at the top, which is highlighted when it is their turn. After completing their dados rolls, the player can the cursor to navigate up and down their column to see each prospective score displayed in the available cells, before committing to one.  Only cells which have not yet been allocated are selectable.
+While the game is in progress, roughly half of the screen is taken up with the score card.  The table is automatically generated and widens to accomodate the number of players in the current game.  It displays the list of available score categories, and includes a score in those categories that have already had dado rolls allocated.  It calculates and displays the subtotals of the top and bottom sections, applies a bonus for the top section if applicable, and calculates the grand total. There is one column for every player, with their name at the top, which is highlighted when it is their turn. After rolling the dados, the player can use the cursor to navigate up and down their score card column to see each prospective score displayed in the available cells, before committing to one.  Only cells which have not yet been allocated are selectable.
 
 #### 4. High Score Table
 
@@ -85,7 +85,7 @@ From the main menu the user can enter a screen of text describing how to play.  
 
 #### General Navigation and User Experience
 
-Navigation throughout the game menus and main game screen is via a cursor, represented on screen as a square which surrounds a control, and can be moved between available controls. Controls may be graphical items (eg. dados, cells of the scorecard table) or buttons (eg. options in a menu). Different controls may be available depending on game logic at any stage of the application.  Arrow keys are used to navigate the cursor between controls, and once the intended control is surrounded by the cursor, that control will highlight by displaying in a different colour. In some situations the cursor may highlight a control in orange to warn that the consequence of that selection might not be what they player intends.
+Navigation throughout the game menus and main game screen is via a cursor, represented on screen as a square which surrounds any control, and can be moved between available controls. Controls may be buttons (eg. options in a menu) or graphical items (eg. dados, cells of the scorecard table). Different controls may be available depending on game logic at any stage of the application.  Arrow keys are used to navigate the cursor between controls, and once the intended control is surrounded by the cursor, that control will highlight by displaying in a different colour. In some situations the cursor may highlight a control in orange to warn that the consequence of that selection might not be what they player intends.
 
 On most pages in the application a line of context based help text at the bottom of the screen will provide instructions on how to interact with the game at any stage, and will change with the currently displayed screen and curerently selected control. For example in a menu it may display: "Navigate with ←↑↓→  Enter↵/Space to select, Escape to exit".  When the roll button is selected it may say "Leigh's turn. 3 rolls left. Press Enter/Space to roll".
 
@@ -107,25 +107,25 @@ Incorrect input in cursor navigation mode (pressing any non supported key) will 
 
 The theme of arrow key based cursor movement continues during the main game, where the user will move the cursor to command on screen actions to progress the game. The context help line will provide players with context help as above.  
 
-Each turn of the game consists of three rolls; each is activated via a large "ROLL" button which is selected by the cursor. For the first roll no dados are initially displayed, and the context help line will direct users to press enter/space to roll the dados. When the dados are rolled, an animation process will sequentially show the new faces of each dados in sequence. 
+Each turn of the game consists of three rolls; each is activated via a large "ROLL" button which is selected by the cursor. For the first roll no dados are initially displayed, and the context help line will direct users to press enter/space to roll the dados. When the dados are rolled, an animation process will show the new faces of each dados in sequence. 
 
-Before the 2nd and 3rd roll, any of the dados can be locked so that they will not be affected by subsequent activations of the roll button. The context help line will display context help along the lines of "press the up/down keys to select and enter/space to lock" (or unlock as appropriate). A locked dados will have a visual locking indicator so users can see when they have locked a dados. If all five dados are locked, the roll button will become disabled, preventing the user from rolling no dados and wasting a turn.  Incorrect key presses will be met with the same silent failure, and a lack of cursor movement. Once the intended dados are locked, the player can select and activate the "ROLL" button to continue, or they may choose at any time to allocate their dados roll to the score card.
+Before the 2nd and 3rd roll, any of the dados can be locked so that they will not be affected by subsequent activations of the roll button. The context help line will display context help along the lines of "press the up/down keys to select and enter/space to lock" (or unlock as appropriate). A locked dado will have a visual locking indicator so users can see when they have locked a dado. If all five dados are locked, the roll button will become disabled, preventing the user from rolling no dados and wasting a turn.  Incorrect key presses will be met with the same silent failure, indicated by a lack of cursor movement. Once the intended dados are locked, the player can select and activate the "ROLL" button to continue, or they may choose at any time to allocate their dados roll to the score card.
 
 #### Game - Score Card
 
-Arrow based cursor movement and enter key / space bar command selection continues, maintaining continuity in the user experience.  After the three rolls of a turn are completed, the user will be forced to choose where on the score card to place their final roll.  An algorithm will predict and preselect the best category to allocate the score based on the already allocated scores and the current dados values.
+Arrow based cursor movement and enter key / space bar command selection continues on to the score card, maintaining continuity in the user experience.  After the three rolls of a turn are completed, the user will be forced to choose where on the score card to place their final roll.  An algorithm will predict and preselect the best category to allocate the score based on the already allocated scores and the current dados values.
 
-The context help line will display direct the user to navigate up and down the score card to select a score and enter/space to commit the score. The cursor will appear in the player's column of the score card, and the up and down arrows can be used to select available cells of the table.  As each cell is highlighted, it will display the prospective score available should that category be chosen.
+The context help line will direct the user to navigate up and down the score card to select a score and enter/space to commit the score. The cursor will appear in the player's column of the score card, and the up and down arrows can be used to select available cells of the table.  As each cell is highlighted, it will display the prospective score available should that category be chosen.
 
-Logic will prevent cells already containing a roll from being selected, so when the up/down arrows are pressed the cursor will skip already allocated cells. Cateory selections which would result in zero score will be highlighed in orange when selected.  When the cursor highlights a cell which would result in a non-zero score it will be highlighted green.
+Logic will prevent cells already containing a roll from being selected, so when the up/down arrows are pressed the cursor will skip already allocated cells. Category selections which would result in zero score will be highlighed in orange when selected.  When the cursor highlights a cell which would result in a non-zero score it will be highlighted green.
 
 To accept the selected category the user can press the space bar or enter key.  If the player selects a zero scoring cell (ie they have no choice, or they are choosing to forego a score for strategic reasons) they will be prompted again with a confirmation message "Are you sure you want enter a zero score for [category]?", and will need to select the yes button and press enter/space again to confirm.
 
 #### Summary Page and High Score Table
 
-After completing a game, some game summary information is displayed, with a ranking of the players and their final scores.  Any player who has achieved a new high score is also indicated.  If the game was single player, the summary information contains the player's final score with a congratulatory message. If the game was multiplayer, then the players will be ranked and the winner declared.
+After playing a game to completion, game summary information is displayed, with a ranking of the players and their final scores.  Any player who has achieved a new high score is also indicated.  If the game was single player, the summary information contains the player's final score with a congratulatory message. If the game was multiplayer, then the players will be ranked and the winner declared.
 
-If any player achieved a new high score, the updated high score table is displayed after ending the game, with their new entry highlighted.  No user interaction is expected apart from acknowledgement and closing the page with the enter/space key on the provided button. Again context help will direct the user with a message such as "Press Enter/Space to exit". 
+If any player achieved a new high score, the updated high score table is displayed after ending the game, with the new entries highlighted.  No user interaction is expected apart from acknowledgement by closing the page with the enter/space key on the provided button. Again context help will direct the user with a message such as "Press Enter/Space to exit". 
 
 The user can also access the high score table at any time directly from the main menu.
 
@@ -149,7 +149,7 @@ This diagram shows the control flow once the main game loop is entered, via the 
 
 ### Implementation Plan
 
-Trello was usedto develop an implementation plan for this project.
+Trello was used to develop an implementation plan for this project.  Please click on teh link below to view the board.
 
 ![My Trello Board](docs/trello_screenshot.png)
 
@@ -174,13 +174,13 @@ tty-prompt (~> 0.23.1)
 tty-reader (~> 0.9.0)
 ```
 
-To install all required dependences, and then run the application execute the following in a terminal
+To install all required dependences, and then run the application execute the `cincodados.sh` bash script in a terminal
 
 ```bash
 $ ./cincodados.sh
 ```
 
-After running this command the first time, the dependencies should all be installed.  On subsequent executions, you can skip the dependency checking and run the application directly by executing the following instead:
+After running this command the first time, the dependencies should all be installed.  On subsequent executions, you can skip the dependency checking and run the application directly by executing the `cincodados-run.sh` script instead:
 
 ```bash
 $ ./cincodados-run.sh
@@ -209,17 +209,17 @@ Once you have your intended option selected, press the space bar or the enter (r
 
 ##### How to Play
 
-Selecting and pressing enter or space on the "How to Play" button will open a screen with multiple pages of text desribing the basic game play.
+Using the arrows to select, and then pressing enter or space on the "How to Play" button will open a screen with multiple pages of text desribing the basic game play.
 
 ![How to Play](docs/how_to_play.png)
 
-In the image above, w have moved to page 2 of 3, as indicated in the top right. The "Previous" and "Next" buttons are used to page through the text, and the exit button in the centre, or the escape key can be used to return to the main menu.
+In the image above, w have moved to page 2 of 3, as indicated in the top right. The "Previous" and "Next" buttons are used to page through the text, and the exit button in the centre, or the escape key, can be used to return to the main menu.
 
 
 
 ##### High Scores
 
-The high scores table button will display the top 10 highest scoring players. This information is retained on disk, so your high scoring games are safe.
+The high scores button will display the top 10 highest scoring players. This information is retained on disk, so your high scoring games are persistent.
 
 ![High Scores](docs/high_scores.png)
 
@@ -232,7 +232,7 @@ After selecting to start a new game, the application asks a few questions to set
 
 ![How Many Players](docs/how_many_players.png)
 
-Use the arrow keys to select 1-4 players, and press enter or space to confirm.  A back button is provided to return to the main menu, or the escape key can be used also.
+Use the arrow keys to select 1-4 players, and press enter or space to confirm.  A back button is provided to return to the main menu, or the escape key can also be used.
 
 The next screen asks for the players names, one by one.  Enter a name of 1-5 characters and press enter.
 
@@ -252,7 +252,7 @@ The context based help directs the user to activate the roll button, after which
 
 ![First Dice Roll](docs/first_roll.png)
 
-Once the dados have appeared, you may choose to set aside and keep some dados while you continue to roll the others.  Each turn consists of 3 rolls, made up of the initial roll, and two re-rolls.  To keep dados aside, and not roll them again, you must "lock" them.  For example, to lock the 2 sixes, first use the arrow keys to move the cursor onto one of them.
+Once the dados have been rolled, you may choose to set aside and keep some dados while you continue to roll others.  Each turn consists of 3 rolls, made up of the initial roll, and two re-rolls.  To keep dados aside, and not roll them again, you must "lock" them.  For example, to lock the 2 sixes, first use the arrow keys to move the cursor onto one of them.
 
 ![Select Dado](docs/select_dados.png)
 
@@ -280,11 +280,11 @@ It has preselected the upper sixes category, based on the fact that this gives y
 
 ![After Third Roll](docs/after_third_roll.png)
 
-Wow, what are the chances, we have a 4th six.  Notice that the roll button has disappeared.  After rolling the 3rd roll, the cursor will automatically move over to the recommended position on the score card.  We could commit our 24 points to sixes, or we can press the down arrow two times to reposition the cursor on "4 of a kind".  However, notice that if we move further down to the "Full House" cateogory, the cursor displays a score of zero highlighted in orange.  
+Wow, what are the chances, we have a 4th six.  Notice that the roll button has disappeared.  After rolling the 3rd roll, the cursor will automatically move over to the recommended position on the score card because we must now choose a score category.  We could commit our 24 points to sixes, or we can press the down arrow two times to reposition the cursor on "4 of a kind".  However, notice that if we move further down to the "Full House" cateogory, the cursor displays a score of zero highlighted in orange.  
 
 ![Zero Score](docs/zero_score.png)
 
-This is because the current dados do not qualify for this category.  If we were to commit the score with "Full House" selected, we would receive zero points. However a confirmation dialogue box will appear asking us to confirm.
+This is because the current dados do not qualify for this category.  If we were to commit the score with "Full House" selected, we would receive zero points. However if we attempt this a confirmation dialogue box will appear asking us to confirm.
 
 ![Confirm Zero Score](docs/zero_score_confirm.png)
 
@@ -292,7 +292,7 @@ Let's not do that, and return to commiting our 24 points in sixes.
 
 ![Score Committed, Player Sequenced](docs/score_commited_next_player.png)
 
-The score is allocated to the sixes category and the totals are updated.  Notice that Alex's name is now highlighted, indicating it is his turn, as is also stated at the bottom.  The dados have disappeared again, ready to be rolled by Alex.
+The score is allocated to the sixes category and the totals are updated.  Notice that Alex's name is now highlighted, indicating that it's his turn, as is also stated at the bottom.  The dados have disappeared again, ready to be rolled by Alex.
 
 The same sequence repeats for each player, where they roll, choose which dados to keep, and finally choose a spot on the score card to allocate their roll.  There are 13 spaces on the score card, so each player gets 13 rolls. You MUST allocate a roll somewhere on the score card in each turn, so occasionally difficult decisions must be made.
 
@@ -326,7 +326,7 @@ Executing the above command with the `-h` or `--help` flag will display the avai
 
 `-d` or `--debug` is used to start the program in debug mode, which is useful to develop a graphical program, as it exposes many variable values and can be used to follow the control flow of the program.  A log file will be created in the current directory which contains a huge amount data generated as the program is run.
 
-`-s` or `--static` is used to disable the animation function of the dice rolling, so that they are immediately displayed.  This is also useful for development as there is no waiting for the dice to display each turn.
+`-s` or `--static` is used to disable the animation function of the dice rolling, so that they are immediately displayed.  This is also useful for development as there is no waiting for the dice to display each turn, saving a lot of time over an entire game.
 
 
 ## Testing
@@ -341,7 +341,7 @@ Automatic testing was used to test various components of the application
 
 The game model class is responsible for correctly implementing the rules of Cinco Dados and forms the core of the game.  One of its major functions is to  calculate scores based on the values of the dice.
 
-Automated testing of this function is provided by `spec/game_model_spec.rb`.  Various combinations of 5 dice vales are fed to the appropriate methods and checked for correct detection of the required combinations for various score categories.
+Automated testing of this function is provided by `spec/game_model_spec.rb`.  Various combinations of 5 dado values are fed to the appropriate methods and checked for correct calculation of the various score categories.
 
 
 #### Player
@@ -349,7 +349,7 @@ Automated testing of this function is provided by `spec/game_model_spec.rb`.  Va
 The player class represents each player in the game.  `spec/player_spec.rb` contains a few tests that check for the correction instantiation of new players.
 #### Player Scores
 
-The player scores class is an sub part of the player class and is responsible for managing the players score card.  It calculates the subtotals and applies the upper section bonues if applicable.
+The player scores class is a sub part of the player class and is responsible for managing the players score card.  It calculates the subtotals and applies the upper section bonus if applicable.
 
 Automated testing of the Player Scores class is provided by `spec/player_scores_spec.rb`, and loads a player score card with various values and tests that the score card correctly totals the scores, applies the bonus, and detects a full player card, which is the logic by which the game is ended.
 
@@ -357,7 +357,7 @@ Automated testing of the Player Scores class is provided by `spec/player_scores_
 
 The Text class is a static helper class that provides various text manipulation utilites.  It is able to wrap text over multiple lines, or centre text in a line, or distribute multiple lines of text vertically in a space.
 
-These functions are used to position text on the screen in all parts of the application, for example the How to Play paragraphs are automatically wrapped by this class.  The labels on buttons are centred by this class.  Prompts in all modal dialogue boxes are arranged by this class.
+These functions are used to position text on the screen in all parts of the application, for example the How to Play paragraphs are automatically wrapped by this class.  The labels on buttons are centred by this class and prompts in all modal dialogue boxes are arranged by this class.
 
 The test file `spec/text_spec.rb` contains automated tests which test all this functionality.
 
@@ -367,5 +367,5 @@ The test file `spec/text_spec.rb` contains automated tests which test all this f
 
 ![Manual Testing Screenshot](docs/testing_manual.png)
 
-Manual testing was used to test the robustness and functionality of the cursor based navigation implementation. This was not something that could easily be tested with automated tesing.  These tests confirmed that the screens and dialogue boxes respond correctly to expected user inputs, and are not adversely affected by other inputs.
+Manual testing was used to test the robustness and functionality of the cursor based navigation implementation. This was not something that could easily be tested with automated testing.  These tests confirmed that the screens and dialogue boxes respond correctly to expected user inputs, and are not adversely affected by other inputs.
 

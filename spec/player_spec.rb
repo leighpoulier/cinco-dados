@@ -4,11 +4,14 @@ include(CincoDados)
 
 describe "Player" do
 
+    @screen = GameScreen.new()
+    @game = Game.new(@screen)
+
     it "requires a player name" do
-        expect {Player.new() }.to raise_error(ArgumentError)
+        expect {Player.new(@game) }.to raise_error(ArgumentError)
     end
 
-    player = Player.new("test")
+    player = Player.new(@game, "test")
 
     it "starts with an empty scorecard" do
 

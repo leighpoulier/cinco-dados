@@ -5,10 +5,13 @@ include(CincoDados)
 describe "Game Model" do
 
     game_screen = CincoDados::GameScreen.new()
+    game = Game.new(game_screen)
 
-    players = [Player.new("test")]
-
-    game = CincoDados::Game.new(game_screen, players)
+    game = CincoDados::Game.new(game_screen)
+    
+    # player_names = ["test1", "test2"]
+    # player_names.each do |player_name|
+    #     game.add_player(Player.new(game, player_name))
 
     it "detects straights" do
         expect(game.dados_cup.calculate_scores([1,2,3,4,5])).to eq({

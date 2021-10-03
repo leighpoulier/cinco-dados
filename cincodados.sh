@@ -2,4 +2,4 @@
 
 gem install bundle
 bundle install
-ruby lib/main.rb
+source ./cincodados-run.sh

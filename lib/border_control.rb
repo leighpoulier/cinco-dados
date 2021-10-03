@@ -176,6 +176,10 @@ class SelectionCursor < EnclosingBorderControl
     def move(direction)
         if can_move(direction)
             select_control(@enclosed_control.follow_link(direction))
+        # else
+        #     @screen.display_message("Cannot move #{direction.to_s}")
+        #     @screen.draw()
+        #     sleep 0.2
         end
 
     end

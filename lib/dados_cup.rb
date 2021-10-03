@@ -178,7 +178,7 @@ module CincoDados
 
             update_dados_values()
 
-            # @dados_values = [6,6,6,6,6]
+            # @dados_values = [6,6,6,6,6] # for testing only
             
             if cinco_dados()
                 flash_dados(0.2, 2)

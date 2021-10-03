@@ -6,7 +6,11 @@ Logger.set_logging_handler(:file)
 describe "PlayerScores" do
 
     before :all do
-        @player_scores = PlayerScores.new("name")
+        
+        @game = Game.new(GameScreen.new())
+        @player = Player.new(@game, "test1")
+        @player_scores = PlayerScores.new(@game, @player)
+
     end
 
     context "basic" do
@@ -50,7 +54,9 @@ describe "PlayerScores" do
     end
     describe "#total_selective" do
         before :all do
-            @player_scores = PlayerScores.new("name")
+            @game = Game.new(GameScreen.new())
+            @player = Player.new(@game, "test1")
+            @player_scores = PlayerScores.new(@game, @player)
         end
 
         it "returns correct totals" do
@@ -88,8 +94,13 @@ describe "PlayerScores" do
     
     context "totals" do
 
+        before :each do
+            @game = Game.new(GameScreen.new())
+            @player = Player.new(@game, "test1")
+            @player_scores = PlayerScores.new(@game, @player)
+        end
+
         it "returns upper totals" do
-            @player_scores = PlayerScores.new("name")
             expect(@player_scores.total_upper()).to eq(0)
             expect(@player_scores.add_score(Config::SCORE_CATEGORIES_UPPER[0], 3)).to eq(3)
             expect(@player_scores.total_upper()).to eq(3)
@@ -101,7 +112,6 @@ describe "PlayerScores" do
         end
         
         it "correctly calculates a successful bonus" do
-            @player_scores = PlayerScores.new("name")
             (1..6).each do |value|
                 expect(@player_scores.bonus).to eq(nil)
             @player_scores.add_score(Config::SCORE_CATEGORIES[value -1], value * 3)
@@ -111,7 +121,6 @@ describe "PlayerScores" do
         end
 
         it "correctly calculates a failed bonus" do
-            @player_scores = PlayerScores.new("name")
             (1..6).each do |value|
                 expect(@player_scores.bonus).to eq(nil)
             @player_scores.add_score(Config::SCORE_CATEGORIES[value -1], value * 2)
@@ -122,7 +131,6 @@ describe "PlayerScores" do
 
 
         it "returns lower totals" do
-            @player_scores = PlayerScores.new("name")
             expect(@player_scores.total_lower()).to eq(0)
             expect(@player_scores.add_score(Config::SCORE_CATEGORIES_LOWER[0],25)).to eq(25)
             expect(@player_scores.total_lower()).to eq(25)
@@ -134,15 +142,24 @@ describe "PlayerScores" do
     end
 
     context "full card detection" do
+
+        before :each do
+                    
+            @game = Game.new(GameScreen.new())
+            @player = Player.new(@game, "test1")
+            @player_scores = PlayerScores.new(@game, @player)
+
+        end
+
         it "detects a not full card" do
-            @player_scores = PlayerScores.new("name")
+                    
 
             expect(@player_scores.full_card?).to eq(false)
 
         end
 
         it "detects a full card" do
-            @player_scores = PlayerScores.new("name")
+                    
 
 
             Config::SCORE_CATEGORIES.each do |category|

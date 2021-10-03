@@ -51,7 +51,7 @@ describe "Text::centre_middle" do
     
 
     it "should centre text correctly on multiple lines line" do
-        expect(Text.centre_middle(rows2, "Hello", style)).to eq([
+        expect(Text.multi_row_align(rows2, "Hello",:middle, :centre, style)).to eq([
             
         Array.new(10, {char: :transparent, style: style}),
         [
@@ -117,13 +117,13 @@ describe "#split_text_into_words_with_max_width" do
     end
 end
 
-describe "#get_minimum_rows" do
+describe "#get_minimum_rows_count" do
     it "should calculate the rows to contain a paragraph" do
-        expect(Text.get_minimum_rows("Please enter a name. Maximum 5 characters!", 42)).to eq(1)
-        expect(Text.get_minimum_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 12)).to eq(15)
-        expect(Text.get_minimum_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 20)).to eq(9)
-        expect(Text.get_minimum_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 30)).to eq(6)
-        expect(Text.get_minimum_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 40)).to eq(5)
+        expect(Text.get_minimum_rows_count("Please enter a name. Maximum 5 characters!", 42)).to eq(1)
+        expect(Text.get_minimum_rows_count("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 12)).to eq(15)
+        expect(Text.get_minimum_rows_count("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 20)).to eq(9)
+        expect(Text.get_minimum_rows_count("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 30)).to eq(6)
+        expect(Text.get_minimum_rows_count("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 40)).to eq(5)
     end
 
 end
@@ -131,20 +131,6 @@ end
 
 describe "#evenly_distributed_rows" do
     it "should distrubute text evenly across multiple rows" do
-        expect(Text.evenly_distrubuted_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 5)).to eq(["This is a really long sentence", "and some of the words are longer", "than permitted, for example", "Supercalifragilisticexpialidocious", "is waaaaaaay too long"])
-    end
-end
-
-describe "#centre_middle " do
-    style = [:white, :on_black]
-    rows = [
-        Array.new(40, {char: :transparent, style: style}),
-        Array.new(40, {char: :transparent, style: style}),
-        Array.new(40, {char: :transparent, style: style}),
-        Array.new(40, {char: :transparent, style: style}),
-        Array.new(40, {char: :transparent, style: style}),
-        ]
-    it "should distribte text in a box" do
-        expect(Text.centre_middle(rows, "This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long" , [:white, :on_black])).to eq(5)
+        expect(Text.get_evenly_distrubuted_rows("This is a really long sentence and some of the words are longer than permitted, for example Supercalifragilisticexpialidocious is waaaaaaay too long", 5)).to eq(["This is a really long sentence", "and some of the words are longer", "than permitted, for example", "Supercalifragilisticexpialidocious", "is waaaaaaay too long"])
     end
 end

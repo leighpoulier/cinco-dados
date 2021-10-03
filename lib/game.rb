@@ -515,7 +515,7 @@ module CincoDados
                 modal.final_scores(congratulations_message, score_table)
 
                 if @new_high_scores
-                    Controller.high_scores()
+                    Controller.high_scores(@high_scores_array)
                 end
 
 

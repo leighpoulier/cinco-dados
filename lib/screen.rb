@@ -11,7 +11,7 @@ module CincoDados
         UNICODE_RIGHT_ARROW = "\u{2192}"
         UNICODE_RETURN_ARROW = "\u{21B5}"
 
-        CONTEXT_HELP_DEFAULT = "Navigate with #{UNICODE_LEFT_ARROW}#{UNICODE_UP_ARROW}#{UNICODE_DOWN_ARROW}#{UNICODE_RIGHT_ARROW} and Enter#{UNICODE_RETURN_ARROW}/Space to select, Escape to exit."
+        CONTEXT_HELP_DEFAULT = "Navigate with #{UNICODE_LEFT_ARROW}#{UNICODE_UP_ARROW}#{UNICODE_DOWN_ARROW}#{UNICODE_RIGHT_ARROW} | Enter#{UNICODE_RETURN_ARROW}/Space to select | Escape to exit"
 
 
         attr_reader :columns, :rows, :selection_cursor, :reader
@@ -526,8 +526,8 @@ module CincoDados
             @name_border.decorate_control()
             add_control(@name_border)
 
-            @text_prompt2 = TextControl.new(19, @text_prompt.y + 8, 42, 1, :top, :centre, "Press Enter to accept")
-            add_control(@text_prompt2)
+            @text_input_error = ErrorTextControl.new(19, @text_prompt.y + 8, 42, 1, :top, :centre, "")
+            add_control(@text_input_error)
 
 
             # Add OK button
@@ -544,29 +544,6 @@ module CincoDados
         
         end
 
-        # def keypress(event)  # implements subscription of TTY::Reader
-        #     Logger.log.info("keypress event: key.name = #{event.key.name}, event.value = #{event.value}")
-        #     case
-        #     when event.key.name == :up
-        #         @selection_cursor.move(NORTH)
-        #     when event.key.name == :left
-        #         @selection_cursor.move(WEST)
-        #     when event.key.name == :down
-        #         @selection_cursor.move(SOUTH)
-        #     when event.key.name == :right
-        #         @selection_cursor.move(EAST)
-        #     when event.key.name == :return
-        #         @selection_cursor.on_activate()
-        #     when event.key.name == :escape
-        #         if @escapecontrol.nil?
-        #             Logger.log.info("Escape key pressed but no control registered")
-        #             @info_line.display_message("Escape pressed but no control registered")
-        #         else
-        #             @escapecontrol.on_activate()
-        #         end
-        #     end
-        # end
-
         def get_player_name(player_number)
 
             # Banner heading
@@ -577,7 +554,8 @@ module CincoDados
 
             # @exit_flag = false
             # while !@exit_flag do
-            while player_name.length < 1 || player_name.length > ScoreCard::PLAYER_SCORE_WIDTH || !Text.sanitize_string(player_name)
+            # while player_name.length < 1 || player_name.length > ScoreCard::PLAYER_SCORE_WIDTH || !Text.sanitize_string(player_name)
+            while !@exit_flag
                 draw()
                 print @cursor.move_to(Text.start_column(ScoreCard::PLAYER_SCORE_WIDTH, @columns, :centre),@text_prompt.y + 4)
                 print @cursor.show()
@@ -585,6 +563,15 @@ module CincoDados
                 print @cursor.move(-5,0)
                 player_name = gets.strip
                 print @cursor.hide()
+                if player_name.length < 1
+                    @text_input_error.set_text("Please enter something, anything")
+                elsif player_name.length > ScoreCard::PLAYER_SCORE_WIDTH
+                    @text_input_error.set_text("Maximum 5 characters!")
+                elsif !Text.sanitize_string(player_name)
+                    @text_input_error.set_text("No dodgy characters please!")
+                else
+                    @exit_flag = true
+                end
                 # @reader.read_keypress
                 Logger.log.info("Read keypress in menu_screen #{self.inspect}")
                 # end
@@ -615,6 +602,10 @@ module CincoDados
 
             @selection_cursor.set_pages(@all_pages)
             @info_line.set_pages(@all_pages)
+
+            @page_number_control = TextControl.new(Config::GAME_SCREEN_WIDTH - 2 - 10, 1, 10, 1, :top, :right, @current_page.to_s + " / " + @max_page.to_s )
+            add_control(@page_number_control)
+            @page_number_control.set_pages(@all_pages)
 
             @banner = BannerText.new(1, "How to Play", @columns)
             add_control(@banner)
@@ -667,6 +658,7 @@ module CincoDados
                 if @current_page > @max_page
                     @current_page = @max_page
                 end
+                @page_number_control.set_text( @current_page.to_s + " / " + @max_page.to_s )
             })
 
             # Add Previous button
@@ -682,6 +674,7 @@ module CincoDados
                 if @current_page < @min_page
                     @current_page = @min_page
                 end
+                @page_number_control.set_text( @current_page.to_s + " / " + @max_page.to_s )
             })
             display_message(CONTEXT_HELP_DEFAULT)
 
@@ -732,16 +725,19 @@ module CincoDados
         HIGH_SCORE_LEFT_MARGIN = 32
         HIGH_SCORE_WIDTH = 16
 
-        def initialize()
-            super
+        def initialize(high_scores = nil)
+            super()
             add_selection_cursor()
 
             @banner1 = BannerText.new(4, "High Scores", @columns)
             add_control(@banner1)
 
-
-            @high_score_array = Controller.load_high_scores()  # Array is already sorted reverse
-
+            if high_scores.nil?
+                @high_score_array = Controller.load_high_scores()  # Array is already sorted reverse
+            else
+                @high_score_array = high_scores
+            end
+            
             y_offset = @banner1.y + @banner1.height + 2
             @high_score_array.each_with_index do |high_score, index|
                 

@@ -258,10 +258,10 @@ module CincoDados
             words_index = 0
             while words_index < words.length
                 if words[words_index].length > width
-                    puts "long word #{words[words_index]}"
+                    # puts "long word #{words[words_index]}"
                     replacement_words = self.split_long_word(words[words_index], width)
                     words.delete_at(words_index)
-                    puts "replacing with #{replacement_words}"
+                    # puts "replacing with #{replacement_words}"
                     words.insert(words_index, *replacement_words)
                     words_index += replacement_words.length
                 else

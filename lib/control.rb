@@ -429,6 +429,11 @@ module CincoDados
             super(@fill)
         end
 
+        def set_text(text)
+            @text = text
+            decorate_control()
+        end
+
         def decorate_control()
             # Logger.log.info("entered decorate_control function for score #{self} with category #{category}")
             initial_fill()
@@ -455,6 +460,21 @@ module CincoDados
 
             super
             @style = [:black, :on_green]
+            @fill = {char: " " , style: @style}
+            Logger.log.info("#{__method__}: Set @fill for control #{self} to #{@fill}")
+            decorate_control()
+
+        end
+    
+    
+    end
+
+    class ErrorTextControl < TextControl
+    
+        def initialize(x, y, width, height, vertical_alignment, horizontal_alignment, text) 
+
+            super
+            @style = [:red, :on_black]
             @fill = {char: " " , style: @style}
             Logger.log.info("#{__method__}: Set @fill for control #{self} to #{@fill}")
             decorate_control()

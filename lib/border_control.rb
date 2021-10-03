@@ -28,8 +28,8 @@ class BorderControl < Control
         when :sides
 
             (1...@height-1).each do |row|
-                @rows[row][0] = { char: "\u{2503}", style: style}  #left side
-                @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side
+                @rows[row][0] = { char: LINE_BOLD_VERTICAL, style: style}  #left side
+                @rows[row][width - 1] = { char: LINE_BOLD_VERTICAL, style: style}  #right side
             end
             
         when :box
@@ -37,19 +37,19 @@ class BorderControl < Control
             # draw a square
 
             (0...@width).each do |col|
-                @rows[0][col] = { char: "\u{2501}", style: style}  #top row
-                @rows[height - 1][col] = { char: "\u{2501}", style: style} #bottom row
+                @rows[0][col] = { char: LINE_BOLD_HORIZONTAL, style: style}  #top row
+                @rows[height - 1][col] = { char: LINE_BOLD_HORIZONTAL, style: style} #bottom row
             end
 
             (0...@height).each do |row|
-                @rows[row][0] = { char: "\u{2503}", style: style}  #left side
-                @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side
+                @rows[row][0] = { char: LINE_BOLD_VERTICAL, style: style}  #left side
+                @rows[row][width - 1] = { char: LINE_BOLD_VERTICAL, style: style}  #right side
             end
 
-            @rows[0][0] = { char: "\u{250F}", style: style} #top left corner
-            @rows[0][@width - 1] = { char: "\u{2513}", style: style} #top right corner
-            @rows[@height - 1][0] = { char: "\u{2517}", style: style} #bottom left corner
-            @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
+            @rows[0][0] = { char: LINE_BOLD_CORNER_TOP_LEFT, style: style} #top left corner
+            @rows[0][@width - 1] = { char: LINE_BOLD_CORNER_TOP_RIGHT, style: style} #top right corner
+            @rows[@height - 1][0] = { char: LINE_BOLD_CORNER_BOTTOM_LEFT, style: style} #bottom left corner
+            @rows[@height - 1][@width - 1] = { char: LINE_BOLD_CORNER_BOTTOM_RIGHT, style: style} #bottom left corner
         when :none
 
         end
@@ -104,25 +104,17 @@ class LockedBorder < EnclosingBorderControl
         style = [:red, :on_black]
         initial_fill({char: :transparent, style: style})
 
-        # [1,@width-2].each do |col|
-        #     @rows[0][col] = { char: "\u{2501}", style: style}  #top row
-        #     @rows[@height - 1][col] = { char: "\u{2501}", style: style} #bottom row
-        # end
 
         [2].each do |row|
-            @rows[row][0] = { char: "\u{2503}", style: style}  #left side full bar
-            @rows[row][width - 1] = { char: "\u{2503}", style: style}  #right side full bar
+            @rows[row][0] = { char: LINE_BOLD_VERTICAL, style: style}  #left side full bar
+            @rows[row][width - 1] = { char: LINE_BOLD_VERTICAL, style: style}  #right side full bar
         end
         [3].each do |row|
-            @rows[row][0] = { char: "\u{2579}", style: style}  #left side top half bar
-            @rows[row][width - 1] = { char: "\u{2579}", style: style}  #right side top half bar
+            @rows[row][0] = { char: LINE_BOLD_VERTICAL_TOP_HALF, style: style}  #left side top half bar
+            @rows[row][width - 1] = { char: LINE_BOLD_VERTICAL_TOP_HALF, style: style}  #right side top half bar
         end
 
 
-        # @rows[0][0] = { char: "\u{250F}", style: style} #top left corner
-        # @rows[0][@width - 1] = { char: "\u{2513}", style: style} #top right corner
-        # @rows[@height - 1][0] = { char: "\u{2517}", style: style} #bottom left corner
-        # @rows[@height - 1][@width - 1] = { char: "\u{251B}", style: style} #bottom left corner
     end
 
     # override to ignore margin
@@ -182,22 +174,29 @@ class SelectionCursor < EnclosingBorderControl
 
 
     def move(direction)
+        if can_move(direction)
+            select_control(@enclosed_control.follow_link(direction))
+        end
+
+    end
+
+    def can_move(direction)
+
         if @enclosed_control.nil?
             raise ConfigurationError.new("@enclosed_control is not set, no links, cannot move!")
-        end
-        if @enclosed_control.has_link(direction)
-            # @enclosed_control = @enclosed_control.follow_link(direction)
-            next_control = @enclosed_control.follow_link(direction)
-            unless next_control.nil?
-                select_control(next_control)
-            else
-                # raise StandardError.new("Cannot Move in direction: #{direction}")
-                Logger.log.warn("Cannot Move in direction: #{direction}. #{@enclosed_control} has a link but it returns nil")
-            end
+            return false
+        elsif @enclosed_control.has_link(direction)
+
+            Logger.log.info("#{__method__}: enclosed control #{@enclosed_control} has link #{EAST}")
+
+            return @enclosed_control.can_follow_link(direction)
+
         else
             # raise StandardError.new("Cannot Move in direction: #{direction}")
             Logger.log.warn("Cannot Move in direction: #{direction}. #{@enclosed_control} has no link.")
+            return false
         end
+
     end
 
 

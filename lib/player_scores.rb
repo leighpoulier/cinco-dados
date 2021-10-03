@@ -308,10 +308,7 @@ module CincoDados
                 while value_string.length < 3
                     value_string = " " + value_string
                 end
-                # Logger.log.info("Decorating Score Control for score: #{self} with text: #{value_string} in style: #{@@style} height: #{@height} width: #{@width}")
-                # @rows = Text.centre_middle(@rows,value_string,style)
                 @rows = Text.multi_row_align(@rows, value_string, :middle, :centre, style)
-                # Logger.log.info("Resulting rows:\n#{@rows}")
             end
         end
     end
@@ -319,7 +316,8 @@ module CincoDados
     class Score < ScoreCardCell
 
 
-        ON_ACTIVATE_DESCRIPTION = "commit score"
+        CONTEXT_HELP_WITH_ROLL_BUTTON = "Navigate with #{Screen::UNICODE_LEFT_ARROW}#{Screen::UNICODE_UP_ARROW}#{Screen::UNICODE_DOWN_ARROW} and Enter/Space to commit score."
+        CONTEXT_HELP_NO_ROLL_BUTTON = "Navigate with #{Screen::UNICODE_UP_ARROW}#{Screen::UNICODE_DOWN_ARROW} and Enter/Space to commit score."
 
         def initialize(player_scores, name, category)
             super(name,category)
@@ -380,8 +378,13 @@ module CincoDados
         end
 
         #override
-        def get_on_activate_description()
-            ON_ACTIVATE_DESCRIPTION
+        def get_context_help()
+            Logger.log.info("Returning custom context help, for object #{self} of class #{self.class.name}")
+            if links[WEST].disabled?
+                CONTEXT_HELP_NO_ROLL_BUTTON
+            else
+                CONTEXT_HELP_WITH_ROLL_BUTTON
+            end
         end
 
     end

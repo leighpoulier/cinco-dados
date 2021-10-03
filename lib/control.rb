@@ -1,6 +1,7 @@
 # require_relative("exceptions")
 require_relative("cursor_map")
 require_relative("text")
+require_relative("screen")
 require "tty-font"
 include CincoDados
 include CompassDirections
@@ -10,10 +11,22 @@ module CincoDados
     class Control < SelectionCursorMapNode
 
         BLOCK_FULL = "\u{2588}"
+        BLOCK_LOWER_HALF = "\u{2584}"
+
         BLOCK_SHADED = "\u{2592}"
+
+        DICE_BOTTOM_ROW_HALF = "\u{1FB0E}"
+
+        DICE_TOP_LEFT_CORNER = "\u{1FB44}"
+        DICE_TOP_RIGHT_CORNER = "\u{1FB4F}"
+        DICE_BOTTOM_LEFT_CORNER = "\u{1FB65}"
+        DICE_BOTTOM_RIGHT_CORNER = "\u{1FB5A}"
 
         LINE_BOLD_HORIZONTAL = "\u{2501}"
         LINE_BOLD_VERTICAL = "\u{2503}"
+
+        LINE_BOLD_VERTICAL_TOP_HALF = "\u{2579}"
+        LINE_BOLD_VERTICAL_BOTTOM_HALF = "\u{257B}"
 
         LINE_BOLD_CORNER_TOP_LEFT = "\u{250F}"
         LINE_BOLD_CORNER_TOP_RIGHT = "\u{2513}"
@@ -145,6 +158,11 @@ module CincoDados
 
         def set_page(page)
             @on_pages = [page]
+        end
+
+        def get_context_help()
+            Logger.log.info("Returning nil for context help, for object #{self} of class #{self.class.name}")
+            return nil
         end
 
         def <=>(other)
@@ -286,7 +304,8 @@ module CincoDados
 
     class RollButton < Button
 
-        ON_ACTIVATE_DESCRIPTION = "roll"
+        CONTEXT_HELP_CAN_NAVIGATE = "Navigate with #{Screen::UNICODE_LEFT_ARROW}#{Screen::UNICODE_UP_ARROW}#{Screen::UNICODE_DOWN_ARROW}#{Screen::UNICODE_RIGHT_ARROW} and Enter/Space to roll."
+        CONTEXT_HELP_NO_NAVIGATE = "Press Enter/Space to roll."
 
         def initialize(x, y, width, height, text)
             super
@@ -295,8 +314,14 @@ module CincoDados
 
 
         #override
-        def get_on_activate_description()
-            ON_ACTIVATE_DESCRIPTION
+        def get_context_help()
+            Logger.log.info("Returning custom context help, for object #{self} of class #{self.class.name}")
+                        
+            if can_follow_link(WEST)  # west or east wouldn't matter, if the dice are available then so is the score card, i think
+                return CONTEXT_HELP_CAN_NAVIGATE
+            else
+                return CONTEXT_HELP_NO_NAVIGATE
+            end
         end
 
 
@@ -305,7 +330,7 @@ module CincoDados
 
     class BackButton < Button
 
-        ON_ACTIVATE_DESCRIPTION = "go back"
+        CONTEXT_HELP = "Navigate with #{Screen::UNICODE_LEFT_ARROW}#{Screen::UNICODE_UP_ARROW}#{Screen::UNICODE_DOWN_ARROW}#{Screen::UNICODE_RIGHT_ARROW} and Enter/Space to go back."
 
         def initialize(x, y, width, height, text)
             super
@@ -317,8 +342,10 @@ module CincoDados
 
 
         #override
-        def get_on_activate_description()
-            ON_ACTIVATE_DESCRIPTION
+        def get_context_help()
+            Logger.log.info("Returning custom context help, for object #{self} of class #{self.class.name}")
+
+            return CONTEXT_HELP
         end
 
 

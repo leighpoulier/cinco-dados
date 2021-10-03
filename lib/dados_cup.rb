@@ -142,7 +142,11 @@ module CincoDados
 
 
         def roll_dados()
-            roll_dados_delay(0.5)
+            if Config::dice_animation?()
+                roll_dados_delay(0.5)
+            else
+                roll_dados_no_delay()
+            end
         end
 
         def roll_dados_no_delay()

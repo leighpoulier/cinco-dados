@@ -84,23 +84,30 @@ module CincoDados
         end
 
         def set_roll_button_link()
-            # Set the EAST link from the roll button to one of the cells of the first player
-            # Config::SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING.each do |category|
-            #     if @current_player.player_scores.scores[category].enabled
-            #         @game_screen.roll_button.add_link(EAST, @current_player.player_scores.scores[category], false)
-            #         Logger.log.info("Add link on button to #{@current_player.name} score: #{player.player_scores.scores[category]}")
-            #         break
-            #     end
-            # end
 
-            @game_screen.roll_button.add_link(EAST, @current_player.player_scores.scores[get_recommended_score_category()] ,false)
-            Logger.log.info("Add link on button to #{@current_player.name} score: #{@current_player.player_scores.scores[get_recommended_score_category()]}")
+            begin
+                # attempt automatic algorithm for best category for current dados
+                recommended_category = get_recommended_score_category()
+                Logger.log.error("Recommended Score SUCCESSFUL, moving selection cursor to #{recommended_category}")
+                # Logger.log.info("Would have moved the cursor to: #{Config::SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING.intersection(@current_player.player_scores.get_empty_categories()).first}")
+                
+            rescue
+                # if automatic algorithm fails, use backup fixed list of priorities
+                recommended_category = Config::SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING.intersection(@current_player.player_scores.get_empty_categories()).first
+                Logger.log.error("Recommended Score category FAILED, instead moving selection cursor to #{recommended_category}")
+            end
+
+            control_to_link = @current_player.player_scores.scores[recommended_category]
+            @game_screen.roll_button.add_link(EAST, control_to_link ,false)
+            Logger.log.info("Add link on button to #{@current_player.name} score: #{control_to_link}")
             
+            
+
         end
 
-        def delete_roll_button_link()
-            @game_screen.roll_button.remove_link(EAST)
-        end
+        # def delete_roll_button_link()
+        #     @game_screen.roll_button.delete_link(EAST)
+        # end
 
         def increment_current_player_roll_count()
             @current_player_roll_count += 1
@@ -264,25 +271,34 @@ module CincoDados
                 player.update_player_name_control()
             end
 
+            Logger.log.info("1. Roll button EAST link to control: #{@game_screen.roll_button.links[EAST]}")
+
             # Enable the roll button in case it was disabled after the previous turn
             @game_screen.roll_button.enable()
             # Show the roll button in case it was hidden
             @game_screen.roll_button.show()
+            Logger.log.info("2. Roll button EAST link to control: #{@game_screen.roll_button.links[EAST]}")
 
             # Position the cursor on the roll button
             @game_screen.selection_cursor.select_control(@game_screen.roll_button)
+            Logger.log.info("3. Roll button EAST link to control: #{@game_screen.roll_button.links[EAST]}")
 
             # Hide all the dados
             @dados_cup.hide_all_dados()
 
-            # Enable all the dados 
-            # @dados_cup.enable_all_dados()
+            # Disable all the dados
+            @dados_cup.disable_all_dados()
+            Logger.log.info("4. Roll button EAST link to control: #{@game_screen.roll_button.links[EAST]}")
 
 
             # while a new score isn't added, and the roll count < 3
             while !@exit_flag && @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories() && @current_player_roll_count < Config::MAX_ROLLS_PER_TURN
+
+                # Update context help
                 rolls_left = Config::MAX_ROLLS_PER_TURN - @current_player_roll_count
-                @game_screen.display_message("#{@current_player}'s turn. #{rolls_left} #{rolls_left > 1 ? "rolls" : "roll"} left.  Press Enter/Space to #{@game_screen.selection_cursor.enclosed_control.get_on_activate_description()}.")
+                @game_screen.display_message("#{@current_player}'s turn. #{rolls_left} #{rolls_left == 1 ? "roll" : "rolls"} left. #{@game_screen.get_context_help()}")
+                
+                Logger.log.info("5. Roll button EAST link to control: #{@game_screen.roll_button.links[EAST]}")
                 @game_screen.draw
                 reader.read_keypress
             end
@@ -296,29 +312,41 @@ module CincoDados
 
                 #select the recommended control
                 begin
-                    @game_screen.selection_cursor.select_control(@current_player.player_scores.scores[get_recommended_score_category()])
-                    Logger.log.info("Would have moved the cursor to: #{Config::SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING.intersection(@current_player.player_scores.get_empty_categories())}")
+                    # attempt automatic algorithm for best category for current dados
+                    recommended_category = get_recommended_score_category()
+                    Logger.log.error("Recommended Score SUCCESSFUL, moving selection cursor to #{recommended_category}")
+                    # Logger.log.info("Would have moved the cursor to: #{Config::SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING.intersection(@current_player.player_scores.get_empty_categories()).first}")
+                    
                 rescue
-                    move_to = Config::SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING.intersection(@current_player.player_scores.get_empty_categories()).first
-                    Logger.log.error("Recommended Score category FAILED, instead moving selection cursor to #{move_to}")
-                    @game_screen.selection_cursor.select_control(@current_player.player_scores.scores[move_to])
+                    # if automatic algorithm fails, use backup fixed list of priorities
+                    recommended_category = Config::SCORE_CATEGORIES_SORTED_FOR_ROLL_BUTTON_LINKING.intersection(@current_player.player_scores.get_empty_categories()).first
+                    Logger.log.error("Recommended Score category FAILED, instead moving selection cursor to #{recommended_category}")
                 end
+                control_to_select = @current_player.player_scores.scores[recommended_category]
+                @game_screen.selection_cursor.select_control(control_to_select)
+
+
 
                 # Disable the roll buton
                 @game_screen.roll_button.disable()
                 # Hide the roll button
                 @game_screen.roll_button.hide()
 
+                Logger.log.info("7. Roll button EAST link to control: #{@game_screen.roll_button.links[EAST]}")
                 # Disable all the dados
                 @dados_cup.disable_all_dados()
 
+                Logger.log.info("8. Roll button EAST link to control: #{@game_screen.roll_button.links[EAST]}")
                 # Loop until player commits a score
                 while  !@exit_flag && @current_player_count_empty_categories == @current_player.player_scores.count_empty_categories()
-                    @game_screen.display_message("#{@current_player}'s turn. #{Config::MAX_ROLLS_PER_TURN - @current_player_roll_count} rolls left.  Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
-                    # Logger.log.info("#{@current_player} empty categories: #{@current_player_count_empty_categories}")
+
+                    # Update context help
+                    rolls_left = Config::MAX_ROLLS_PER_TURN - @current_player_roll_count
+                    @game_screen.display_message("#{@current_player}'s turn. #{rolls_left} #{rolls_left == 1 ? "roll" : "rolls"} left. #{@game_screen.get_context_help()}")
 
                     @game_screen.draw
                     reader.read_keypress
+                    Logger.log.info("9. Roll button EAST link to control: #{@game_screen.roll_button.links[EAST]}")
                 end
             end
 

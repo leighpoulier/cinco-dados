@@ -35,6 +35,22 @@ module CincoDados
             # end
         end
 
+        def can_follow_link(direction)
+            # check if the linked control can be followed
+            next_control = follow_link(direction)
+            Logger.log.info("#{__method__}: the linked control is #{next_control.inspect}")
+
+            if next_control.nil?
+                # raise StandardError.new("Cannot Move in direction: #{direction}")
+                Logger.log.warn("#{__method__}: Cannot Move in direction: #{direction}. #{self} has a link but it returns nil")
+                return false
+            else
+                Logger.log.warn("#{__method__}: can follow link , off we go")
+                return true
+            end
+
+        end
+
         def follow_link(direction)
             # if @links[direction].is_a?(SelectionCursorMapNode)
             #     return @links[direction]
@@ -75,7 +91,7 @@ module CincoDados
             end
         end
 
-        def remove_link(direction)
+        def delete_link(direction)
             unless links[direction].nil?
                 links[direction].delete(direction)
             else
@@ -99,8 +115,6 @@ module CincoDados
             !@enabled
         end
 
-
-
         def on_selected()
         end
 
@@ -110,13 +124,11 @@ module CincoDados
         def on_activate()
         end
 
-        def get_on_activate_description()
-            raise ConfigurationError.new("Should not reach this backup method.  This cursor map node has no on_activate_description")
-
+        def to_s()
+            return @name
         end
 
-
-        def to_s()
+        def inspect()
             return @name
         end
 

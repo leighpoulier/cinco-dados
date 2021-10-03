@@ -13,17 +13,17 @@ parser.banner = "Usage: #{File.basename($0)} [options]"
 # parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
 # options[:verbose] = v
 
-parser.on("-d", "--debug OUTPUT", "enable debug mode, without output to OUTPUT [ console | file ]") do |output|
-    if ["console","file"].include?(output)
-        # puts "debug output to #{output}!"
-        Logger.set_logging_handler(output.to_sym)
-    else
-        # raise ArgumentError.new("Invalid output for debug mode: #{output}, must be one of [ console | file ]")
-        puts "Invalid output for debug mode: #{output}, must be one of [ console | file ]"
-        puts "\n"
-        puts parser.help
-        exit
-    end
+parser.on("-d", "--debug", "enable debug mode with logging to a file") do
+    Logger.set_logging_handler(:file)
+end
+
+parser.on("-s", "--static", "disable dice sequenced animation on roll") do
+    Config.disable_dice_animation()
+end
+
+parser.on("-h", "--help", "display this usage information") do
+    puts parser.help
+    exit
 end
 
 begin

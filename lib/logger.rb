@@ -19,7 +19,7 @@ module CincoDados
                         config.handlers = [:stream]
                         config.output = File.open("log_" + Time.new.strftime("%Y%m%d-%H%M%S") + ".log", "a")
                     end
-                elsif @@handler == :console
+                elsif @@handler == :console  # not currently implemented
                     @@logger ||= TTY::Logger.new do |config|
                         config.handlers = [:console]
                     end

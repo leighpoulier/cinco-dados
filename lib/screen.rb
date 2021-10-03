@@ -5,6 +5,14 @@ module CincoDados
 
     class Screen
 
+        UNICODE_UP_ARROW = "\u{2191}"
+        UNICODE_DOWN_ARROW = "\u{2193}"
+        UNICODE_LEFT_ARROW = "\u{2190}"
+        UNICODE_RIGHT_ARROW = "\u{2192}"
+        UNICODE_RETURN_ARROW = "\u{21B5}"
+
+        CONTEXT_HELP_DEFAULT = "Navigate with #{UNICODE_LEFT_ARROW}#{UNICODE_UP_ARROW}#{UNICODE_DOWN_ARROW}#{UNICODE_RIGHT_ARROW} and Enter#{UNICODE_RETURN_ARROW}/Space to select, Escape to exit."
+
 
         attr_reader :columns, :rows, :selection_cursor, :reader
 
@@ -98,6 +106,34 @@ module CincoDados
             else
                 raise ArgumentError.new("Control must be an instance of SelectionCursor to assign as selection_cursor")
             end
+        end
+
+        def get_context_help()
+
+            if @selection_cursor.nil?
+                Logger.log.info("#{__method__}: @selection_cursor is nil, returning default context help")
+
+                return CONTEXT_HELP_DEFAULT
+
+            else
+                if @selection_cursor.enclosed_control.nil?
+                    Logger.log.info("#{__method__}: @selection_cursor is not nil, but the enclosed control is nil, returning default context help")
+
+                    return CONTEXT_HELP_DEFAULT
+
+                else
+
+                    if @selection_cursor.enclosed_control.get_context_help.nil?
+                        Logger.log.info("#{__method__}: enclosed control is not nil, but get_context_help returns nil, returning default context help")
+                        return CONTEXT_HELP_DEFAULT
+                    else
+                        Logger.log.info("#{__method__}: returning custom context help")
+                        return @selection_cursor.enclosed_control.get_context_help
+                    end
+
+                end
+            end
+
         end
 
 
@@ -204,6 +240,8 @@ module CincoDados
             # create info_line
             @info_line = InfoLine.new(columns, rows-1)
             add_control(@info_line)
+
+            display_message(CONTEXT_HELP_DEFAULT)
 
         end
 
@@ -380,8 +418,6 @@ module CincoDados
             @escapecontrol = @button_exit
 
             @selection_cursor.select_control(@button_new_game)
-
-            display_message("Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
         end
 
 
@@ -451,7 +487,7 @@ module CincoDados
 
             # initial select button 1
             @selection_cursor.select_control(@player_count_buttons[0])
-            display_message("Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
+            display_message(CONTEXT_HELP_DEFAULT)
 
         end
 
@@ -578,6 +614,7 @@ module CincoDados
             @all_pages = [1,2,3]  #for the controls below
 
             @selection_cursor.set_pages(@all_pages)
+            @info_line.set_pages(@all_pages)
 
             @banner = BannerText.new(1, "How to Play", @columns)
             add_control(@banner)
@@ -646,7 +683,7 @@ module CincoDados
                     @current_page = @min_page
                 end
             })
-            display_message("Navigate with \u{2190}\u{2191}\u{2193}\u{2192} and Enter/Space to select.")
+            display_message(CONTEXT_HELP_DEFAULT)
 
             
         end

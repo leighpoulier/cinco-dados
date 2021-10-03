@@ -8,8 +8,10 @@ module CincoDados
         X_MARGIN = 1
         Y_MARGIN = 0
 
-        ON_ACTIVATE_DESCRIPTION_UNLOCKED = "lock dado"
-        ON_ACTIVATE_DESCRIPTION_LOCKED = "unlock dado"
+        CONTEXT_HELP_ADDON_UNLOCKED = "lock dado"
+        CONTEXT_HELP_ADDON_LOCKED = "unlock dado"
+        CONTEXT_HELP = "Navigate with #{Screen::UNICODE_UP_ARROW}#{Screen::UNICODE_DOWN_ARROW}#{Screen::UNICODE_RIGHT_ARROW} and Enter/Space to "
+
 
         attr_reader :value
 
@@ -19,8 +21,6 @@ module CincoDados
 
             super(name)
             set_position(x,y)
-            @@full_block = "\u{2588}"
-            @@pip = "\u{2584}"
             @game_screen = game_screen
             @dados_cup = dados_cup
             @width = WIDTH
@@ -32,19 +32,18 @@ module CincoDados
 
 
             style = [:white, :on_black]
-            fill = {char: @@full_block, style: style}
+            fill = {char: BLOCK_FULL, style: style}
             initial_fill(fill)
-            # initial_fill(@@full_block)
 
             @prng = Random.new
             @value = @prng.rand(6) + 1
 
-            @rows[height-1] = Array.new(@width, {char: "\u{1FB0E}", style: style})  #bottom half row
+            @rows[height-1] = Array.new(@width, {char: DICE_BOTTOM_ROW_HALF, style: style})  #bottom half row
             
-            @rows[0][0] = {char: "\u{1FB44}", style: style} #top left corner
-            @rows[0][@width-1] = {char: "\u{1FB4F}", style: style} #top right corner
-            @rows[@height-1][0] = {char: "\u{1FB65}", style: style} #bottom left corner
-            @rows[@height-1][@width-1] = {char: "\u{1FB5A}", style: style} #bottom right corner
+            @rows[0][0] = {char: DICE_TOP_LEFT_CORNER, style: style} #top left corner
+            @rows[0][@width-1] = {char: DICE_TOP_RIGHT_CORNER, style: style} #top right corner
+            @rows[@height-1][0] = {char: DICE_BOTTOM_LEFT_CORNER, style: style} #bottom left corner
+            @rows[@height-1][@width-1] = {char: DICE_BOTTOM_RIGHT_CORNER, style: style} #bottom right corner
 
 
             @locked_border = LockedBorder.new(self, "locked_" + self.name)
@@ -71,19 +70,19 @@ module CincoDados
                 style = [:white, :on_black, :inverse]
                 
                 if @value == 2 || @value == 3 || @value == 4 || @value == 5 || @value == 6
-                    @rows[0][1] = {char: @@pip, style: style}
-                    @rows[2][5] = {char: @@pip, style: style}
+                    @rows[0][1] = {char: BLOCK_LOWER_HALF, style: style}
+                    @rows[2][5] = {char: BLOCK_LOWER_HALF, style: style}
                 end
                 if @value == 4 || @value == 5 || @value == 6
-                    @rows[0][5] = {char: @@pip, style: style}
-                    @rows[2][1] = {char: @@pip, style: style}
+                    @rows[0][5] = {char: BLOCK_LOWER_HALF, style: style}
+                    @rows[2][1] = {char: BLOCK_LOWER_HALF, style: style}
                 end
                 if @value == 6
-                    @rows[1][1] = {char: @@pip, style: style}
-                    @rows[1][5] = {char: @@pip, style: style}
+                    @rows[1][1] = {char: BLOCK_LOWER_HALF, style: style}
+                    @rows[1][5] = {char: BLOCK_LOWER_HALF, style: style}
                 end
                 if @value == 1 || @value == 3 || @value == 5
-                    @rows[1][3] = {char: @@pip, style: style}
+                    @rows[1][3] = {char: BLOCK_LOWER_HALF, style: style}
                 end
             else
                 raise DadosError.new("You can't roll a locked dado")
@@ -94,10 +93,10 @@ module CincoDados
             style = [:white, :on_black]
             (0..2).each do |row|
                 [1,5].each do |side|
-                    @rows[row][side] = {char: @@full_block, style: style}
+                    @rows[row][side] = {char: BLOCK_FULL, style: style}
                 end
             end
-            @rows[1][3]= {char: @@full_block, style: style}
+            @rows[1][3]= {char: BLOCK_FULL, style: style}
         end
 
         def toggle_lock()
@@ -153,11 +152,12 @@ module CincoDados
         end
 
         #override
-        def get_on_activate_description()
+        def get_context_help()
+            Logger.log.info("Returning custom context help, for object #{self} of class #{self.class.name}")
             if @locked
-                ON_ACTIVATE_DESCRIPTION_LOCKED
+                CONTEXT_HELP + CONTEXT_HELP_ADDON_LOCKED
             else
-                ON_ACTIVATE_DESCRIPTION_UNLOCKED
+                CONTEXT_HELP + CONTEXT_HELP_ADDON_UNLOCKED
             end
         end
 

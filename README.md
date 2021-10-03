@@ -2,38 +2,38 @@
 
 ## Contents
 
-1. [SoftwareDevelopmentPlan](#software-development-plan)
+1. [Software Development Plan](#software-development-plan)
     1. [Links](#links)
     2. [Statement of Purpose and Scope](#statement-of-purpose-and-scope)
     3. [List of Features](#list-of-features)
-        1. [Cursor Based Navigation and Control](#cursor-based-navigation-and-control)
-        2. [Dice](#dice)
-        3. [Score Card](#score-card)
-        4. [High Score Table](#high-score-table)
-        5. [How to Play Screen](#how-to-play-screen)
+        1. [Cursor Based Navigation and Control](#1-cursor-based-navigation-and-control)
+        2. [Dice](#2-dice)
+        3. [Score Card](#3-score-card)
+        4. [High Score Table](#4-high-score-table)
+        5. [How to Play Screen](#5-how-to-play-screen)
     4. [User Interaction](#user-interaction)
         1. [General Navigation and User Experience](#general-navigation-and-user-experience)
         2. [Main Menu](#main-menu)
-        3. [Game - Dice](#game-dice)
-        4. [Game - Score Card](#game-score-card)
-        5. [Summary Page / High Score Table](#summary-page-high-score-table)
+        3. [Game - Dice](#game---dice)
+        4. [Game - Score Card](#game---score-card)
+        5. [Summary Page and High Score Table](#summary-page-and-high-score-table)
     5.  [Control Flow Diagram](#control-flow-diagram)
-        1. [Main Menu, New Game Setup, and High Scores screens](#main-menu-new-game-setup-and-high-scores-screens)
-        2. [Main Game Loop](#main-game-loop)
+        1. [Main Menu, New Game Setup, and High Scores screens](#1-main-menu-new-game-setup-and-high-scores-screens)
+        2. [Main Game Loop](#2-main-game-loop)
     6.  [Implementation Plan](#implementation-plan)
     7.  [Help Documentation](#help-documentation)
-        1. [Installation](#installation)
-        2. [System Requirements](#system-requirements)
-        3. [How to Use this Application](#how-to-use-this-application)
+        1. [Installation](#1-installation)
+        2. [System Requirements](#2-system-requirements)
+        3. [How to Use this Application](#3-how-to-use-this-application)
             1. [How to Play](#how-to-play)
             2. [High Scores](#high-scores)
             3. [New Game](#new-game)
-        4. [Advanced Usage](#advanced-usage)
+        4. [Advanced Usage](#4-advanced-usage)
     5. [Testing](#testing)
         1. [Automatic Testing](#automatic-testing)
             1. [Game Model](#game-model)
             2. [Player](#player)
-            3. [Palyer Scores]{#player-scores}
+            3. [Player Scores](#player-scores)
             4. [Text](#text)
         2. [Manual Testing](#manual-testing)
 ## Software Development Plan
@@ -121,7 +121,7 @@ Logic will prevent cells already containing a roll from being selected, so when 
 
 To accept the selected category the user can press the space bar or enter key.  If the player selects a zero scoring cell (ie they have no choice, or they are choosing to forego a score for strategic reasons) they will be prompted again with a confirmation message "Are you sure you want enter a zero score for [category]?", and will need to select the yes button and press enter/space again to confirm.
 
-#### Summary Page / High Score Table
+#### Summary Page and High Score Table
 
 After completing a game, some game summary information is displayed, with a ranking of the players and their final scores.  Any player who has achieved a new high score is also indicated.  If the game was single player, the summary information contains the player's final score with a congratulatory message. If the game was multiplayer, then the players will be ranked and the winner declared.
 
@@ -306,7 +306,7 @@ If they have scored high enough to be placed in the high scores a message will a
 
 Pressing enter or space will close this high scores screen and return to you to the main menu. 
 
-### Advanced Usage
+### 4. Advanced Usage
 
 After the required gem dependencies are installed, the program can also be run by directly starting ruby and passing it the main ruby file.
 

@@ -87,18 +87,6 @@ describe "All same width" do
 
 end
 
-
-# describe "#get_minimum_rows"
-
-#     it "should correctly determine the minimum lines of text without breaking words" do
-        
-#         expect(Text.get_minimum_rows("Lots of long text that needs to be wrapped in a certain width of bla bla blasdlf really long text", 15)).to eq()
-
-
-#     end
-
-# end
-
 describe "#split_long_words" do
 
     it "should correctly split a long word into chunks according to width" do

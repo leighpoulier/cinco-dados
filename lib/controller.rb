@@ -69,45 +69,45 @@ module CincoDados
             # after screen is created, create game. This includes controls such as dados and players scores
             @@game = Game.new(@@game_screen)
 
-            @counter = 0
+            # @counter = 0
 
             player_names.each do |player_name|
 
                 # Player requires a reference to the game, so that the player_name control can know if it is the current player.
                 player = Player.new(@@game, player_name)
 
-                if @counter == 0
-                    player.add_score(:cinco_dados, Config::SCORE_CINCO_DADOS)
-                    player.add_score(:large_straight, Config:: SCORE_LARGE_STRAIGHT)
-                    player.add_score(:small_straight, Config:: SCORE_SMALL_STRAIGHT)
-                    player.add_score(:full_house, Config:: SCORE_FULL_HOUSE)
-                    player.add_score(:four_of_a_kind, 22)
-                    player.add_score(:three_of_a_kind, 17)
-                    player.add_score(:sixes, 24)
-                    player.add_score(:fives, 15)
-                    player.add_score(:fours, 8)
-                    player.add_score(:threes, 9)
-                    player.add_score(:twos, 4)
-                    player.add_score(:ones, 3)
-                    # player.add_score(:chance, 30)
-                elsif @counter == 1
-                    player.add_score(:cinco_dados, 0)
-                    player.add_score(:large_straight, Config:: SCORE_LARGE_STRAIGHT)
-                    player.add_score(:small_straight, Config:: SCORE_SMALL_STRAIGHT)
-                    player.add_score(:full_house, Config:: SCORE_FULL_HOUSE)
-                    player.add_score(:four_of_a_kind, 18)
-                    player.add_score(:three_of_a_kind, 24)
-                    player.add_score(:sixes, 18)
-                    player.add_score(:fives, 15)
-                    player.add_score(:fours, 12)
-                    player.add_score(:threes, 12)
-                    player.add_score(:twos, 4)
-                    player.add_score(:ones, 0)
-                    # player.add_score(:chance, 30)
+                # if @counter == 0
+                #     player.add_score(:cinco_dados, Config::SCORE_CINCO_DADOS)
+                #     player.add_score(:large_straight, Config:: SCORE_LARGE_STRAIGHT)
+                #     player.add_score(:small_straight, Config:: SCORE_SMALL_STRAIGHT)
+                #     player.add_score(:full_house, Config:: SCORE_FULL_HOUSE)
+                #     player.add_score(:four_of_a_kind, 22)
+                #     player.add_score(:three_of_a_kind, 17)
+                #     player.add_score(:sixes, 24)
+                #     player.add_score(:fives, 15)
+                #     player.add_score(:fours, 8)
+                #     player.add_score(:threes, 9)
+                #     player.add_score(:twos, 4)
+                #     player.add_score(:ones, 3)
+                #     # player.add_score(:chance, 30)
+                # elsif @counter == 1
+                #     player.add_score(:cinco_dados, 0)
+                #     player.add_score(:large_straight, Config:: SCORE_LARGE_STRAIGHT)
+                #     player.add_score(:small_straight, Config:: SCORE_SMALL_STRAIGHT)
+                #     player.add_score(:full_house, Config:: SCORE_FULL_HOUSE)
+                #     player.add_score(:four_of_a_kind, 18)
+                #     player.add_score(:three_of_a_kind, 24)
+                #     player.add_score(:sixes, 18)
+                #     player.add_score(:fives, 15)
+                #     player.add_score(:fours, 12)
+                #     player.add_score(:threes, 12)
+                #     player.add_score(:twos, 4)
+                #     player.add_score(:ones, 0)
+                #     # player.add_score(:chance, 30)
 
-                end
+                # end
 
-                @counter += 1
+                # @counter += 1
 
                 @@game.add_player(player)
             end

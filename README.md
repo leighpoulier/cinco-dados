@@ -3,8 +3,9 @@
 ## Software Development Plan
 ### Links
 
-[Github repository](https://github.com/leighpoulier/cincodados)  
-[Trello board](https://trello.com/b/uHqXtL1J/cinco-dados)
+- [Github repository](https://github.com/leighpoulier/cinco-dados)  
+- [Trello board](https://trello.com/b/uHqXtL1J/cinco-dados)  
+- [Manual testing spreadsheet](https://docs.google.com/spreadsheets/d/1wJI3GNPPTrftSQKoeWJNgMlS92xe-D9lnzCIf8iFqco/edit?usp=sharing)
 
 ### Statement of Purpose and Scope
 
@@ -116,7 +117,7 @@ Trello was usedto develop an implementation plan for this project.
 
 [Please see my Trello Board here: Trello board for Cinco Dados](https://trello.com/b/uHqXtL1J/cinco-dados)
 
-### User Documentation
+### Help Documentation
 
 This game is called "Cinco Dados", which is spanish for "Five Dice".  Throughout the game and within this user documentation, "dados" is used instead of "dice"
 
@@ -285,8 +286,48 @@ Executing the above command with the `-h` or `--help` flag will display the avai
     -h, --help                       display this usage information
 ```
 
-`-d` or `--debug` is used to start the program in debug mode, which is useful to develop a graphical program, as it exposes many variable values and can be used to follow the control flow of the program.
+`-d` or `--debug` is used to start the program in debug mode, which is useful to develop a graphical program, as it exposes many variable values and can be used to follow the control flow of the program.  A log file will be created in the current directory which contains a huge amount data generated as the program is run.
 
 `-s` or `--static` is used to disable the animation function of the dice rolling, so that they are immediately displayed.  This is also useful for development as there is no waiting for the dice to display each turn.
 
+
+### Testing
+
+Both rspec based automatic testing and manual testing were used in the development of this appliation
+
+#### 1. Automatic testing
+
+Automatic testing was used to test various components of the application
+
+##### Game Model
+
+The game model class is responsible for correctly implementing the rules of Cinco Dados and forms the core of the game.  One of its major functions is to  calculate scores based on the values of the dice.
+
+Automated testing of this function is provided by `spec/game_model_spec.rb`.  Various combinations of 5 dice vales are fed to the appropriate methods and checked for correct detection of the required combinations for various score categories.
+
+
+##### Player
+
+The player class represents each player in the game.  `spec/player_spec.rb` contains a few tests that check for the correction instantiation of new players.
+##### Player Scores
+
+The player scores class is an sub part of the player class and is responsible for managing the players score card.  It calculates the subtotals and applies the upper section bonues if applicable.
+
+Automated testing of the Player Scores class is provided by `spec/player_scores_spec.rb`, and loads a player score card with various values and tests that the score card correctly totals the scores, applies the bonus, and detects a full player card, which is the logic by which the game is ended.
+
+##### Text
+
+The Text class is a static helper class that provides various text manipulation utilites.  It is able to wrap text over multiple lines, or centre text in a line, or distribute multiple lines of text vertically in a space.
+
+These functions are used to position text on the screen in all parts of the application, for example the How to Play paragraphs are automatically wrapped by this class.  The labels on buttons are centred by this class.  Prompts in all modal dialogue boxes are arranged by this class.
+
+The test file `spec/text_spec.rb` contains automated tests which test all this functionality.
+
+#### 2. Manual testing
+
+[See Google Sheets Spreadsheet](https://docs.google.com/spreadsheets/d/1wJI3GNPPTrftSQKoeWJNgMlS92xe-D9lnzCIf8iFqco/edit?usp=sharing)
+
+![Manual Testing Screenshot](docs/testing_manual.png)
+
+Manual testing was used to test the robustness and functionality of the cursor based navigation implementation. This was not something that could easily be tested with automated tesing.  These tests confirmed that the screens and dialogue boxes respond correctly to expected user inputs, and are not adversely affected by other inputs.
 

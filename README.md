@@ -1,5 +1,41 @@
 # Cinco Dados 🎲🎲🎲🎲🎲
 
+## Contents
+
+1. [SoftwareDevelopmentPlan](#software-development-plan)
+    1. [Links](#links)
+    2. [Statement of Purpose and Scope](#statement-of-purpose-and-scope)
+    3. [List of Features](#list-of-features)
+        1. [Cursor Based Navigation and Control](#cursor-based-navigation-and-control)
+        2. [Dice](#dice)
+        3. [Score Card](#score-card)
+        4. [High Score Table](#high-score-table)
+        5. [How to Play Screen](#how-to-play-screen)
+    4. [User Interaction](#user-interaction)
+        1. [General Navigation and User Experience](#general-navigation-and-user-experience)
+        2. [Main Menu](#main-menu)
+        3. [Game - Dice](#game-dice)
+        4. [Game - Score Card](#game-score-card)
+        5. [Summary Page / High Score Table](#summary-page-high-score-table)
+    5.  [Control Flow Diagram](#control-flow-diagram)
+        1. [Main Menu, New Game Setup, and High Scores screens](#main-menu-new-game-setup-and-high-scores-screens)
+        2. [Main Game Loop](#main-game-loop)
+    6.  [Implementation Plan](#implementation-plan)
+    7.  [Help Documentation](#help-documentation)
+        1. [Installation](#installation)
+        2. [System Requirements](#system-requirements)
+        3. [How to Use this Application](#how-to-use-this-application)
+            1. [How to Play](#how-to-play)
+            2. [High Scores](#high-scores)
+            3. [New Game](#new-game)
+        4. [Advanced Usage](#advanced-usage)
+    5. [Testing](#testing)
+        1. [Automatic Testing](#automatic-testing)
+            1. [Game Model](#game-model)
+            2. [Player](#player)
+            3. [Palyer Scores]{#player-scores}
+            4. [Text](#text)
+        2. [Manual Testing](#manual-testing)
 ## Software Development Plan
 ### Links
 
@@ -7,9 +43,11 @@
 - [Trello board](https://trello.com/b/uHqXtL1J/cinco-dados)  
 - [Manual testing spreadsheet](https://docs.google.com/spreadsheets/d/1wJI3GNPPTrftSQKoeWJNgMlS92xe-D9lnzCIf8iFqco/edit?usp=sharing)
 
+
+
 ### Statement of Purpose and Scope
 
-"Cinco Dados" is Español for "Five Dice".  Five Dice is a game of chance played with ... you guessed it ... five dice.  You probably know it by another name, which is a trademark, so I won't be using that name!  Throughout this text, "dados" is used instead of "dice", but they are the same thing.  Six sided cubes with numbers on the sides.
+"Cinco Dados" _(SINK-oh DAH-dohs)_ is Español for "Five Dice".  Five Dice is a game of chance played with ... you guessed it ... five dice.  You probably know it by another name, which is a trademark, so I won't be using that name!  Throughout this text, "dados" is used instead of "dice", but they are the same thing.  Six sided cubes with numbers on the sides.
 
 Cinco Dados is going to be my take on this game and is dedicated to my partner, who is Mexican, and with whom i play it often in real life.  It is aimed at people who would like to take a few minutes of leasure time, and can be played either alone or with friends. The game involves rolling five dados up to 3 times to achieve certain combinations, such as matching or sequentially numbered dados, and strategically inserting those rolls into the available slots on the score card to maximise your score. 
 
@@ -22,15 +60,15 @@ Players may like to keep records of their highest ever scores, and the game will
 
 ### List of Features
 
-#### 1. Cursor based navigation and control
+#### 1. Cursor Based Navigation and Control
 
 Navigation throughout the application is intended to be accomplished solely with use of the arrow keys to select various on-screen controls, such as buttons.  Once these controls are selected, the space bar or enter key can be used to activate the action that each control represents.  Controls can be simple buttons such as Yes/No/Exit or other controls such as the dados, or the individual table cells on the score card.  Using these controls instead of text input limits the need for input validation and provides a familiar graphical user interface.
 
-#### 2. Game - Dice
+#### 2. Dice
 
 During the main game, the five dados are "rolled" to generate the required combinations.  The dados will be represented visually; displayed using a grid of white and black Unicode chacters that can be represented in the terminal.  The values of the dados are generated from five seperate psuedo-random number generators; one for each dados. The action of dados rolling is simulated by animating the dados in a sequence.  A "locking" enables the user to select which dados to roll again and which to keep, simulating adding or removing real dados to a dados cup before rolling.
 
-#### 3. Game - Score Card
+#### 3. Score Card
 
 While the game is in progress, roughly half of the screen is taken up with the score card.  The table is automatically generated and widens to accomodate the number of players in the current game.  It displays the list of available score categories, and includes a score in those categories that have already had dados rolls allocated.  It calculates and displays the subtotals of the top and bottom secions, applies a bonus for the top section if applicable, and calculates the grand total. There is one column for every player, with their name at the top, which is highlighted when it is their turn. After completing their dados rolls, the player can the cursor to navigate up and down their column to see each prospective score displayed in the available cells, before committing to one.  Only cells which have not yet been allocated are selectable.
 
@@ -45,7 +83,7 @@ From the main menu the user can enter a screen of text describing how to play.  
 
 ### User Interaction
 
-#### 1. General Navigation and User Experience
+#### General Navigation and User Experience
 
 Navigation throughout the game menus and main game screen is via a cursor, represented on screen as a square which surrounds a control, and can be moved between available controls. Controls may be graphical items (eg. dados, cells of the scorecard table) or buttons (eg. options in a menu). Different controls may be available depending on game logic at any stage of the application.  Arrow keys are used to navigate the cursor between controls, and once the intended control is surrounded by the cursor, that control will highlight by displaying in a different colour. In some situations the cursor may highlight a control in orange to warn that the consequence of that selection might not be what they player intends.
 
@@ -53,7 +91,7 @@ On most pages in the application a line of context based help text at the bottom
 
 At various times during the game confirmation of a user action is required.  This confirmation is dispayed in Yes/No type modal box overlaid on the current screen.  The user can use the arrow and enter/space to make their selection as above.
 
-#### 1. Main Menu
+#### Main Menu
 
 Initially upon executing the program, the user will be presented with the main menu.  The menu will contain options such as start a new game, view the high scores table, view help information, or quit.  Navigation of the menu options is via the arrow keys up/down/left/right, and pressing the Enter or Space bar to activate the selected option.
 
@@ -65,7 +103,7 @@ From the main menu, the user can also navigate to the "How to Play" screen. On t
 
 Incorrect input in cursor navigation mode (pressing any non supported key) will be ignored and the visual cursor will not move.  The context help line will continue to display the accepted navigation directions. Incorrect input in a text entry field (on the Player Name screen) will receive a red error message such as "Minimum 5 characters", or "Invalid character".
 
-#### 2. Game - Dice
+#### Game - Dice
 
 The theme of arrow key based cursor movement continues during the main game, where the user will move the cursor to command on screen actions to progress the game. The context help line will provide players with context help as above.  
 
@@ -73,7 +111,7 @@ Each turn of the game consists of three rolls; each is activated via a large "RO
 
 Before the 2nd and 3rd roll, any of the dados can be locked so that they will not be affected by subsequent activations of the roll button. The context help line will display context help along the lines of "press the up/down keys to select and enter/space to lock" (or unlock as appropriate). A locked dados will have a visual locking indicator so users can see when they have locked a dados. If all five dados are locked, the roll button will become disabled, preventing the user from rolling no dados and wasting a turn.  Incorrect key presses will be met with the same silent failure, and a lack of cursor movement. Once the intended dados are locked, the player can select and activate the "ROLL" button to continue, or they may choose at any time to allocate their dados roll to the score card.
 
-#### 3. Game - Score Card
+#### Game - Score Card
 
 Arrow based cursor movement and enter key / space bar command selection continues, maintaining continuity in the user experience.  After the three rolls of a turn are completed, the user will be forced to choose where on the score card to place their final roll.  An algorithm will predict and preselect the best category to allocate the score based on the already allocated scores and the current dados values.
 
@@ -83,7 +121,7 @@ Logic will prevent cells already containing a roll from being selected, so when 
 
 To accept the selected category the user can press the space bar or enter key.  If the player selects a zero scoring cell (ie they have no choice, or they are choosing to forego a score for strategic reasons) they will be prompted again with a confirmation message "Are you sure you want enter a zero score for [category]?", and will need to select the yes button and press enter/space again to confirm.
 
-#### 4. Summary Page / High Score Table
+#### Summary Page / High Score Table
 
 After completing a game, some game summary information is displayed, with a ranking of the players and their final scores.  Any player who has achieved a new high score is also indicated.  If the game was single player, the summary information contains the player's final score with a congratulatory message. If the game was multiplayer, then the players will be ranked and the winner declared.
 
@@ -93,7 +131,7 @@ The user can also access the high score table at any time directly from the main
 
 ### Control Flow Diagram
 
-#### 1. Control Flow Diagram for Main Menu, New Game Setup, and High Scores screens
+#### 1. Main Menu, New Game Setup, and High Scores screens
 
 ![Control Flow Diagram for Main Menu, New Game setup, and High Scores screens](docs/controlflowdiagram-main.drawio.png)
 
@@ -101,7 +139,7 @@ The user can also access the high score table at any time directly from the main
 
 This diagram shows all parts of control flow, except for inside the main game loop.  The main game loop is represented by a predefined process symbol on this diagram and expanded in a separate diagram below.
 
-#### 2. Main Game Loop Control Flow Diagram
+#### 2. Main Game Loop
 
 ![Main Game Loop Control Flow Diagram](docs/controlflowdiagram-gameloop.drawio.png)
 
@@ -152,7 +190,7 @@ $ ./cincodados-run.sh
 
 This application relies extensively on unicode characters to draw the user interface.  A terminal emulator capable of displaying 4-byte Unicode characters is required.  Basic colour is used, so any terminal emulator capable of drawing 16 colours should work.
 
-#### 3. How to Use this application
+#### 3. How to Use this Application
 
 After starting the application, you will be presented with a main menu screen.  The available options are:
 
@@ -291,31 +329,31 @@ Executing the above command with the `-h` or `--help` flag will display the avai
 `-s` or `--static` is used to disable the animation function of the dice rolling, so that they are immediately displayed.  This is also useful for development as there is no waiting for the dice to display each turn.
 
 
-### Testing
+## Testing
 
 Both rspec based automatic testing and manual testing were used in the development of this appliation
 
-#### 1. Automatic testing
+### Automatic testing
 
 Automatic testing was used to test various components of the application
 
-##### Game Model
+#### Game Model
 
 The game model class is responsible for correctly implementing the rules of Cinco Dados and forms the core of the game.  One of its major functions is to  calculate scores based on the values of the dice.
 
 Automated testing of this function is provided by `spec/game_model_spec.rb`.  Various combinations of 5 dice vales are fed to the appropriate methods and checked for correct detection of the required combinations for various score categories.
 
 
-##### Player
+#### Player
 
 The player class represents each player in the game.  `spec/player_spec.rb` contains a few tests that check for the correction instantiation of new players.
-##### Player Scores
+#### Player Scores
 
 The player scores class is an sub part of the player class and is responsible for managing the players score card.  It calculates the subtotals and applies the upper section bonues if applicable.
 
 Automated testing of the Player Scores class is provided by `spec/player_scores_spec.rb`, and loads a player score card with various values and tests that the score card correctly totals the scores, applies the bonus, and detects a full player card, which is the logic by which the game is ended.
 
-##### Text
+#### Text
 
 The Text class is a static helper class that provides various text manipulation utilites.  It is able to wrap text over multiple lines, or centre text in a line, or distribute multiple lines of text vertically in a space.
 
@@ -323,7 +361,7 @@ These functions are used to position text on the screen in all parts of the appl
 
 The test file `spec/text_spec.rb` contains automated tests which test all this functionality.
 
-#### 2. Manual testing
+### Manual testing
 
 [See Google Sheets Spreadsheet](https://docs.google.com/spreadsheets/d/1wJI3GNPPTrftSQKoeWJNgMlS92xe-D9lnzCIf8iFqco/edit?usp=sharing)
 

@@ -369,3 +369,4 @@ The test file `spec/text_spec.rb` contains automated tests which test all this f
 
 Manual testing was used to test the robustness and functionality of the cursor based navigation implementation. This was not something that could easily be tested with automated testing.  These tests confirmed that the screens and dialogue boxes respond correctly to expected user inputs, and are not adversely affected by other inputs.
 
+
